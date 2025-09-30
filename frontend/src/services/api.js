@@ -156,13 +156,13 @@ export const createTransaction = async (payload) => {
   const total = payload.total ?? Math.max(0, Number(subtotal) - Number(discount));
 
   const tx = {
-    paymentMethod: payload.paymentMethod || 'tunai',
+    payment_method: payload.paymentMethod || 'tunai',
     subtotal,
     discount,
     total,
     notes: payload.notes || null,
-    userId,
-    createdAt: new Date().toISOString()
+    user_id: userId,
+    created_at: new Date().toISOString()
   };
   const { data: txRows, error: txError } = await supabase.from('transactions').insert([tx]).select();
   if (txError) {
@@ -178,12 +178,12 @@ export const createTransaction = async (payload) => {
 
   if (items.length > 0) {
     const itemRows = items.map(i => ({
-      transactionId,
-      productId: i.productId,
+      transaction_id: transactionId,
+      product_id: i.productId,
       price: Number(i.price || 0),
       qty: Number(i.qty || 0),
       subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0))),
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     }));
     const { error: itemsError } = await supabase.from('transaction_items').insert(itemRows);
     if (itemsError) {
@@ -195,7 +195,7 @@ export const createTransaction = async (payload) => {
       const qty = Number(i.qty) || 0;
       if (!i.productId || qty <= 0) continue;
       const { error: moveError } = await supabase.from('stock_movements').insert([
-        { productId: i.productId, qty, description: 'Penjualan', type: 'out', createdAt: new Date().toISOString() }
+        { product_id: i.productId, qty, description: 'Penjualan', type: 'out', created_at: new Date().toISOString() }
       ]);
       if (moveError) {
         console.error('Supabase movement (sale) error:', moveError);
@@ -216,10 +216,10 @@ export const getTransactions = async (startDate = null, endDate = null) => {
   let query = supabase
     .from('transactions')
     .select('*, transaction_items(*)')
-    .order('createdAt', { ascending: false });
+    .order('created_at', { ascending: false });
 
-  if (startDate) query = query.gte('createdAt', `${startDate}T00:00:00.000Z`);
-  if (endDate) query = query.lte('createdAt', `${endDate}T23:59:59.999Z`);
+  if (startDate) query = query.gte('created_at', `${startDate}T00:00:00.000Z`);
+  if (endDate) query = query.lte('created_at', `${endDate}T23:59:59.999Z`);
 
   const { data, error } = await query;
   if (error) {
@@ -240,9 +240,9 @@ export const getTodayTransactions = async () => {
   const { data, error } = await supabase
     .from('transactions')
     .select('*, transaction_items(*)')
-    .gte('createdAt', start)
-    .lte('createdAt', end)
-    .order('createdAt', { ascending: false });
+    .gte('created_at', start)
+    .lte('created_at', end)
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Supabase getTodayTransactions error:', error);
@@ -268,8 +268,8 @@ export const getDashboardStats = async () => {
 
   // Fetch transactions for today and month
   const [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
-    supabase.from('transactions').select('total').gte('createdAt', startToday).lte('createdAt', endToday),
-    supabase.from('transactions').select('total').gte('createdAt', monthStart).lte('createdAt', monthEnd)
+    supabase.from('transactions').select('total').gte('created_at', startToday).lte('created_at', endToday),
+    supabase.from('transactions').select('total').gte('created_at', monthStart).lte('created_at', monthEnd)
   ]);
 
   if (todayErr) console.error('Supabase today stats error:', todayErr);
