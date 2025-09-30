@@ -172,10 +172,21 @@ export const createTransaction = async (payload) => {
     notes: payload.notes || null,
     userId
   };
+  const txLowerNoCreated = {
+    paymentmethod: payload.paymentMethod || 'tunai',
+    subtotal,
+    discount,
+    total,
+    notes: payload.notes || null,
+    userid: userId
+  };
   let txRows, txError;
   ({ data: txRows, error: txError } = await supabase.from('transactions').insert([txSnakeNoCreated]).select());
   if (txError && txError?.code === 'PGRST204') {
     ({ data: txRows, error: txError } = await supabase.from('transactions').insert([txCamelNoCreated]).select());
+  }
+  if (txError && txError?.code === 'PGRST204') {
+    ({ data: txRows, error: txError } = await supabase.from('transactions').insert([txLowerNoCreated]).select());
   }
   if (txError) {
     console.error('Supabase createTransaction error:', txError);
@@ -203,10 +214,20 @@ export const createTransaction = async (payload) => {
       qty: Number(i.qty || 0),
       subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
     }));
+    const itemRowsLower = items.map(i => ({
+      transactionid: transactionId,
+      productid: i.productId,
+      price: Number(i.price || 0),
+      qty: Number(i.qty || 0),
+      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
+    }));
     let itemsError;
     ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsSnake));
     if (itemsError && itemsError?.code === 'PGRST204') {
       ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsCamel));
+    }
+    if (itemsError && (itemsError?.code === 'PGRST204' || itemsError?.code === '23502')) {
+      ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsLower));
     }
     if (itemsError) {
       console.error('Supabase insert transaction_items error:', itemsError);
@@ -223,6 +244,11 @@ export const createTransaction = async (payload) => {
       if (moveError && moveError?.code === 'PGRST204') {
         ({ error: moveError } = await supabase.from('stock_movements').insert([
           { productId: i.productId, qty, description: 'Penjualan', type: 'out' }
+        ]));
+      }
+      if (moveError && (moveError?.code === 'PGRST204' || moveError?.code === '23502')) {
+        ({ error: moveError } = await supabase.from('stock_movements').insert([
+          { productid: i.productId, qty, description: 'Penjualan', type: 'out' }
         ]));
       }
       if (moveError) {
