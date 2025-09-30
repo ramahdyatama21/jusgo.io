@@ -51,7 +51,7 @@ export default function Products() {
       resetForm();
       loadProducts();
     } catch (error) {
-      alert('Gagal menyimpan produk');
+      alert(`Gagal menyimpan produk: ${error?.message || 'Unknown error'}`);
     }
   };
 
