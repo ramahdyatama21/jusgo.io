@@ -161,7 +161,8 @@ export const createTransaction = async (payload) => {
     discount,
     total,
     notes: payload.notes || null,
-    userId
+    userId,
+    createdAt: new Date().toISOString()
   };
   const { data: txRows, error: txError } = await supabase.from('transactions').insert([tx]).select();
   if (txError) {
@@ -181,7 +182,8 @@ export const createTransaction = async (payload) => {
       productId: i.productId,
       price: Number(i.price || 0),
       qty: Number(i.qty || 0),
-      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
+      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0))),
+      createdAt: new Date().toISOString()
     }));
     const { error: itemsError } = await supabase.from('transaction_items').insert(itemRows);
     if (itemsError) {

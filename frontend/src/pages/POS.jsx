@@ -153,7 +153,8 @@ export default function POS() {
       setPromoDipilih('');
       loadProducts();
     } catch (error) {
-      alert('Transaksi gagal');
+      const message = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+      alert(`Transaksi gagal: ${message}`);
     } finally {
       setLoading(false);
     }
