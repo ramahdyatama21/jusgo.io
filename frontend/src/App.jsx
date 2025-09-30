@@ -1,5 +1,6 @@
 // frontend/src/App.jsx
 
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -13,10 +14,27 @@ import RiwayatTransaksi from './pages/RiwayatTransaksi';
 import KalkulatorHPP from './pages/KalkulatorHPP';
 import Promo from './pages/Promo';
 import BelanjaBahan from './pages/BelanjaBahan';
+import { supabase } from './services/supabase';
 
 function ProtectedRoute({ children }) {
-  const session = localStorage.getItem('supabase_session');
-  console.log('ProtectedRoute session:', session);
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  if (loading) return null; // atau loading spinner
   return session ? children : <Navigate to="/login" />;
 }
 
