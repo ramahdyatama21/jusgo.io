@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/api';
+import { supabase } from '../services/supabase';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -17,14 +17,19 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const data = await login(username, password);
-      
-      if (data.error) {
-        setError(data.error);
-      } else {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+      // Supabase Auth login
+      const { data, error: supaError } = await supabase.auth.signInWithPassword({
+        email: username,
+        password
+      });
+      if (supaError) {
+        setError(supaError.message);
+      } else if (data.session) {
+        localStorage.setItem('supabase_session', JSON.stringify(data.session));
+        localStorage.setItem('supabase_user', JSON.stringify(data.user));
         navigate('/dashboard');
+      } else {
+        setError('Login gagal.');
       }
     } catch (err) {
       setError('Terjadi kesalahan. Silakan coba lagi.');
