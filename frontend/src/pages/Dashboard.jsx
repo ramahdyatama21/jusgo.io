@@ -11,6 +11,13 @@ export default function Dashboard() {
   const [salesPerDay, setSalesPerDay] = useState([]);
   const [salesPerWeek, setSalesPerWeek] = useState([]);
   const [salesPerMonth, setSalesPerMonth] = useState([]);
+  const [costPerDay, setCostPerDay] = useState([]);
+  const [profitPerDay, setProfitPerDay] = useState([]);
+  const [todayHPP, setTodayHPP] = useState(0);
+  const [todayProfit, setTodayProfit] = useState(0);
+  const [monthHPP, setMonthHPP] = useState(0);
+  const [monthProfit, setMonthProfit] = useState(0);
+  const [totalBelanjaBahan, setTotalBelanjaBahan] = useState(0);
   const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
 
   useEffect(() => {
@@ -18,16 +25,18 @@ export default function Dashboard() {
     // Hitung produk terlaris dari riwayat transaksi dan produk
     const products = JSON.parse(localStorage.getItem('products') || '[]');
     const riwayat = JSON.parse(localStorage.getItem('riwayatTransaksi') || '[]');
-    // Akumulasi qty dan revenue per produk
+    // Akumulasi qty, revenue, dan HPP per produk
     const productMap = {};
     products.forEach(p => {
-      productMap[p.name] = { product: p, totalQty: 0, totalRevenue: 0 };
+      productMap[p.name] = { product: p, totalQty: 0, totalRevenue: 0, totalHPP: 0 };
     });
     riwayat.forEach(order => {
       order.items.forEach(item => {
         if (productMap[item.name]) {
           productMap[item.name].totalQty += item.qty;
           productMap[item.name].totalRevenue += (item.subtotal || (item.qty * item.price));
+          const buyPrice = Number(productMap[item.name].product?.buyPrice || 0);
+          productMap[item.name].totalHPP += (Number(item.qty) * buyPrice);
         }
       });
     });
@@ -36,13 +45,25 @@ export default function Dashboard() {
     // --- Grafik Penjualan ---
     // Helper: format tanggal ke yyyy-mm-dd
     const toDate = (str) => str ? str.slice(0, 10) : '';
-    // Per Hari
+    // Per Hari (Revenue, HPP/Cost, Profit)
     const perDay = {};
+    const costDay = {};
+    const profitDay = {};
     riwayat.forEach(order => {
       const tgl = toDate(order.createdAt || order.sentAt);
-      perDay[tgl] = (perDay[tgl] || 0) + order.items.reduce((sum, i) => sum + (i.subtotal || (i.qty * i.price)), 0);
+      const revenue = order.items.reduce((sum, i) => sum + (i.subtotal || (i.qty * i.price)), 0);
+      perDay[tgl] = (perDay[tgl] || 0) + revenue;
+      const hpp = order.items.reduce((sum, i) => {
+        const prod = products.find(p => p.id === i.productId || p.name === i.name);
+        const buyPrice = Number(prod?.buyPrice || 0);
+        return sum + (Number(i.qty) * buyPrice);
+      }, 0);
+      costDay[tgl] = (costDay[tgl] || 0) + hpp;
+      profitDay[tgl] = (profitDay[tgl] || 0) + (revenue - hpp);
     });
     setSalesPerDay(Object.entries(perDay).map(([date, total]) => ({ date, total })).sort((a, b) => a.date.localeCompare(b.date)));
+    setCostPerDay(Object.entries(costDay).map(([date, cost]) => ({ date, cost })).sort((a, b) => a.date.localeCompare(b.date)));
+    setProfitPerDay(Object.entries(profitDay).map(([date, profit]) => ({ date, profit })).sort((a, b) => a.date.localeCompare(b.date)));
     // Per Minggu
     const getWeek = (dateStr) => {
       const d = new Date(dateStr);
@@ -64,6 +85,26 @@ export default function Dashboard() {
       perMonth[month] = (perMonth[month] || 0) + total;
     });
     setSalesPerMonth(Object.entries(perMonth).map(([month, total]) => ({ month, total })).sort((a, b) => a.month.localeCompare(b.month)));
+    // Totals: Today & Month
+    const todayKey = toDate(new Date().toISOString());
+    const monthKey = todayKey.slice(0, 7);
+    const todayCost = costDay[todayKey] || 0;
+    const todayRevenue = perDay[todayKey] || 0;
+    setTodayHPP(todayCost);
+    setTodayProfit(Math.max(0, todayRevenue - todayCost));
+
+    const monthCost = Object.entries(costDay)
+      .filter(([d]) => d && d.startsWith(monthKey))
+      .reduce((s, [, v]) => s + v, 0);
+    const monthRevenue = Object.entries(perDay)
+      .filter(([d]) => d && d.startsWith(monthKey))
+      .reduce((s, [, v]) => s + v, 0);
+    setMonthHPP(monthCost);
+    setMonthProfit(Math.max(0, monthRevenue - monthCost));
+
+    // Total belanja bahan sepanjang riwayat lokal
+    const totalCostAll = Object.values(costDay).reduce((s, v) => s + v, 0);
+    setTotalBelanjaBahan(totalCostAll);
   }, []);
 
   const loadStats = async () => {
@@ -182,6 +223,36 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* HPP & Profit Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <p className="text-sm text-gray-600">HPP (Hari Ini)</p>
+          <p className="text-2xl font-bold text-gray-800 mt-1">{formatRupiah(todayHPP)}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <p className="text-sm text-gray-600">Profit (Hari Ini)</p>
+          <p className="text-2xl font-bold text-gray-800 mt-1">{formatRupiah(todayProfit)}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <p className="text-sm text-gray-600">HPP (Bulan Ini)</p>
+          <p className="text-2xl font-bold text-gray-800 mt-1">{formatRupiah(monthHPP)}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <p className="text-sm text-gray-600">Profit (Bulan Ini)</p>
+          <p className="text-2xl font-bold text-gray-800 mt-1">{formatRupiah(monthProfit)}</p>
+        </div>
+      </div>
+
+      {/* Total Belanja Bahan */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">Total Belanja Bahan</h2>
+            <p className="text-2xl font-bold text-blue-700 mt-1">{formatRupiah(totalBelanjaBahan)}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Top Products */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Produk Terlaris</h2>
@@ -233,6 +304,30 @@ export default function Dashboard() {
               <YAxis />
               <Tooltip formatter={(value) => formatRupiah(value)} />
               <Bar dataKey="total" fill="#2563eb" name="Total Penjualan" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="mb-6">
+          <h3 className="font-semibold mb-2">Belanja Bahan per Hari (HPP)</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={costPerDay}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" fontSize={10} angle={-45} textAnchor="end" height={60} />
+              <YAxis />
+              <Tooltip formatter={(value) => formatRupiah(value)} />
+              <Bar dataKey="cost" fill="#ef4444" name="Belanja Bahan" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="mb-6">
+          <h3 className="font-semibold mb-2">Profit per Hari</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={profitPerDay}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" fontSize={10} angle={-45} textAnchor="end" height={60} />
+              <YAxis />
+              <Tooltip formatter={(value) => formatRupiah(value)} />
+              <Bar dataKey="profit" fill="#10b981" name="Profit" />
             </BarChart>
           </ResponsiveContainer>
         </div>
