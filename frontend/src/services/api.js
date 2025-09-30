@@ -311,3 +311,22 @@ export const getProductReport = async (startDate = null, endDate = null) => {
   });
   return res.json();
 };
+
+// Categories
+export const getCategories = async () => {
+  const { data, error } = await supabase.from('categories').select('*').order('name');
+  if (error) {
+    console.error('Supabase getCategories error:', error);
+    return [];
+  }
+  return data || [];
+};
+
+export const createCategory = async (name) => {
+  const { data, error } = await supabase.from('categories').insert([{ name }]).select();
+  if (error) {
+    console.error('Supabase createCategory error:', error);
+    throw error;
+  }
+  return data?.[0] || null;
+};

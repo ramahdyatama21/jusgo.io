@@ -1,7 +1,7 @@
 // frontend/src/pages/Products.jsx
 
 import { useState, useEffect } from 'react';
-import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/api';
+import { getProducts, createProduct, updateProduct, deleteProduct, getCategories, createCategory } from '../services/api';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -20,12 +20,14 @@ export default function Products() {
     minStock: 5,
     description: ''
   });
+  const [categories, setCategories] = useState([]);
 
   const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
   const isAdmin = user.role === 'authenticated';
 
   useEffect(() => {
     loadProducts();
+    loadCategories();
   }, [search]);
 
   const loadProducts = async () => {
@@ -37,6 +39,11 @@ export default function Products() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadCategories = async () => {
+    const data = await getCategories();
+    setCategories(data);
   };
 
   const handleSubmit = async (e) => {
@@ -216,17 +223,37 @@ export default function Products() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="Umum">Umum</option>
-                      <option value="Makanan">Makanan</option>
-                      <option value="Minuman">Minuman</option>
-                      <option value="Elektronik">Elektronik</option>
-                      <option value="Fashion">Fashion</option>
-                    </select>
+                    <div className="flex gap-2">
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">-- Pilih Kategori --</option>
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.name}>{c.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const name = prompt('Nama kategori baru');
+                          if (name) {
+                            try {
+                              const created = await createCategory(name);
+                              await loadCategories();
+                              setFormData({ ...formData, category: created?.name || name });
+                            } catch (err) {
+                              alert(`Gagal menambah kategori: ${err?.message || 'Unknown error'}`);
+                            }
+                          }
+                        }}
+                        className="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                        title="Tambah kategori"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Satuan</label>
