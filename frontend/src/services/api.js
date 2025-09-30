@@ -155,16 +155,30 @@ export const createTransaction = async (payload) => {
   const discount = payload.discount ?? payload.diskon ?? 0;
   const total = payload.total ?? Math.max(0, Number(subtotal) - Number(discount));
 
-  const tx = {
+  const nowIso = new Date().toISOString();
+  const txSnake = {
     payment_method: payload.paymentMethod || 'tunai',
     subtotal,
     discount,
     total,
     notes: payload.notes || null,
     user_id: userId,
-    created_at: new Date().toISOString()
+    created_at: nowIso
   };
-  const { data: txRows, error: txError } = await supabase.from('transactions').insert([tx]).select();
+  const txCamel = {
+    paymentMethod: payload.paymentMethod || 'tunai',
+    subtotal,
+    discount,
+    total,
+    notes: payload.notes || null,
+    userId,
+    createdAt: nowIso
+  };
+  let txRows, txError;
+  ({ data: txRows, error: txError } = await supabase.from('transactions').insert([txSnake]).select());
+  if (txError && txError?.code === 'PGRST204') {
+    ({ data: txRows, error: txError } = await supabase.from('transactions').insert([txCamel]).select());
+  }
   if (txError) {
     console.error('Supabase createTransaction error:', txError);
     throw txError;
@@ -177,15 +191,27 @@ export const createTransaction = async (payload) => {
   const transactionId = transaction.id;
 
   if (items.length > 0) {
-    const itemRows = items.map(i => ({
+    const itemRowsSnake = items.map(i => ({
       transaction_id: transactionId,
       product_id: i.productId,
       price: Number(i.price || 0),
       qty: Number(i.qty || 0),
       subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0))),
-      created_at: new Date().toISOString()
+      created_at: nowIso
     }));
-    const { error: itemsError } = await supabase.from('transaction_items').insert(itemRows);
+    const itemRowsCamel = items.map(i => ({
+      transactionId,
+      productId: i.productId,
+      price: Number(i.price || 0),
+      qty: Number(i.qty || 0),
+      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0))),
+      createdAt: nowIso
+    }));
+    let itemsError;
+    ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsSnake));
+    if (itemsError && itemsError?.code === 'PGRST204') {
+      ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsCamel));
+    }
     if (itemsError) {
       console.error('Supabase insert transaction_items error:', itemsError);
       throw itemsError;
@@ -194,9 +220,15 @@ export const createTransaction = async (payload) => {
     for (const i of items) {
       const qty = Number(i.qty) || 0;
       if (!i.productId || qty <= 0) continue;
-      const { error: moveError } = await supabase.from('stock_movements').insert([
-        { product_id: i.productId, qty, description: 'Penjualan', type: 'out', created_at: new Date().toISOString() }
-      ]);
+      let moveError;
+      ({ error: moveError } = await supabase.from('stock_movements').insert([
+        { product_id: i.productId, qty, description: 'Penjualan', type: 'out', created_at: nowIso }
+      ]));
+      if (moveError && moveError?.code === 'PGRST204') {
+        ({ error: moveError } = await supabase.from('stock_movements').insert([
+          { productId: i.productId, qty, description: 'Penjualan', type: 'out', createdAt: nowIso }
+        ]));
+      }
       if (moveError) {
         console.error('Supabase movement (sale) error:', moveError);
         throw moveError;
@@ -213,15 +245,18 @@ export const createTransaction = async (payload) => {
 };
 
 export const getTransactions = async (startDate = null, endDate = null) => {
-  let query = supabase
-    .from('transactions')
-    .select('*, transaction_items(*)')
-    .order('created_at', { ascending: false });
-
+  // Try snake_case then camelCase fallback for created_at/createdAt
+  let data, error;
+  let query = supabase.from('transactions').select('*, transaction_items(*)').order('created_at', { ascending: false });
   if (startDate) query = query.gte('created_at', `${startDate}T00:00:00.000Z`);
   if (endDate) query = query.lte('created_at', `${endDate}T23:59:59.999Z`);
-
-  const { data, error } = await query;
+  ({ data, error } = await query);
+  if (error && error?.code === 'PGRST204') {
+    let q2 = supabase.from('transactions').select('*, transaction_items(*)').order('createdAt', { ascending: false });
+    if (startDate) q2 = q2.gte('createdAt', `${startDate}T00:00:00.000Z`);
+    if (endDate) q2 = q2.lte('createdAt', `${endDate}T23:59:59.999Z`);
+    ({ data, error } = await q2);
+  }
   if (error) {
     console.error('Supabase getTransactions error:', error);
     return [];
@@ -237,12 +272,21 @@ export const getTodayTransactions = async () => {
   const start = `${yyyy}-${mm}-${dd}T00:00:00.000Z`;
   const end = `${yyyy}-${mm}-${dd}T23:59:59.999Z`;
 
-  const { data, error } = await supabase
+  let data, error;
+  ({ data, error } = await supabase
     .from('transactions')
     .select('*, transaction_items(*)')
     .gte('created_at', start)
     .lte('created_at', end)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false }));
+  if (error && error?.code === 'PGRST204') {
+    ({ data, error } = await supabase
+      .from('transactions')
+      .select('*, transaction_items(*)')
+      .gte('createdAt', start)
+      .lte('createdAt', end)
+      .order('createdAt', { ascending: false }));
+  }
 
   if (error) {
     console.error('Supabase getTodayTransactions error:', error);
@@ -267,10 +311,17 @@ export const getDashboardStats = async () => {
   const monthEnd = `${yyyy}-${mm}-${String(monthEndDate).padStart(2, '0')}T23:59:59.999Z`;
 
   // Fetch transactions for today and month
-  const [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
+  let todayTx, todayErr, monthTx, monthErr;
+  [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
     supabase.from('transactions').select('total').gte('created_at', startToday).lte('created_at', endToday),
     supabase.from('transactions').select('total').gte('created_at', monthStart).lte('created_at', monthEnd)
   ]);
+  if (todayErr?.code === 'PGRST204' || monthErr?.code === 'PGRST204') {
+    [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
+      supabase.from('transactions').select('total').gte('createdAt', startToday).lte('createdAt', endToday),
+      supabase.from('transactions').select('total').gte('createdAt', monthStart).lte('createdAt', monthEnd)
+    ]);
+  }
 
   if (todayErr) console.error('Supabase today stats error:', todayErr);
   if (monthErr) console.error('Supabase month stats error:', monthErr);
