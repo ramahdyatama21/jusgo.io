@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [monthHPP, setMonthHPP] = useState(0);
   const [monthProfit, setMonthProfit] = useState(0);
   const [totalBelanjaBahan, setTotalBelanjaBahan] = useState(0);
+  const [lowStockList, setLowStockList] = useState([]);
   const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
 
   useEffect(() => {
@@ -41,6 +42,10 @@ export default function Dashboard() {
       });
     });
     setTopProducts(Object.values(productMap).filter(p => p.totalQty > 0).sort((a, b) => b.totalQty - a.totalQty));
+
+    // Low stock list (lokal)
+    const lowList = products.filter(p => typeof p.stock === 'number' && typeof p.minStock === 'number' && p.stock <= p.minStock);
+    setLowStockList(lowList);
 
     // --- Grafik Penjualan ---
     // Helper: format tanggal ke yyyy-mm-dd
@@ -210,7 +215,7 @@ export default function Dashboard() {
             <div>
               <p className="text-sm text-gray-600">Stok Rendah</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">
-                {stats?.products?.lowStock || 0}
+                {lowStockList.length}
               </p>
             </div>
             <div className="bg-red-100 p-3 rounded-full">
@@ -219,7 +224,13 @@ export default function Dashboard() {
               </svg>
             </div>
           </div>
-          <p className="text-sm text-gray-500 mt-2">Perlu restok</p>
+          {lowStockList.length === 0 ? (
+            <p className="text-sm text-green-600 mt-2">Stok aman</p>
+          ) : (
+            <div className="text-sm text-red-600 mt-2">
+              Perlu restok: {lowStockList.map(p => p.name).join(', ')}
+            </div>
+          )}
         </div>
       </div>
 
