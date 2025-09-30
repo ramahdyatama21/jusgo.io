@@ -53,29 +53,30 @@ export const getProducts = async (search = '', category = '') => {
 };
 
 export const createProduct = async (data) => {
-  const res = await fetch(`${API_URL}/products`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(data)
-  });
-  return res.json();
+  const { data: result, error } = await supabase.from('products').insert([data]).select();
+  if (error) {
+    console.error('Supabase createProduct error:', error);
+    throw error;
+  }
+  return result?.[0] || null;
 };
 
 export const updateProduct = async (id, data) => {
-  const res = await fetch(`${API_URL}/products/${id}`, {
-    method: 'PUT',
-    headers: getHeaders(),
-    body: JSON.stringify(data)
-  });
-  return res.json();
+  const { data: result, error } = await supabase.from('products').update(data).eq('id', id).select();
+  if (error) {
+    console.error('Supabase updateProduct error:', error);
+    throw error;
+  }
+  return result?.[0] || null;
 };
 
 export const deleteProduct = async (id) => {
-  const res = await fetch(`${API_URL}/products/${id}`, {
-    method: 'DELETE',
-    headers: getHeaders()
-  });
-  return res.json();
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) {
+    console.error('Supabase deleteProduct error:', error);
+    throw error;
+  }
+  return true;
 };
 
 export const importProducts = async (products) => {
