@@ -15,8 +15,8 @@ import Promo from './pages/Promo';
 import BelanjaBahan from './pages/BelanjaBahan';
 
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" />;
+  const session = localStorage.getItem('supabase_session');
+  return session ? children : <Navigate to="/login" />;
 }
 
 function App() {
