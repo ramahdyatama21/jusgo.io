@@ -21,8 +21,8 @@ export default function Products() {
     description: ''
   });
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAdmin = user.role === 'admin';
+  const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
+  const isAdmin = user.role === 'authenticated';
 
   useEffect(() => {
     loadProducts();

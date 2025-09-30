@@ -90,29 +90,52 @@ export const importProducts = async (products) => {
 
 // Stock
 export const getStockMovements = async (productId = null) => {
-  const params = productId ? `?productId=${productId}` : '';
-  const res = await fetch(`${API_URL}/stock/movements${params}`, {
-    headers: getHeaders()
-  });
-  return res.json();
+  let query = supabase.from('stock_movements').select('*').order('createdAt', { ascending: false });
+  if (productId) {
+    query = query.eq('productId', productId);
+  }
+  const { data, error } = await query;
+  if (error) {
+    console.error('Supabase getStockMovements error:', error);
+    return [];
+  }
+  return data || [];
 };
 
 export const addStock = async (productId, qty, description) => {
-  const res = await fetch(`${API_URL}/stock/in`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({ productId, qty, description })
-  });
-  return res.json();
+  // Tambah record ke stock_movements dan update stok produk
+  const { error: moveError } = await supabase.from('stock_movements').insert([
+    { productId, qty, description, type: 'in', createdAt: new Date().toISOString() }
+  ]);
+  if (moveError) {
+    console.error('Supabase addStock movement error:', moveError);
+    throw moveError;
+  }
+  // Update stok produk
+  const { data: product, error: prodError } = await supabase.from('products').select('stock').eq('id', productId).single();
+  if (prodError) throw prodError;
+  const newStock = (product?.stock || 0) + qty;
+  const { error: updateError } = await supabase.from('products').update({ stock: newStock }).eq('id', productId);
+  if (updateError) throw updateError;
+  return true;
 };
 
 export const removeStock = async (productId, qty, description) => {
-  const res = await fetch(`${API_URL}/stock/out`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({ productId, qty, description })
-  });
-  return res.json();
+  // Tambah record ke stock_movements dan update stok produk
+  const { error: moveError } = await supabase.from('stock_movements').insert([
+    { productId, qty, description, type: 'out', createdAt: new Date().toISOString() }
+  ]);
+  if (moveError) {
+    console.error('Supabase removeStock movement error:', moveError);
+    throw moveError;
+  }
+  // Update stok produk
+  const { data: product, error: prodError } = await supabase.from('products').select('stock').eq('id', productId).single();
+  if (prodError) throw prodError;
+  const newStock = (product?.stock || 0) - qty;
+  const { error: updateError } = await supabase.from('products').update({ stock: newStock }).eq('id', productId);
+  if (updateError) throw updateError;
+  return true;
 };
 
 // Transactions
