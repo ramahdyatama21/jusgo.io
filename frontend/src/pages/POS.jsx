@@ -175,6 +175,67 @@ export default function POS() {
     p.sku.toLowerCase().includes(search.toLowerCase())
   );
 
+  const printThermalReceipt = () => {
+    if (!receipt) return;
+    const rItems = Array.isArray(receipt.items) ? receipt.items : [];
+    const subtotal = rItems.reduce((s, it) => s + Number(it?.subtotal ?? (Number(it?.price || 0) * Number(it?.qty || 0))), 0);
+    const diskonVal = Number(receipt?.diskon || 0);
+    const total = Number(receipt?.total ?? Math.max(0, subtotal - diskonVal));
+    const formatRupiahNum = n => Number(n || 0).toLocaleString('id-ID', { minimumFractionDigits: 0 });
+    const noTrans = `${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${String(receipt.id || Date.now()).slice(-3)}`;
+    const kasir = receipt.kasir || '-';
+    const pembayaran = receipt.paymentMethod ? String(receipt.paymentMethod).toUpperCase() : '-';
+    const status = 'LUNAS';
+    const waktu = receipt.date || new Date().toLocaleString('id-ID').slice(0,16);
+    const promoText = receipt.promo ? `<div>Promo        : ${receipt.promo}</div>` : '';
+    const printWindow = window.open('', '', 'width=400,height=700');
+    printWindow.document.write(`
+      <html><head><title>Struk Transaksi</title>
+      <style>
+        @media print { body { width: 58mm !important; } }
+        body { font-family: monospace, Arial, sans-serif; font-size: 11px; padding: 0 2px; margin: 0; width: 58mm; }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .line { border-top: 1px dashed #222; margin: 6px 0; }
+        .item-row { display: flex; justify-content: space-between; }
+        .item-name { flex: 1; }
+        .item-qty { width: 24px; text-align: center; }
+        .item-total { width: 48px; text-align: right; }
+      </style></head><body>
+      <div class='center bold' style='font-size:13px;margin-top:4px;'>Jusgo Indonesia</div>
+      <div class='center'>Cold-Pressed Juice & More</div>
+      <div class='center'>IG: @jusgo.id | WA: 08xxxx</div>
+      <div class='line'></div>
+      <div>No. Transaksi : ${noTrans}</div>
+      <div>Tanggal       : ${waktu}</div>
+      <div>Kasir         : ${kasir}</div>
+      <div class='line'></div>
+      <div class='item-row bold'><span class='item-name'>Item</span><span class='item-qty'>Qty</span><span class='item-total'>Total</span></div>
+      <div class='line'></div>
+      ${rItems.map(item => `
+        <div class='item-row'>
+          <span class='item-name'>${item.name}</span>
+          <span class='item-qty'>${item.qty}</span>
+          <span class='item-total'>${formatRupiahNum(item.subtotal ?? (Number(item.price || 0) * Number(item.qty || 0)))}</span>
+        </div>
+      `).join('')}
+      <div class='line'></div>
+      <div class='item-row'><span class='item-name'>Subtotal</span><span></span><span class='item-total'>${formatRupiahNum(subtotal)}</span></div>
+      <div class='item-row'><span class='item-name'>Diskon</span><span></span><span class='item-total'>${diskonVal ? '-' + formatRupiahNum(diskonVal) : '0'}</span></div>
+      <div class='line'></div>
+      <div class='item-row bold'><span class='item-name'>TOTAL</span><span></span><span class='item-total'>${formatRupiahNum(total)}</span></div>
+      <div class='line'></div>
+      <div>Pembayaran : ${pembayaran}</div>
+      ${promoText}
+      <div>Status     : ${status}</div>
+      <div class='line'></div>
+      <div class='center'>Terima kasih telah belanja!<br/>Jaga kesehatan dengan Jusgo 🍹</div>
+      <div class='line'></div>
+      <script>window.print();setTimeout(()=>window.close(),500);</script>
+      </body></html>
+    `);
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-800">Point of Sale</h1>
@@ -239,7 +300,7 @@ export default function POS() {
           })()}
           <button
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 print:hidden"
-            onClick={() => window.print()}
+            onClick={printThermalReceipt}
           >
             Print Struk
           </button>
