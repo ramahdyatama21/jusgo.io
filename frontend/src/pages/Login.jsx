@@ -86,9 +86,7 @@ export default function Login() {
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600">
-          <p>Demo Login:</p>
-          <p className="mt-1">Admin: admin / admin123</p>
-          <p>Kasir: kasir / kasir123</p>
+          <p>Copyright@Jusgo.id</p>
         </div>
       </div>
     </div>
