@@ -186,38 +186,57 @@ export default function POS() {
           {receipt.promo && (
             <div className="mb-2 text-sm text-gray-600">Promo: <span className="font-semibold">{receipt.promo}</span></div>
           )}
-          <table className="w-full text-sm mb-2">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left">Produk</th>
-                <th>Qty</th>
-                <th>Harga</th>
-                <th>Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {receipt.items.map((item, idx) => (
-                <tr key={idx}>
-                  <td>{item.name}</td>
-                  <td className="text-center">{item.qty}</td>
-                  <td className="text-right">{formatRupiah(item.price)}</td>
-                  <td className="text-right">{formatRupiah(item.subtotal)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex justify-between font-bold border-t pt-2">
-            <span>Subtotal</span>
-            <span>{formatRupiah(receipt.subtotal)}</span>
-          </div>
-          <div className="flex justify-between font-bold">
-            <span>Diskon</span>
-            <span className="text-red-600">- {formatRupiah(receipt.diskon)}</span>
-          </div>
-          <div className="flex justify-between font-bold text-lg border-t pt-2">
-            <span>Total</span>
-            <span className="text-blue-600">{formatRupiah(receipt.total)}</span>
-          </div>
+          {(() => {
+            const rSubtotal = Number(
+              receipt?.subtotal ??
+              (Array.isArray(receipt?.items)
+                ? receipt.items.reduce((s, it) => s + Number(it?.subtotal ?? (Number(it?.price || 0) * Number(it?.qty || 0))), 0)
+                : 0)
+            );
+            const rDiskon = Number(
+              receipt?.diskon ??
+              (typeof receipt?.total === 'number' ? Math.max(0, rSubtotal - Number(receipt.total)) : 0)
+            );
+            const rTotal = Number(
+              receipt?.total ?? Math.max(0, rSubtotal - rDiskon)
+            );
+            return (
+              <>
+                <table className="w-full text-sm mb-2">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left">Produk</th>
+                      <th>Qty</th>
+                      <th>Harga</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {receipt.items.map((item, idx) => (
+                      <tr key={idx}>
+                        <td>{item.name}</td>
+                        <td className="text-center">{item.qty}</td>
+                        <td className="text-right">{formatRupiah(Number(item.price || 0))}</td>
+                        <td className="text-right">{formatRupiah(Number(item.subtotal ?? (Number(item.price || 0) * Number(item.qty || 0))))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="flex justify-between font-bold border-t pt-2">
+                  <span>Subtotal</span>
+                  <span>{formatRupiah(rSubtotal)}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Diskon</span>
+                  <span className="text-red-600">- {formatRupiah(rDiskon)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-lg border-t pt-2">
+                  <span>Total</span>
+                  <span className="text-blue-600">{formatRupiah(rTotal)}</span>
+                </div>
+              </>
+            );
+          })()}
           <button
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 print:hidden"
             onClick={() => window.print()}
