@@ -24,31 +24,31 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        
+
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Layout><Dashboard /></Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path="/products" element={
           <ProtectedRoute>
             <Layout><Products /></Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path="/stock" element={
           <ProtectedRoute>
             <Layout><Stock /></Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path="/pos" element={
           <ProtectedRoute>
             <Layout><POS /></Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path="/reports" element={
           <ProtectedRoute>
             <Layout><Reports /></Layout>
@@ -84,7 +84,7 @@ function App() {
             <Layout><BelanjaBahan /></Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
