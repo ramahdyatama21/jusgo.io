@@ -90,7 +90,10 @@ export const importProducts = async (products) => {
 
 // Stock
 export const getStockMovements = async (productId = null) => {
-  let query = supabase.from('stock_movements').select('*').order('createdAt', { ascending: false });
+  let query = supabase
+    .from('stock_movements')
+    .select('id, qty, description, type, createdAt, products:productId ( id, name, sku, unit )')
+    .order('createdAt', { ascending: false });
   if (productId) {
     query = query.eq('productId', productId);
   }
