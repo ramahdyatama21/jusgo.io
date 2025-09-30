@@ -5,7 +5,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -61,11 +61,11 @@ export default function Layout({ children }) {
         <div className="absolute bottom-0 w-64 p-4 border-t">
           <div className="flex items-center space-x-3 mb-3">
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-              {user.name?.charAt(0).toUpperCase()}
+              {(user.email?.charAt(0) || 'U').toUpperCase()}
             </div>
             <div>
-              <div className="font-medium text-gray-800">{user.name}</div>
-              <div className="text-sm text-gray-500">{user.role}</div>
+              <div className="font-medium text-gray-800">{user.email || 'User'}</div>
+              <div className="text-sm text-gray-500">{user.role || '-'}</div>
             </div>
           </div>
           <button
