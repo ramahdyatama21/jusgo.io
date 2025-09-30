@@ -143,21 +143,23 @@ export const removeStock = async (productId, qty, description) => {
 
 // Transactions (migrated to Supabase)
 export const createTransaction = async (payload) => {
-  // payload diharapkan mengandung: items[], paymentMethod, subtotal, discount, total, notes
-  // items: [{ productId, name, price, qty, subtotal, stock }]
-  // User akan diambil dari Supabase Auth
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError) {
     console.error('Supabase getUser error:', userError);
   }
   const userId = userData?.user?.id || null;
 
-  // 1) Insert transaksi
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  const computedSubtotal = items.reduce((s, i) => s + Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0))), 0);
+  const subtotal = payload.subtotal ?? computedSubtotal;
+  const discount = payload.discount ?? payload.diskon ?? 0;
+  const total = payload.total ?? Math.max(0, Number(subtotal) - Number(discount));
+
   const tx = {
     paymentMethod: payload.paymentMethod || 'tunai',
-    subtotal: payload.subtotal ?? (Array.isArray(payload.items) ? payload.items.reduce((s, i) => s + (i.subtotal ?? (i.price * i.qty)), 0) : 0),
-    discount: payload.discount ?? 0,
-    total: payload.total ?? (payload.subtotal ?? 0) - (payload.discount ?? 0),
+    subtotal,
+    discount,
+    total,
     notes: payload.notes || null,
     userId
   };
@@ -172,16 +174,14 @@ export const createTransaction = async (payload) => {
   }
 
   const transactionId = transaction.id;
-  const items = Array.isArray(payload.items) ? payload.items : [];
 
   if (items.length > 0) {
-    // 2) Insert items
     const itemRows = items.map(i => ({
       transactionId,
       productId: i.productId,
-      price: i.price,
-      qty: i.qty,
-      subtotal: i.subtotal ?? (i.price * i.qty)
+      price: Number(i.price || 0),
+      qty: Number(i.qty || 0),
+      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
     }));
     const { error: itemsError } = await supabase.from('transaction_items').insert(itemRows);
     if (itemsError) {
@@ -189,7 +189,6 @@ export const createTransaction = async (payload) => {
       throw itemsError;
     }
 
-    // 3) Stock movements + update stok produk
     for (const i of items) {
       const qty = Number(i.qty) || 0;
       if (!i.productId || qty <= 0) continue;
