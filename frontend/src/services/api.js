@@ -1,5 +1,7 @@
 // frontend/src/services/api.js
 
+import { supabase } from './supabase';
+
 const API_URL = import.meta.env.VITE_API_URL 
   ? `${import.meta.env.VITE_API_URL}/api`
   : 'http://localhost:5000/api';
@@ -35,14 +37,19 @@ export const getProfile = async () => {
 
 // Products
 export const getProducts = async (search = '', category = '') => {
-  const params = new URLSearchParams();
-  if (search) params.append('search', search);
-  if (category) params.append('category', category);
-  
-  const res = await fetch(`${API_URL}/products?${params}`, {
-    headers: getHeaders()
-  });
-  return res.json();
+  let query = supabase.from('products').select('*');
+  if (search) {
+    query = query.ilike('name', `%${search}%`);
+  }
+  if (category) {
+    query = query.eq('category', category);
+  }
+  const { data, error } = await query;
+  if (error) {
+    console.error('Supabase getProducts error:', error);
+    return [];
+  }
+  return data || [];
 };
 
 export const createProduct = async (data) => {
