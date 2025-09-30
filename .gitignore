@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment
+.env
+.env.local
+.env.production
+*.env
+
+# Database
+*.db
+*.db-journal
+backend/prisma/dev.db*
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Backups
+*.backup
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
