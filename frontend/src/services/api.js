@@ -156,28 +156,26 @@ export const createTransaction = async (payload) => {
   const total = payload.total ?? Math.max(0, Number(subtotal) - Number(discount));
 
   const nowIso = new Date().toISOString();
-  const txSnake = {
+  const txSnakeNoCreated = {
     payment_method: payload.paymentMethod || 'tunai',
     subtotal,
     discount,
     total,
     notes: payload.notes || null,
-    user_id: userId,
-    created_at: nowIso
+    user_id: userId
   };
-  const txCamel = {
+  const txCamelNoCreated = {
     paymentMethod: payload.paymentMethod || 'tunai',
     subtotal,
     discount,
     total,
     notes: payload.notes || null,
-    userId,
-    createdAt: nowIso
+    userId
   };
   let txRows, txError;
-  ({ data: txRows, error: txError } = await supabase.from('transactions').insert([txSnake]).select());
+  ({ data: txRows, error: txError } = await supabase.from('transactions').insert([txSnakeNoCreated]).select());
   if (txError && txError?.code === 'PGRST204') {
-    ({ data: txRows, error: txError } = await supabase.from('transactions').insert([txCamel]).select());
+    ({ data: txRows, error: txError } = await supabase.from('transactions').insert([txCamelNoCreated]).select());
   }
   if (txError) {
     console.error('Supabase createTransaction error:', txError);
@@ -196,16 +194,14 @@ export const createTransaction = async (payload) => {
       product_id: i.productId,
       price: Number(i.price || 0),
       qty: Number(i.qty || 0),
-      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0))),
-      created_at: nowIso
+      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
     }));
     const itemRowsCamel = items.map(i => ({
       transactionId,
       productId: i.productId,
       price: Number(i.price || 0),
       qty: Number(i.qty || 0),
-      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0))),
-      createdAt: nowIso
+      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
     }));
     let itemsError;
     ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsSnake));
@@ -222,11 +218,11 @@ export const createTransaction = async (payload) => {
       if (!i.productId || qty <= 0) continue;
       let moveError;
       ({ error: moveError } = await supabase.from('stock_movements').insert([
-        { product_id: i.productId, qty, description: 'Penjualan', type: 'out', created_at: nowIso }
+        { product_id: i.productId, qty, description: 'Penjualan', type: 'out' }
       ]));
       if (moveError && moveError?.code === 'PGRST204') {
         ({ error: moveError } = await supabase.from('stock_movements').insert([
-          { productId: i.productId, qty, description: 'Penjualan', type: 'out', createdAt: nowIso }
+          { productId: i.productId, qty, description: 'Penjualan', type: 'out' }
         ]));
       }
       if (moveError) {
@@ -247,14 +243,23 @@ export const createTransaction = async (payload) => {
 export const getTransactions = async (startDate = null, endDate = null) => {
   // Try snake_case then camelCase fallback for created_at/createdAt
   let data, error;
-  let query = supabase.from('transactions').select('*, transaction_items(*)').order('created_at', { ascending: false });
-  if (startDate) query = query.gte('created_at', `${startDate}T00:00:00.000Z`);
-  if (endDate) query = query.lte('created_at', `${endDate}T23:59:59.999Z`);
+  let query = supabase.from('transactions').select('*, transaction_items(*)').order('id', { ascending: false });
+  if (startDate && endDate) {
+    // Try date filters on created_at first
+    query = supabase.from('transactions').select('*, transaction_items(*)')
+      .gte('created_at', `${startDate}T00:00:00.000Z`)
+      .lte('created_at', `${endDate}T23:59:59.999Z`)
+      .order('created_at', { ascending: false });
+  }
   ({ data, error } = await query);
   if (error && error?.code === 'PGRST204') {
-    let q2 = supabase.from('transactions').select('*, transaction_items(*)').order('createdAt', { ascending: false });
-    if (startDate) q2 = q2.gte('createdAt', `${startDate}T00:00:00.000Z`);
-    if (endDate) q2 = q2.lte('createdAt', `${endDate}T23:59:59.999Z`);
+    let q2 = supabase.from('transactions').select('*, transaction_items(*)').order('id', { ascending: false });
+    if (startDate && endDate) {
+      q2 = supabase.from('transactions').select('*, transaction_items(*)')
+        .gte('createdAt', `${startDate}T00:00:00.000Z`)
+        .lte('createdAt', `${endDate}T23:59:59.999Z`)
+        .order('createdAt', { ascending: false });
+    }
     ({ data, error } = await q2);
   }
   if (error) {
@@ -278,14 +283,14 @@ export const getTodayTransactions = async () => {
     .select('*, transaction_items(*)')
     .gte('created_at', start)
     .lte('created_at', end)
-    .order('created_at', { ascending: false }));
+    .order('id', { ascending: false }));
   if (error && error?.code === 'PGRST204') {
     ({ data, error } = await supabase
       .from('transactions')
       .select('*, transaction_items(*)')
       .gte('createdAt', start)
       .lte('createdAt', end)
-      .order('createdAt', { ascending: false }));
+      .order('id', { ascending: false }));
   }
 
   if (error) {
