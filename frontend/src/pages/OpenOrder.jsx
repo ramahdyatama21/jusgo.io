@@ -1,6 +1,6 @@
 // frontend/src/pages/OpenOrder.jsx
 import { useState, useEffect } from 'react';
-import { getProducts } from '../services/api';
+import { getProducts, createTransaction } from '../services/api';
 
 export default function OpenOrder() {
   const [products, setProducts] = useState([]);
@@ -170,24 +170,51 @@ export default function OpenOrder() {
     }
   };
 
-  const handleSendOrder = (order) => {
-    // Pindahkan order ke riwayatTransaksi
-    setRiwayatTransaksi(prev => [
-      ...prev,
-      {
-        ...order,
-        status: 'sent',
-        sentAt: new Date().toLocaleString('id-ID')
+  const handleSendOrder = async (order) => {
+    try {
+      const subtotal = order.items.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0);
+      const discount = Number(order.diskon) || 0;
+      const payload = {
+        items: order.items.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+          subtotal: item.subtotal || (item.qty * item.price)
+        })),
+        paymentMethod: 'tunai',
+        subtotal,
+        discount,
+        total: Math.max(0, subtotal - discount),
+        notes: order.notes || ''
+      };
+
+      await createTransaction(payload);
+
+      // Pindahkan order ke riwayatTransaksi (lokal) untuk kompatibilitas lama
+      setRiwayatTransaksi(prev => [
+        ...prev,
+        {
+          ...order,
+          status: 'sent',
+          sentAt: new Date().toLocaleString('id-ID')
+        }
+      ]);
+
+      // Hapus dari daftar open orders
+      setOrders(orders.filter(o => o.id !== order.id));
+      if (editOrderId === order.id) {
+        setEditOrderId(null);
+        setShowForm(false);
+        setCustomer('');
+        setNotes('');
+        setCart([]);
       }
-    ]);
-    setOrders(orders.filter(o => o.id !== order.id));
-    // Jika sedang edit order yang dikirim, reset form
-    if (editOrderId === order.id) {
-      setEditOrderId(null);
-      setShowForm(false);
-      setCustomer('');
-      setNotes('');
-      setCart([]);
+
+      alert('Order berhasil dikirim sebagai transaksi');
+    } catch (err) {
+      console.error('Gagal mengirim order:', err);
+      alert(`Gagal mengirim order: ${err?.message || 'Unknown error'}`);
     }
   };
 

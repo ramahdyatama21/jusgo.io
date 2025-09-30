@@ -138,40 +138,159 @@ export const removeStock = async (productId, qty, description) => {
   return true;
 };
 
-// Transactions
-export const createTransaction = async (data) => {
-  const res = await fetch(`${API_URL}/transactions`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(data)
-  });
-  return res.json();
+// Transactions (migrated to Supabase)
+export const createTransaction = async (payload) => {
+  // payload diharapkan mengandung: items[], paymentMethod, subtotal, discount, total, notes
+  // items: [{ productId, name, price, qty, subtotal, stock }]
+  // User akan diambil dari Supabase Auth
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError) {
+    console.error('Supabase getUser error:', userError);
+  }
+  const userId = userData?.user?.id || null;
+
+  // 1) Insert transaksi
+  const tx = {
+    paymentMethod: payload.paymentMethod || 'tunai',
+    subtotal: payload.subtotal ?? (Array.isArray(payload.items) ? payload.items.reduce((s, i) => s + (i.subtotal ?? (i.price * i.qty)), 0) : 0),
+    discount: payload.discount ?? 0,
+    total: payload.total ?? (payload.subtotal ?? 0) - (payload.discount ?? 0),
+    notes: payload.notes || null,
+    userId
+  };
+  const { data: txRows, error: txError } = await supabase.from('transactions').insert([tx]).select();
+  if (txError) {
+    console.error('Supabase createTransaction error:', txError);
+    throw txError;
+  }
+  const transaction = txRows?.[0];
+  if (!transaction) {
+    throw new Error('Transaksi tidak dibuat');
+  }
+
+  const transactionId = transaction.id;
+  const items = Array.isArray(payload.items) ? payload.items : [];
+
+  if (items.length > 0) {
+    // 2) Insert items
+    const itemRows = items.map(i => ({
+      transactionId,
+      productId: i.productId,
+      price: i.price,
+      qty: i.qty,
+      subtotal: i.subtotal ?? (i.price * i.qty)
+    }));
+    const { error: itemsError } = await supabase.from('transaction_items').insert(itemRows);
+    if (itemsError) {
+      console.error('Supabase insert transaction_items error:', itemsError);
+      throw itemsError;
+    }
+
+    // 3) Stock movements + update stok produk
+    for (const i of items) {
+      const qty = Number(i.qty) || 0;
+      if (!i.productId || qty <= 0) continue;
+      const { error: moveError } = await supabase.from('stock_movements').insert([
+        { productId: i.productId, qty, description: 'Penjualan', type: 'out', createdAt: new Date().toISOString() }
+      ]);
+      if (moveError) {
+        console.error('Supabase movement (sale) error:', moveError);
+        throw moveError;
+      }
+      const { data: prod, error: prodErr } = await supabase.from('products').select('stock').eq('id', i.productId).single();
+      if (prodErr) throw prodErr;
+      const newStock = Math.max(0, (prod?.stock || 0) - qty);
+      const { error: updErr } = await supabase.from('products').update({ stock: newStock }).eq('id', i.productId);
+      if (updErr) throw updErr;
+    }
+  }
+
+  return { id: transactionId, ...transaction };
 };
 
 export const getTransactions = async (startDate = null, endDate = null) => {
-  const params = new URLSearchParams();
-  if (startDate) params.append('startDate', startDate);
-  if (endDate) params.append('endDate', endDate);
-  
-  const res = await fetch(`${API_URL}/transactions?${params}`, {
-    headers: getHeaders()
-  });
-  return res.json();
+  let query = supabase
+    .from('transactions')
+    .select('*, transaction_items(*)')
+    .order('createdAt', { ascending: false });
+
+  if (startDate) query = query.gte('createdAt', `${startDate}T00:00:00.000Z`);
+  if (endDate) query = query.lte('createdAt', `${endDate}T23:59:59.999Z`);
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('Supabase getTransactions error:', error);
+    return [];
+  }
+  return data || [];
 };
 
 export const getTodayTransactions = async () => {
-  const res = await fetch(`${API_URL}/transactions/today`, {
-    headers: getHeaders()
-  });
-  return res.json();
+  const today = new Date();
+  const yyyy = today.getUTCFullYear();
+  const mm = String(today.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(today.getUTCDate()).padStart(2, '0');
+  const start = `${yyyy}-${mm}-${dd}T00:00:00.000Z`;
+  const end = `${yyyy}-${mm}-${dd}T23:59:59.999Z`;
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*, transaction_items(*)')
+    .gte('createdAt', start)
+    .lte('createdAt', end)
+    .order('createdAt', { ascending: false });
+
+  if (error) {
+    console.error('Supabase getTodayTransactions error:', error);
+    return [];
+  }
+  return data || [];
 };
 
-// Reports
+// Reports (basic dashboard stats from Supabase)
 export const getDashboardStats = async () => {
-  const res = await fetch(`${API_URL}/reports/dashboard`, {
-    headers: getHeaders()
-  });
-  return res.json();
+  // Today
+  const today = new Date();
+  const yyyy = today.getUTCFullYear();
+  const mm = String(today.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(today.getUTCDate()).padStart(2, '0');
+  const startToday = `${yyyy}-${mm}-${dd}T00:00:00.000Z`;
+  const endToday = `${yyyy}-${mm}-${dd}T23:59:59.999Z`;
+
+  // This month
+  const monthStart = `${yyyy}-${mm}-01T00:00:00.000Z`;
+  const monthEndDate = new Date(Date.UTC(yyyy, Number(mm), 0)).getUTCDate();
+  const monthEnd = `${yyyy}-${mm}-${String(monthEndDate).padStart(2, '0')}T23:59:59.999Z`;
+
+  // Fetch transactions for today and month
+  const [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
+    supabase.from('transactions').select('total').gte('createdAt', startToday).lte('createdAt', endToday),
+    supabase.from('transactions').select('total').gte('createdAt', monthStart).lte('createdAt', monthEnd)
+  ]);
+
+  if (todayErr) console.error('Supabase today stats error:', todayErr);
+  if (monthErr) console.error('Supabase month stats error:', monthErr);
+
+  const todayRevenue = Array.isArray(todayTx) ? todayTx.reduce((s, t) => s + Number(t.total || 0), 0) : 0;
+  const monthRevenue = Array.isArray(monthTx) ? monthTx.reduce((s, t) => s + Number(t.total || 0), 0) : 0;
+  const todayCount = Array.isArray(todayTx) ? todayTx.length : 0;
+
+  // Products stats
+  const [{ count: productsCount }, { data: lowStockList, error: lowErr }] = await Promise.all([
+    supabase.from('products').select('*', { count: 'exact', head: true }),
+    supabase.from('products').select('id, stock, minStock').lte('stock', supabase.rpc ? undefined : 999999)
+  ]);
+  if (lowErr) console.error('Supabase low stock error:', lowErr);
+
+  const lowStock = Array.isArray(lowStockList)
+    ? lowStockList.filter(p => typeof p.stock === 'number' && typeof p.minStock === 'number' && p.stock <= p.minStock).length
+    : 0;
+
+  return {
+    today: { revenue: todayRevenue, transactionCount: todayCount },
+    month: { revenue: monthRevenue },
+    products: { total: productsCount || 0, lowStock }
+  };
 };
 
 export const getSalesReport = async (startDate, endDate) => {
