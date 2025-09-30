@@ -246,11 +246,6 @@ export const createTransaction = async (payload) => {
           { productId: i.productId, qty, description: 'Penjualan', type: 'out' }
         ]));
       }
-      if (moveError && (moveError?.code === 'PGRST204' || moveError?.code === '23502')) {
-        ({ error: moveError } = await supabase.from('stock_movements').insert([
-          { productid: i.productId, qty, description: 'Penjualan', type: 'out' }
-        ]));
-      }
       if (moveError) {
         console.error('Supabase movement (sale) error:', moveError);
         throw moveError;
