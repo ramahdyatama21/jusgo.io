@@ -117,6 +117,8 @@ export default function POS() {
 
     setLoading(true);
     try {
+      const subtotalVal = calculateTotal();
+      const totalVal = Math.max(0, subtotalVal - diskon);
       const transactionData = {
         items: cart.map(item => ({
           productId: item.productId,
@@ -131,20 +133,20 @@ export default function POS() {
         promo: promoDipilih,
         createdAt: new Date().toLocaleString('id-ID'),
         status: 'pos',
-        id: Date.now()
+        id: Date.now(),
+        subtotal: subtotalVal,
+        total: totalVal
       };
 
       await createTransaction(transactionData);
       // Simpan data struk ke state
       setReceipt({
         ...transactionData,
-        total: calculateTotal(),
         date: new Date().toLocaleString('id-ID'),
       });
       // Simpan ke riwayat transaksi
       saveToRiwayatTransaksi({
         ...transactionData,
-        total: calculateTotal(),
         sentAt: transactionData.createdAt
       });
       alert('Transaksi berhasil!');
@@ -181,6 +183,9 @@ export default function POS() {
           <h2 className="text-xl font-bold mb-2">Struk Transaksi</h2>
           <div className="text-sm text-gray-600 mb-2">{receipt.date}</div>
           <div className="mb-2">Metode: <span className="font-semibold">{receipt.paymentMethod}</span></div>
+          {receipt.promo && (
+            <div className="mb-2 text-sm text-gray-600">Promo: <span className="font-semibold">{receipt.promo}</span></div>
+          )}
           <table className="w-full text-sm mb-2">
             <thead>
               <tr className="border-b">
@@ -203,15 +208,15 @@ export default function POS() {
           </table>
           <div className="flex justify-between font-bold border-t pt-2">
             <span>Subtotal</span>
-            <span>{formatRupiah(calculateTotal())}</span>
+            <span>{formatRupiah(receipt.subtotal)}</span>
           </div>
           <div className="flex justify-between font-bold">
             <span>Diskon</span>
-            <span className="text-red-600">- {formatRupiah(diskon)}</span>
+            <span className="text-red-600">- {formatRupiah(receipt.diskon)}</span>
           </div>
           <div className="flex justify-between font-bold text-lg border-t pt-2">
             <span>Total</span>
-            <span className="text-blue-600">{formatRupiah(calculateTotal() - diskon)}</span>
+            <span className="text-blue-600">{formatRupiah(receipt.total)}</span>
           </div>
           <button
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 print:hidden"
