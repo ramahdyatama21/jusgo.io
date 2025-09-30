@@ -11,7 +11,7 @@ export default function Dashboard() {
   const [salesPerDay, setSalesPerDay] = useState([]);
   const [salesPerWeek, setSalesPerWeek] = useState([]);
   const [salesPerMonth, setSalesPerMonth] = useState([]);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
 
   useEffect(() => {
     loadStats();
@@ -92,12 +92,19 @@ export default function Dashboard() {
       </div>
     );
   }
+  if (!stats) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-red-500">Gagal memuat data dashboard.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Selamat datang, {user.name}!</p>
+        <p className="text-gray-600 mt-1">Selamat datang, {user.email || 'User'}!</p>
       </div>
 
       {/* Stats Cards */}
