@@ -154,13 +154,14 @@ export const addStock = async (productId, qty, description) => {
     });
     if (updateError) {
       // Rollback movement if stock update fails
-      await supabase
-        .from('stock_movements')
-        .delete()
-        .eq('id', movement.id)
-        .catch(rollbackError => {
-          console.error('Rollback error:', rollbackError);
-        });
+      try {
+        await supabase
+          .from('stock_movements')
+          .delete()
+          .eq('id', movement.id);
+      } catch (rollbackError) {
+        console.error('Rollback error:', rollbackError);
+      }
       throw new Error('Gagal memperbarui stok');
     }
     return movement;
@@ -210,13 +211,14 @@ export const removeStock = async (productId, qty, description) => {
     });
     if (updateError) {
       // Rollback movement if stock update fails
-      await supabase
-        .from('stock_movements')
-        .delete()
-        .eq('id', movement.id)
-        .catch(rollbackError => {
-          console.error('Rollback error:', rollbackError);
-        });
+      try {
+        await supabase
+          .from('stock_movements')
+          .delete()
+          .eq('id', movement.id);
+      } catch (rollbackError) {
+        console.error('Rollback error:', rollbackError);
+      }
       throw new Error('Gagal memperbarui stok');
     }
     return movement;
