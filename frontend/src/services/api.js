@@ -450,7 +450,7 @@ export const getDashboardStats = async () => {
   // Products stats
   const [{ count: productsCount }, { data: lowStockList, error: lowErr }] = await Promise.all([
     supabase.from('products').select('*', { count: 'exact', head: true }),
-    supabase.from('products').select('id, stock, minStock').lte('stock', supabase.rpc ? undefined : 999999)
+    supabase.from('products').select('id, stock, minStock')
   ]);
   if (lowErr) console.error('Supabase low stock error:', lowErr);
 
