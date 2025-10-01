@@ -90,7 +90,7 @@ export default function Layout({ children }) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 md:ml-64 p-4 md:p-8 flex flex-col items-center">
+        <div className="flex-1 md:ml-64 p-4 md:p-8 flex flex-col items-center overflow-x-auto">
           <div className="w-full max-w-2xl md:max-w-4xl">
             {children}
           </div>
