@@ -491,6 +491,34 @@ export const createCategory = async (name) => {
   return data?.[0] || null;
 };
 
+// Open Orders
+export const getOpenOrders = async () => {
+  const { data, error } = await supabase.from('open_orders').select('*');
+  if (error) {
+    console.error('Supabase getOpenOrders error:', error);
+    return [];
+  }
+  return data || [];
+};
+
+export const saveOpenOrder = async (order) => {
+  const { data, error } = await supabase.from('open_orders').insert([order]);
+  if (error) {
+    console.error('Supabase saveOpenOrder error:', error);
+    throw error;
+  }
+  return data?.[0] || null;
+};
+
+export const deleteOpenOrder = async (id) => {
+  const { error } = await supabase.from('open_orders').delete().eq('id', id);
+  if (error) {
+    console.error('Supabase deleteOpenOrder error:', error);
+    throw error;
+  }
+  return true;
+};
+
 // Utility: Convert array of objects to CSV string
 function arrayToCSV(data, columns) {
   const header = columns.join(',');
