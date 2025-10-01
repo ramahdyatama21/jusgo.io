@@ -332,7 +332,7 @@ export const getTransactions = async (startDate = null, endDate = null) => {
   // Fetch from Supabase with product join and map to UI shape
   let data, error;
   let selectExpr = 'id, created_at, payment_method, subtotal, discount, total, notes, transaction_items(id, product_id, price, qty, subtotal, products(name))';
-  let query = supabase.from('transactions').select(selectExpr).order('id', { ascending: false });
+  let query = supabase.from('transactions').select(selectExpr).order('created_at', { ascending: false });
   if (startDate && endDate) {
     query = supabase.from('transactions')
       .select(selectExpr)
@@ -344,7 +344,7 @@ export const getTransactions = async (startDate = null, endDate = null) => {
   if (error && error?.code === 'PGRST204') {
     // Fallback camelCase if needed
     selectExpr = 'id, createdAt, paymentMethod, subtotal, discount, total, notes, transaction_items(id, productId, price, qty, subtotal, products(name))';
-    let q2 = supabase.from('transactions').select(selectExpr).order('id', { ascending: false });
+    let q2 = supabase.from('transactions').select(selectExpr).order('createdAt', { ascending: false });
     if (startDate && endDate) {
       q2 = supabase.from('transactions')
         .select(selectExpr)
