@@ -1,7 +1,7 @@
 // frontend/src/pages/Reports.jsx
 
 import { useState, useEffect } from 'react';
-import { getSalesReport, getProductReport } from '../services/api';
+import { getSalesReport, getProductReport, exportSalesReportCSV, exportOpenOrderCSV, exportStockReportCSV, exportBelanjaBahanCSV } from '../services/api';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Papa from 'papaparse';
 
@@ -107,10 +107,10 @@ export default function Reports() {
       <div className="bg-white rounded-lg shadow p-4 mb-4">
         <h2 className="text-lg font-semibold mb-2">Export Semua Laporan CSV</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <button onClick={() => window.exportSalesReportCSV?.(startDate, endDate)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Export Laporan Penjualan</button>
-          <button onClick={() => window.exportOpenOrderCSV?.()} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Export Laporan Open Order</button>
-          <button onClick={() => window.exportStockReportCSV?.()} className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition">Export Laporan Stok Barang</button>
-          <button onClick={() => window.exportBelanjaBahanCSV?.(startDate, endDate)} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Export Laporan Belanja Bahan</button>
+          <button onClick={() => exportSalesReportCSV(startDate, endDate)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Export Laporan Penjualan</button>
+          <button onClick={() => exportOpenOrderCSV()} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Export Laporan Open Order</button>
+          <button onClick={() => exportStockReportCSV()} className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition">Export Laporan Stok Barang</button>
+          <button onClick={() => exportBelanjaBahanCSV(startDate, endDate)} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Export Laporan Belanja Bahan</button>
         </div>
       </div>
 
