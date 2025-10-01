@@ -1,0 +1,255 @@
+// frontend/src/services/api.js
+
+import { supabase } from './supabase';
+
+const API_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : 'http://localhost:5000/api';
+
+const getToken = () => {
+  // Try to get JWT token first
+  let token = localStorage.getItem('token');
+  
+  // If no JWT token, try to get from Supabase session
+  if (!token) {
+    const session = localStorage.getItem('supabase_session');
+    if (session) {
+      try {
+        const sessionData = JSON.parse(session);
+        token = sessionData.access_token;
+      } catch (e) {
+        console.error('Error parsing Supabase session:', e);
+      }
+    }
+  }
+  
+  return token;
+};
+
+const getHeaders = () => {
+  const token = getToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { Authorization: `Bearer ${token}` })
+  };
+};
+
+// Auth
+export const login = async (username, password) => {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  return res.json();
+};
+
+export const getProfile = async () => {
+  const res = await fetch(`${API_URL}/auth/profile`, {
+    headers: getHeaders()
+  });
+  return res.json();
+};
+
+// Products
+export const getProducts = async (search = '', category = '') => {
+  let query = supabase.from('products').select('*');
+  if (search) {
+    query = query.ilike('name', `%${search}%`);
+  }
+  if (category) {
+    query = query.eq('category', category);
+  }
+  const { data, error } = await query;
+  if (error) {
+    console.error('Supabase getProducts error:', error);
+    return [];
+  }
+  return data || [];
+};
+
+export const createProduct = async (data) => {
+  const { data: result, error } = await supabase.from('products').insert([data]).select();
+  if (error) {
+    console.error('Supabase createProduct error:', error);
+    throw error;
+  }
+  return result?.[0] || null;
+};
+
+export const updateProduct = async (id, data) => {
+  const { data: result, error } = await supabase.from('products').update(data).eq('id', id).select();
+  if (error) {
+    console.error('Supabase updateProduct error:', error);
+    throw error;
+  }
+  return result?.[0] || null;
+};
+
+export const deleteProduct = async (id) => {
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) {
+    console.error('Supabase deleteProduct error:', error);
+    throw error;
+  }
+  return true;
+};
+
+// Stock Management
+export const getStockMovements = async (productId = null) => {
+  let query = supabase.from('stock_movements')
+    .select(`
+      *,
+      product:products(*)
+    `)
+    .order('created_at', { ascending: false });
+    
+  if (productId) {
+    query = query.eq('product_id', productId);
+  }
+  
+  const { data, error } = await query;
+  if (error) {
+    console.error('Supabase getStockMovements error:', error);
+    return [];
+  }
+  return data || [];
+};
+
+export const addStock = async (productId, qty, description) => {
+  try {
+    // First get the current product
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('stock')
+      .eq('id', productId)
+      .single();
+      
+    if (productError) {
+      console.error('Supabase get product error:', productError);
+      throw new Error('Gagal mendapatkan data produk');
+    }
+
+    // Get user ID for movement record
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+
+    // Try to create stock movement record first
+    const { data: movement, error: movementError } = await supabase
+      .from('stock_movements')
+      .insert([{
+        product_id: productId,
+        type: 'in',
+        qty,
+        description: description || '',
+        user_id: userId,
+        created_at: new Date().toISOString()
+      }])
+      .select();
+
+    if (movementError) {
+      console.error('Failed to create movement record:', movementError);
+      throw new Error('Gagal mencatat pergerakan stok');
+    }
+
+    // Only if movement is recorded successfully, update the stock
+    const { error: updateError } = await supabase
+      .from('products')
+      .update({ 
+        stock: (product.stock || 0) + qty,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', productId);
+
+    if (updateError) {
+      // If stock update fails, try to rollback the movement record
+      await supabase
+        .from('stock_movements')
+        .delete()
+        .eq('id', movement[0].id)
+        .catch(rollbackError => {
+          console.error('Failed to rollback movement:', rollbackError);
+        });
+
+      throw new Error('Gagal memperbarui stok');
+    }
+
+    return movement[0];
+  } catch (error) {
+    console.error('Add stock error:', error);
+    throw error;
+  }
+};
+
+export const removeStock = async (productId, qty, description) => {
+  try {
+    // First get the current product
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('stock')
+      .eq('id', productId)
+      .single();
+      
+    if (productError) {
+      console.error('Supabase get product error:', productError);
+      throw new Error('Gagal mendapatkan data produk');
+    }
+    
+    // Check if we have enough stock
+    if ((product.stock || 0) < qty) {
+      throw new Error('Stok tidak mencukupi');
+    }
+
+    // Get user ID for movement record
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+
+    // Try to create stock movement record first
+    const { data: movement, error: movementError } = await supabase
+      .from('stock_movements')
+      .insert([{
+        product_id: productId,
+        type: 'out',
+        qty,
+        description: description || '',
+        user_id: userId,
+        created_at: new Date().toISOString()
+      }])
+      .select();
+
+    if (movementError) {
+      console.error('Failed to create movement record:', movementError);
+      throw new Error('Gagal mencatat pergerakan stok');
+    }
+
+    // Only if movement is recorded successfully, update the stock
+    const { error: updateError } = await supabase
+      .from('products')
+      .update({ 
+        stock: Math.max(0, (product.stock || 0) - qty),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', productId);
+
+    if (updateError) {
+      // If stock update fails, try to rollback the movement record
+      await supabase
+        .from('stock_movements')
+        .delete()
+        .eq('id', movement[0].id)
+        .catch(rollbackError => {
+          console.error('Failed to rollback movement:', rollbackError);
+        });
+
+      throw new Error('Gagal memperbarui stok');
+    }
+
+    return movement[0];
+  } catch (error) {
+    console.error('Remove stock error:', error);
+    throw error;
+  }
+};
+
+// Rest of your existing code...
+// (Keep all other functions as they were)
