@@ -106,51 +106,124 @@ export const importProducts = async (products) => {
 
 // Stock
 export const getStockMovements = async (productId = null) => {
-  let url = `${API_URL}/stock/movements`;
+  let query = supabase.from('stock_movements')
+    .select(`
+      *,
+      product:products(*)
+    `)
+    .order('created_at', { ascending: false });
+    
   if (productId) {
-    url += `?productId=${productId}`;
+    query = query.eq('product_id', productId);
   }
   
-  const res = await fetch(url, {
-    headers: getHeaders()
-  });
-  
-  if (!res.ok) {
-    console.error('API getStockMovements error:', res.statusText);
+  const { data, error } = await query;
+  if (error) {
+    console.error('Supabase getStockMovements error:', error);
     return [];
   }
-  
-  return res.json();
+  return data || [];
 };
 
 export const addStock = async (productId, qty, description) => {
-  const res = await fetch(`${API_URL}/stock/in`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({ productId, qty, description })
-  });
-  
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || 'Gagal menambah stok');
+  // First get the current product
+  const { data: product, error: productError } = await supabase
+    .from('products')
+    .select('stock')
+    .eq('id', productId)
+    .single();
+    
+  if (productError) {
+    console.error('Supabase get product error:', productError);
+    throw new Error('Gagal mendapatkan data produk');
   }
   
-  return res.json();
+  // Start a transaction to update both product stock and create movement
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData?.user?.id;
+  
+  // Update product stock
+  const { error: updateError } = await supabase
+    .from('products')
+    .update({ stock: (product.stock || 0) + qty })
+    .eq('id', productId);
+    
+  if (updateError) {
+    console.error('Supabase update stock error:', updateError);
+    throw new Error('Gagal menambah stok');
+  }
+  
+  // Create stock movement record
+  const { data: movement, error: movementError } = await supabase
+    .from('stock_movements')
+    .insert([{
+      product_id: productId,
+      type: 'in',
+      qty,
+      description,
+      user_id: userId
+    }])
+    .select(`*, product:products(*)`);
+    
+  if (movementError) {
+    console.error('Supabase create movement error:', movementError);
+    throw new Error('Gagal mencatat pergerakan stok');
+  }
+  
+  return movement?.[0];
 };
 
 export const removeStock = async (productId, qty, description) => {
-  const res = await fetch(`${API_URL}/stock/out`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({ productId, qty, description })
-  });
-  
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || 'Gagal mengurangi stok');
+  // First get the current product
+  const { data: product, error: productError } = await supabase
+    .from('products')
+    .select('stock')
+    .eq('id', productId)
+    .single();
+    
+  if (productError) {
+    console.error('Supabase get product error:', productError);
+    throw new Error('Gagal mendapatkan data produk');
   }
   
-  return res.json();
+  // Check if we have enough stock
+  if ((product.stock || 0) < qty) {
+    throw new Error('Stok tidak mencukupi');
+  }
+  
+  // Start a transaction to update both product stock and create movement
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData?.user?.id;
+  
+  // Update product stock
+  const { error: updateError } = await supabase
+    .from('products')
+    .update({ stock: Math.max(0, (product.stock || 0) - qty) })
+    .eq('id', productId);
+    
+  if (updateError) {
+    console.error('Supabase update stock error:', updateError);
+    throw new Error('Gagal mengurangi stok');
+  }
+  
+  // Create stock movement record
+  const { data: movement, error: movementError } = await supabase
+    .from('stock_movements')
+    .insert([{
+      product_id: productId,
+      type: 'out',
+      qty,
+      description,
+      user_id: userId
+    }])
+    .select(`*, product:products(*)`);
+    
+  if (movementError) {
+    console.error('Supabase create movement error:', movementError);
+    throw new Error('Gagal mencatat pergerakan stok');
+  }
+  
+  return movement?.[0];
 };
 
 // Transactions (migrated to Supabase)

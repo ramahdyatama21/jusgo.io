@@ -23,33 +23,40 @@ export default function Stock() {
         getProducts(),
         getStockMovements()
       ]);
-      setProducts(productsData);
-      setMovements(movementsData);
+      setProducts(productsData || []);
+      setMovements(movementsData || []);
     } catch (error) {
       console.error('Error loading data:', error);
+      alert('Terjadi kesalahan saat memuat data. Silakan coba lagi.');
     }
   };
 
   const handleStockAction = async () => {
-    if (!selectedProduct || qty <= 0) {
-      alert('Mohon lengkapi data');
+    if (!selectedProduct || !selectedProduct.id) {
+      alert('Mohon pilih produk terlebih dahulu');
+      return;
+    }
+    
+    if (!qty || qty <= 0) {
+      alert('Mohon masukkan jumlah yang valid');
       return;
     }
 
     setLoading(true);
     try {
       if (modalType === 'in') {
-        await addStock(selectedProduct.id, qty, description);
+        await addStock(selectedProduct.id, parseInt(qty), description);
+        alert('Stok berhasil ditambahkan');
       } else {
-        await removeStock(selectedProduct.id, qty, description);
+        await removeStock(selectedProduct.id, parseInt(qty), description);
+        alert('Stok berhasil dikurangi');
       }
-      alert('Stok berhasil diperbarui');
       setShowModal(false);
       resetForm();
-      loadData();
+      await loadData(); // Reload data after successful update
     } catch (error) {
       console.error('Stock update error:', error);
-      alert(`Gagal memperbarui stok: ${error.message || 'Terjadi kesalahan'}`);
+      alert(error.message || 'Terjadi kesalahan saat memperbarui stok');
     } finally {
       setLoading(false);
     }
