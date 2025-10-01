@@ -25,7 +25,17 @@ export default function Dashboard() {
     loadStats();
     // Hitung produk terlaris dari riwayat transaksi dan produk
     const products = JSON.parse(localStorage.getItem('products') || '[]');
-    const riwayat = JSON.parse(localStorage.getItem('riwayatTransaksi') || '[]');
+    const riwayatRaw = JSON.parse(localStorage.getItem('riwayatTransaksi') || '[]');
+    const riwayat = Array.isArray(riwayatRaw)
+      ? riwayatRaw.map((order) => {
+          let items = [];
+          if (Array.isArray(order?.items)) items = order.items;
+          else if (typeof order?.items === 'string') {
+            try { items = JSON.parse(order.items); } catch { items = []; }
+          } else { items = []; }
+          return { ...order, items };
+        })
+      : [];
     // Akumulasi qty, revenue, dan HPP per produk
     const productMap = {};
     products.forEach(p => {
