@@ -90,14 +90,14 @@ export default function Layout({ children }) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 md:ml-64 p-4 md:p-8 flex flex-col items-center overflow-x-auto max-w-full">
+        <div className="flex-1 md:ml-64 p-4 md:p-8 flex flex-col items-center overflow-x-auto">
           {/* Responsive table/form wrapper for specific pages */}
           {['KalkulatorHPP', 'Stock', 'OpenOrder'].includes(children?.type?.name) ? (
-            <div className="w-full max-w-full md:max-w-4xl">
+            <div className="w-full md:max-w-4xl">
               {children}
             </div>
           ) : (
-            <div className="w-full max-w-full md:max-w-4xl">
+            <div className="w-full md:max-w-4xl">
               {children}
             </div>
           )}
