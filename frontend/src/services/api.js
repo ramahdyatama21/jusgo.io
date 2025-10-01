@@ -505,12 +505,21 @@ export const createCategory = async (name) => {
 
 // Open Orders
 export const getOpenOrders = async () => {
-  const { data, error } = await supabase.from('open_orders').select('*');
+  const { data, error } = await supabase.from('open_orders').select('*').eq('status', 'open').order('created_at', { ascending: false });
   if (error) {
     console.error('Supabase getOpenOrders error:', error);
     return [];
   }
   return data || [];
+};
+
+export const markOpenOrderSent = async (id) => {
+  const { error } = await supabase.from('open_orders').update({ status: 'sent' }).eq('id', id);
+  if (error) {
+    console.error('Supabase markOpenOrderSent error:', error);
+    throw error;
+  }
+  return true;
 };
 
 export const saveOpenOrder = async (order) => {

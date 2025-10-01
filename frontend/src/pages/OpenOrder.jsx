@@ -1,6 +1,7 @@
 // frontend/src/pages/OpenOrder.jsx
 import { useState, useEffect } from 'react';
 import { getProducts, createTransaction, getOpenOrders, saveOpenOrder, deleteOpenOrder } from '../services/api';
+import { markOpenOrderSent } from '../services/api';
 
 export default function OpenOrder() {
   const [products, setProducts] = useState([]);
@@ -201,6 +202,19 @@ export default function OpenOrder() {
       };
 
       await createTransaction(payload);
+
+      // Tandai open order sebagai sent di Supabase
+      try {
+        await markOpenOrderSent(order.id);
+      } catch (e) {
+        console.error('Gagal menandai order sent:', e);
+      }
+
+      // Refresh daftar open orders dari Supabase
+      try {
+        const data = await getOpenOrders();
+        setOrders(data || []);
+      } catch {}
 
       // Pindahkan order ke riwayatTransaksi (lokal) untuk kompatibilitas lama
       setRiwayatTransaksi(prev => [
