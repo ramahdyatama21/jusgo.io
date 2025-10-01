@@ -63,10 +63,10 @@ export async function sendOpenOrderToTransaction(orderId) {
     // Insert ke stock_movements (snake_case)
     for (const i of items) {
       const qty = Number(i.qty) || 0;
-      if (!(i.product_id || i.productId) || qty <= 0) continue;
+      if (!i.product_id || qty <= 0) continue;
       const { error: moveError } = await supabase.from('stock_movements').insert([
         {
-          product_id: i.product_id || i.productId,
+          product_id: i.product_id,
           qty,
           description: 'Penjualan',
           type: 'out'
