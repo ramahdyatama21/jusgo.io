@@ -177,20 +177,19 @@ export const addStock = async (productId, qty, description) => {
     throw new Error('Gagal menambah stok');
   }
   
-  // Create stock movement record
-  const { data: movement, error: movementError } = await supabase
-    .from('stock_movements')
-    .insert([{
-      productId: productId,
-      product_id: productId, // fallback for different column naming
-      type: 'in',
-      qty: qty,
-      description: description || '',
-      userId: userId,
-      user_id: userId, // fallback for different column naming
-      created_at: new Date().toISOString()
-    }])
-    .select();
+  // Create stock movement record with correct column names
+    const { data: movement, error: movementError } = await supabase
+      .from('stock_movements')
+      .insert([{
+        // Use only snake_case column names as per error message
+        product_id: productId,
+        type: 'in',
+        qty,
+        description: description || '',
+        user_id: userId
+        // Let Supabase handle created_at automatically
+      }])
+      .select('*, product:products(*)');
     
   if (movementError) {
     console.error('Supabase create movement error:', movementError);
