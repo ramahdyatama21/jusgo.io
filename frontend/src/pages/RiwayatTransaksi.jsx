@@ -1,12 +1,16 @@
 // frontend/src/pages/RiwayatTransaksi.jsx
 import { useState, useEffect } from 'react';
+import { getTransactions } from '../services/api';
 
 export default function RiwayatTransaksi() {
   const [riwayat, setRiwayat] = useState([]);
 
   useEffect(() => {
-    const data = localStorage.getItem('riwayatTransaksi');
-    setRiwayat(data ? JSON.parse(data) : []);
+    async function fetchData() {
+      const data = await getTransactions();
+      setRiwayat(data || []);
+    }
+    fetchData();
   }, []);
 
   return (

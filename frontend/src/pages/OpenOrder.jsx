@@ -1,15 +1,12 @@
 // frontend/src/pages/OpenOrder.jsx
 import { useState, useEffect } from 'react';
-import { getProducts, createTransaction } from '../services/api';
+import { getProducts, createTransaction, getOpenOrders, saveOpenOrder, deleteOpenOrder } from '../services/api';
 
 export default function OpenOrder() {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState('');
-  const [orders, setOrders] = useState(() => {
-    const data = localStorage.getItem('openOrders');
-    return data ? JSON.parse(data) : [];
-  });
+  const [orders, setOrders] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [customer, setCustomer] = useState('');
   const [notes, setNotes] = useState('');
@@ -27,11 +24,15 @@ export default function OpenOrder() {
     // Ambil promo dari localStorage
     const promos = localStorage.getItem('promoList');
     setPromoList(promos ? JSON.parse(promos) : []);
+    // Ambil open orders dari Supabase
+    async function fetchOrders() {
+      const data = await getOpenOrders();
+      setOrders(data || []);
+    }
+    fetchOrders();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('openOrders', JSON.stringify(orders));
-  }, [orders]);
+  // Tidak perlu sync ke localStorage lagi
 
   useEffect(() => {
     localStorage.setItem('riwayatTransaksi', JSON.stringify(riwayatTransaksi));
@@ -123,31 +124,40 @@ export default function OpenOrder() {
     setShowForm(true);
   };
 
-  const handleSaveOrder = (e) => {
+  const handleSaveOrder = async (e) => {
     e.preventDefault();
     if (!customer || cart.length === 0) return;
     if (editOrderId) {
-      setOrders(orders.map(order =>
-        order.id === editOrderId
-          ? { ...order, customer, notes, items: cart, diskon, promo: promoDipilih }
-          : order
-      ));
+      // Update order di Supabase
+      // (implementasi updateOpenOrder bisa ditambahkan di api.js jika diperlukan)
+      // Untuk sekarang, hanya hapus dan tambah baru
+      await deleteOpenOrder(editOrderId);
+      await saveOpenOrder({
+        id: editOrderId,
+        customer,
+        items: cart,
+        notes,
+        diskon,
+        promo: promoDipilih,
+        createdAt: new Date().toLocaleString('id-ID'),
+        status: 'open'
+      });
       setEditOrderId(null);
     } else {
-      setOrders([
-        ...orders,
-        {
-          id: Date.now(),
-          customer,
-          items: cart,
-          notes,
-          diskon,
-          promo: promoDipilih,
-          createdAt: new Date().toLocaleString('id-ID'),
-          status: 'open'
-        }
-      ]);
+      await saveOpenOrder({
+        id: Date.now(),
+        customer,
+        items: cart,
+        notes,
+        diskon,
+        promo: promoDipilih,
+        createdAt: new Date().toLocaleString('id-ID'),
+        status: 'open'
+      });
     }
+    // Refresh orders
+    const data = await getOpenOrders();
+    setOrders(data || []);
     setCustomer('');
     setNotes('');
     setCart([]);
@@ -156,9 +166,12 @@ export default function OpenOrder() {
     setShowForm(false);
   };
 
-  const handleDeleteOrder = (id) => {
+  const handleDeleteOrder = async (id) => {
     if (window.confirm('Yakin ingin menghapus order ini?')) {
-      setOrders(orders.filter(order => order.id !== id));
+      await deleteOpenOrder(id);
+      // Refresh orders
+      const data = await getOpenOrders();
+      setOrders(data || []);
       // Jika sedang edit order yang dihapus, reset form
       if (editOrderId === id) {
         setEditOrderId(null);
