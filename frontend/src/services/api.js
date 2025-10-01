@@ -195,8 +195,7 @@ export const removeStock = async (productId, qty, description) => {
         product_id: productId,
         type: 'out',
         qty: qty,
-        description: description || '',
-        user_id: userData.user.id
+        description: description || ''
       }])
       .select('*, product:products(*)')
       .single();
