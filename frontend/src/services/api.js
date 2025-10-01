@@ -112,10 +112,10 @@ export const getStockMovements = async (productId = null) => {
     let query = supabase
       .from('stock_movements')
       .select('*, product:products(*)')
-      .order('created_at', { ascending: false })
+      .order('createdAt', { ascending: false })
       .limit(100);
     if (productId) {
-      query = query.eq('product_id', productId);
+      query = query.eq('productId', productId);
     }
     const { data, error } = await query;
     if (error) throw error;
@@ -136,7 +136,7 @@ export const addStock = async (productId, qty, description) => {
     const { data: movement, error: movementError } = await supabase
       .from('stock_movements')
       .insert([{
-        product_id: productId,
+        productId: productId,
         type: 'in', // atau 'out'
         qty: qty,
         description: description || ''
@@ -194,7 +194,7 @@ export const removeStock = async (productId, qty, description) => {
     const { data: movement, error: movementError } = await supabase
       .from('stock_movements')
       .insert([{
-        product_id: productId,
+        productId: productId,
         type: 'out',
         qty: qty,
         description: description || ''
@@ -290,8 +290,8 @@ export const createTransaction = async (payload) => {
 
   if (items.length > 0) {
     const itemRowsSnake = items.map(i => ({
-      transaction_id: transactionId,
-      product_id: i.productId,
+      transactionId: transactionId,
+      productId: i.productId,
       price: Number(i.price || 0),
       qty: Number(i.qty || 0),
       subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
@@ -318,11 +318,11 @@ export const createTransaction = async (payload) => {
       if (!i.productId || qty <= 0) continue;
       let moveError;
       ({ error: moveError } = await supabase.from('stock_movements').insert([
-        { product_id: i.productId, qty, description: 'Penjualan', type: 'out' }
+        { productId: i.productId, qty, description: 'Penjualan', type: 'out' }
       ]));
       if (moveError && moveError?.code === 'PGRST204') {
         ({ error: moveError } = await supabase.from('stock_movements').insert([
-          { productId: i.productId, qty, description: 'Penjualan', type: 'out' }
+          { product_id: i.productId, qty, description: 'Penjualan', type: 'out' }
         ]));
       }
       if (moveError) {
@@ -341,24 +341,24 @@ export const createTransaction = async (payload) => {
 };
 
 export const getTransactions = async (startDate = null, endDate = null) => {
-  // Try snake_case then camelCase fallback for created_at/createdAt
+  // Try camelCase first, then snake_case fallback for createdAt/created_at
   let data, error;
   let query = supabase.from('transactions').select('*, transaction_items(*)').order('id', { ascending: false });
   if (startDate && endDate) {
-    // Try date filters on created_at first
+    // Try date filters on createdAt first
     query = supabase.from('transactions').select('*, transaction_items(*)')
-      .gte('created_at', `${startDate}T00:00:00.000Z`)
-      .lte('created_at', `${endDate}T23:59:59.999Z`)
-      .order('created_at', { ascending: false });
+      .gte('createdAt', `${startDate}T00:00:00.000Z`)
+      .lte('createdAt', `${endDate}T23:59:59.999Z`)
+      .order('createdAt', { ascending: false });
   }
   ({ data, error } = await query);
   if (error && error?.code === 'PGRST204') {
     let q2 = supabase.from('transactions').select('*, transaction_items(*)').order('id', { ascending: false });
     if (startDate && endDate) {
       q2 = supabase.from('transactions').select('*, transaction_items(*)')
-        .gte('createdAt', `${startDate}T00:00:00.000Z`)
-        .lte('createdAt', `${endDate}T23:59:59.999Z`)
-        .order('createdAt', { ascending: false });
+        .gte('created_at', `${startDate}T00:00:00.000Z`)
+        .lte('created_at', `${endDate}T23:59:59.999Z`)
+        .order('created_at', { ascending: false });
     }
     ({ data, error } = await q2);
   }
@@ -381,15 +381,15 @@ export const getTodayTransactions = async () => {
   ({ data, error } = await supabase
     .from('transactions')
     .select('*, transaction_items(*)')
-    .gte('created_at', start)
-    .lte('created_at', end)
+    .gte('createdAt', start)
+    .lte('createdAt', end)
     .order('id', { ascending: false }));
   if (error && error?.code === 'PGRST204') {
     ({ data, error } = await supabase
       .from('transactions')
       .select('*, transaction_items(*)')
-      .gte('createdAt', start)
-      .lte('createdAt', end)
+      .gte('created_at', start)
+      .lte('created_at', end)
       .order('id', { ascending: false }));
   }
 
@@ -418,13 +418,13 @@ export const getDashboardStats = async () => {
   // Fetch transactions for today and month
   let todayTx, todayErr, monthTx, monthErr;
   [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
-    supabase.from('transactions').select('total').gte('created_at', startToday).lte('created_at', endToday),
-    supabase.from('transactions').select('total').gte('created_at', monthStart).lte('created_at', monthEnd)
+    supabase.from('transactions').select('total').gte('createdAt', startToday).lte('createdAt', endToday),
+    supabase.from('transactions').select('total').gte('createdAt', monthStart).lte('createdAt', monthEnd)
   ]);
   if (todayErr?.code === 'PGRST204' || monthErr?.code === 'PGRST204') {
     [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
-      supabase.from('transactions').select('total').gte('createdAt', startToday).lte('createdAt', endToday),
-      supabase.from('transactions').select('total').gte('createdAt', monthStart).lte('createdAt', monthEnd)
+      supabase.from('transactions').select('total').gte('created_at', startToday).lte('created_at', endToday),
+      supabase.from('transactions').select('total').gte('created_at', monthStart).lte('created_at', monthEnd)
     ]);
   }
 
@@ -502,7 +502,7 @@ export const getOpenOrders = async () => {
 };
 
 export const saveOpenOrder = async (order) => {
-  // Convert camelCase to snake_case for Supabase
+  // Use camelCase to match Prisma schema
   const orderData = {
     id: order.id,
     customer: order.customer,
@@ -510,7 +510,7 @@ export const saveOpenOrder = async (order) => {
     notes: order.notes,
     diskon: order.diskon,
     promo: order.promo,
-    created_at: order.createdAt || new Date().toISOString(),
+    createdAt: order.createdAt || new Date().toISOString(),
     status: order.status
   };
   
@@ -573,7 +573,7 @@ export async function exportOpenOrderCSV() {
   } catch (e) {
     arr = [];
   }
-  let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'created_at', 'customer', 'status'];
+  let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'createdAt', 'customer', 'status'];
   const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, 'laporan_open_order.csv');
 }
@@ -592,7 +592,7 @@ export async function exportBelanjaBahanCSV(startDate, endDate) {
   // Ambil data belanja bahan dari Supabase (misal tabel 'belanja_bahan')
   const { data, error } = await supabase.from('belanja_bahan').select('*');
   let arr = Array.isArray(data) ? data : [];
-  let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'created_at', 'supplier', 'total', 'status'];
+  let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'createdAt', 'supplier', 'total', 'status'];
   const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, `laporan_belanja_bahan_${startDate}_${endDate}.csv`);
 };
