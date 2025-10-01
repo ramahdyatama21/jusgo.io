@@ -224,7 +224,10 @@ export default function OpenOrder() {
 
       // Pindahkan order ke riwayatTransaksi (lokal) untuk kompatibilitas lama
       setRiwayatTransaksi(prev => {
-        const entry = { ...order, status: 'sent', sentAt: new Date().toISOString() };
+        const normalizedItems = Array.isArray(order.items)
+          ? order.items
+          : (typeof order.items === 'string' ? (() => { try { return JSON.parse(order.items); } catch { return []; } })() : []);
+        const entry = { ...order, items: normalizedItems, status: 'sent', sentAt: new Date().toISOString() };
         const next = [entry, ...prev];
         return next.sort((a, b) => {
           const tb = new Date(b?.sentAt || b?.created_at || b?.date || 0).getTime();
