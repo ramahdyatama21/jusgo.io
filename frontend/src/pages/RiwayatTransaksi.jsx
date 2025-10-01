@@ -54,8 +54,10 @@ export default function RiwayatTransaksi() {
                   <td className="px-4 py-3 border-b align-top text-center">
                     {order.status === 'pos' ? (
                       <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold">POS</span>
-                    ) : (
+                    ) : order.status === 'open' || order.status === 'open_order' ? (
                       <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">Open Order</span>
+                    ) : (
+                      <span className="inline-block bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-semibold">{order.status || '-'}</span>
                     )}
                   </td>
                   <td className="px-4 py-3 border-b align-top text-center">
