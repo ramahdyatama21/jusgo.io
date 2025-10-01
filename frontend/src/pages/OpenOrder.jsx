@@ -136,18 +136,18 @@ export default function OpenOrder() {
         id: editOrderId,
         customer,
         items: cart,
-        total: cart.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0),
-        created_at: new Date().toLocaleString('id-ID'),
+        total: Number(cart.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0)),
+        created_at: new Date().toISOString(),
         status: 'open'
       });
       setEditOrderId(null);
     } else {
       await saveOpenOrder({
-        id: Date.now(),
+        id: crypto.randomUUID(),
         customer,
         items: cart,
-        total: cart.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0),
-        created_at: new Date().toLocaleString('id-ID'),
+        total: Number(cart.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0)),
+        created_at: new Date().toISOString(),
         status: 'open'
       });
     }

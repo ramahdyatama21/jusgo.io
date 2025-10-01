@@ -507,8 +507,8 @@ export const saveOpenOrder = async (order) => {
     id: order.id,
     customer: order.customer,
     items: JSON.stringify(order.items), // Convert to JSON string as per schema
-    total: order.total || 0,
-    created_at: order.createdAt || new Date().toISOString(),
+    total: Number(order.total || 0),
+    created_at: order.created_at || new Date().toISOString(),
     status: order.status || 'open'
   };
   
