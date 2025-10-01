@@ -164,8 +164,8 @@ export default function Stock() {
                     {formatDate(movement.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{movement.products?.name || '-'}</div>
-                    <div className="text-sm text-gray-500">{movement.products?.sku || ''}</div>
+                    <div className="text-sm font-medium text-gray-900">{movement.product?.name || '-'}</div>
+                    <div className="text-sm text-gray-500">{movement.product?.sku || ''}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {movement.type === 'in' ? (
@@ -179,7 +179,7 @@ export default function Stock() {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {movement.qty} {movement.products?.unit || ''}
+                    {movement.qty} {movement.product?.unit || ''}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {movement.description || '-'}
