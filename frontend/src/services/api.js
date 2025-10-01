@@ -115,7 +115,7 @@ export const getStockMovements = async (productId = null) => {
       .order('created_at', { ascending: false })
       .limit(100);
     if (productId) {
-      query = query.eq('productId', productId);
+      query = query.eq('product_id', productId);
     }
     const { data, error } = await query;
     if (error) throw error;
@@ -132,15 +132,17 @@ export const addStock = async (productId, qty, description) => {
     if (!userData?.user?.id) {
       throw new Error('Sesi login telah berakhir. Silakan login ulang.');
     }
-    // Create movement record first
+    // Create movement record first (snake_case)
     const { data: movement, error: movementError } = await supabase
       .from('stock_movements')
-      .insert([{
-        productId: productId,
-        type: 'in', // atau 'out'
-        qty: qty,
-        description: description || ''
-      }])
+      .insert([
+        {
+          product_id: productId,
+          type: 'in',
+          qty: qty,
+          description: description || ''
+        }
+      ])
       .select('*, product:products(*)')
       .single();
     if (movementError) {
@@ -190,15 +192,17 @@ export const removeStock = async (productId, qty, description) => {
     if ((product?.stock || 0) < qty) {
       throw new Error('Stok tidak mencukupi');
     }
-    // Create movement record first
+    // Create movement record first (snake_case)
     const { data: movement, error: movementError } = await supabase
       .from('stock_movements')
-      .insert([{
-        productId: productId,
-        type: 'out',
-        qty: qty,
-        description: description || ''
-      }])
+      .insert([
+        {
+          product_id: productId,
+          type: 'out',
+          qty: qty,
+          description: description || ''
+        }
+      ])
       .select('*, product:products(*)')
       .single();
     if (movementError) {
@@ -290,8 +294,8 @@ export const createTransaction = async (payload) => {
 
   if (items.length > 0) {
     const itemRowsSnake = items.map(i => ({
-      transaction_id: transactionId, // string UUID
-      product_id: i.productId,       // string UUID
+      transaction_id: transactionId,
+      product_id: i.productId,
       price: Number(i.price || 0),
       qty: Number(i.qty || 0),
       subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
@@ -306,15 +310,9 @@ export const createTransaction = async (payload) => {
     for (const i of items) {
       const qty = Number(i.qty) || 0;
       if (!i.productId || qty <= 0) continue;
-      let moveError;
-      ({ error: moveError } = await supabase.from('stock_movements').insert([
-        { productId: i.productId, qty, description: 'Penjualan', type: 'out' }
-      ]));
-      if (moveError && moveError?.code === 'PGRST204') {
-        ({ error: moveError } = await supabase.from('stock_movements').insert([
-          { product_id: i.productId, qty, description: 'Penjualan', type: 'out' }
-        ]));
-      }
+      const { error: moveError } = await supabase.from('stock_movements').insert([
+        { product_id: i.productId, qty, description: 'Penjualan', type: 'out' }
+      ]);
       if (moveError) {
         console.error('Supabase movement (sale) error:', moveError);
         throw moveError;
