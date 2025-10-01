@@ -55,7 +55,7 @@ export default function Dashboard() {
     const costDay = {};
     const profitDay = {};
     riwayat.forEach(order => {
-      const tgl = toDate(order.createdAt || order.sentAt);
+      const tgl = toDate(order.created_at || order.sentAt);
       const revenue = order.items.reduce((sum, i) => sum + (i.subtotal || (i.qty * i.price)), 0);
       perDay[tgl] = (perDay[tgl] || 0) + revenue;
       const hpp = order.items.reduce((sum, i) => {

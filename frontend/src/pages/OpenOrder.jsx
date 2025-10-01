@@ -139,7 +139,7 @@ export default function OpenOrder() {
         notes,
         diskon,
         promo: promoDipilih,
-        createdAt: new Date().toLocaleString('id-ID'),
+        created_at: new Date().toLocaleString('id-ID'),
         status: 'open'
       });
       setEditOrderId(null);
@@ -151,7 +151,7 @@ export default function OpenOrder() {
         notes,
         diskon,
         promo: promoDipilih,
-        createdAt: new Date().toLocaleString('id-ID'),
+        created_at: new Date().toLocaleString('id-ID'),
         status: 'open'
       });
     }
@@ -414,7 +414,7 @@ export default function OpenOrder() {
             <tbody>
               {orders.map(order => (
                 <tr key={order.id}>
-                  <td>{order.createdAt}</td>
+                  <td>{order.created_at}</td>
                   <td>{order.customer}</td>
                   <td>
                     <ul>

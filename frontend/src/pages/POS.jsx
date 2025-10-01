@@ -131,7 +131,7 @@ export default function POS() {
         notes: '',
         diskon,
         promo: promoDipilih,
-        createdAt: new Date().toLocaleString('id-ID'),
+        created_at: new Date().toLocaleString('id-ID'),
         status: 'pos',
         id: Date.now(),
         subtotal: subtotalVal,
@@ -147,7 +147,7 @@ export default function POS() {
       // Simpan ke riwayat transaksi
       saveToRiwayatTransaksi({
         ...transactionData,
-        sentAt: transactionData.createdAt
+        sentAt: transactionData.created_at
       });
       alert('Transaksi berhasil!');
       setCart([]);

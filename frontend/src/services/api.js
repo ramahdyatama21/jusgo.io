@@ -112,7 +112,7 @@ export const getStockMovements = async (productId = null) => {
     let query = supabase
       .from('stock_movements')
       .select('*, product:products(*)')
-      .order('createdAt', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(100);
     if (productId) {
       query = query.eq('productId', productId);
@@ -347,9 +347,9 @@ export const getTransactions = async (startDate = null, endDate = null) => {
   if (startDate && endDate) {
     // Try date filters on createdAt first
     query = supabase.from('transactions').select('*, transaction_items(*)')
-      .gte('createdAt', `${startDate}T00:00:00.000Z`)
-      .lte('createdAt', `${endDate}T23:59:59.999Z`)
-      .order('createdAt', { ascending: false });
+      .gte('created_at', `${startDate}T00:00:00.000Z`)
+      .lte('created_at', `${endDate}T23:59:59.999Z`)
+      .order('created_at', { ascending: false });
   }
   ({ data, error } = await query);
   if (error && error?.code === 'PGRST204') {
@@ -381,8 +381,8 @@ export const getTodayTransactions = async () => {
   ({ data, error } = await supabase
     .from('transactions')
     .select('*, transaction_items(*)')
-    .gte('createdAt', start)
-    .lte('createdAt', end)
+    .gte('created_at', start)
+    .lte('created_at', end)
     .order('id', { ascending: false }));
   if (error && error?.code === 'PGRST204') {
     ({ data, error } = await supabase
@@ -418,8 +418,8 @@ export const getDashboardStats = async () => {
   // Fetch transactions for today and month
   let todayTx, todayErr, monthTx, monthErr;
   [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
-    supabase.from('transactions').select('total').gte('createdAt', startToday).lte('createdAt', endToday),
-    supabase.from('transactions').select('total').gte('createdAt', monthStart).lte('createdAt', monthEnd)
+    supabase.from('transactions').select('total').gte('created_at', startToday).lte('created_at', endToday),
+    supabase.from('transactions').select('total').gte('created_at', monthStart).lte('created_at', monthEnd)
   ]);
   if (todayErr?.code === 'PGRST204' || monthErr?.code === 'PGRST204') {
     [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
@@ -592,7 +592,7 @@ export async function exportBelanjaBahanCSV(startDate, endDate) {
   // Ambil data belanja bahan dari Supabase (misal tabel 'belanja_bahan')
   const { data, error } = await supabase.from('belanja_bahan').select('*');
   let arr = Array.isArray(data) ? data : [];
-  let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'createdAt', 'supplier', 'total', 'status'];
+  let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'created_at', 'supplier', 'total', 'status'];
   const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, `laporan_belanja_bahan_${startDate}_${endDate}.csv`);
 };

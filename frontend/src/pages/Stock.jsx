@@ -170,7 +170,7 @@ export default function Stock() {
               {movements.map((movement) => (
                 <tr key={movement.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDate(movement.created_at || movement.createdAt)}
+                    {formatDate(movement.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{movement.product?.name || '-'}</div>
