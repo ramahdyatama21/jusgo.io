@@ -7,5 +7,6 @@ router.get('/dashboard', authMiddleware, reportController.getDashboardStats);
 router.get('/sales', authMiddleware, reportController.getSalesReport);
 router.get('/products', authMiddleware, reportController.getProductReport);
 router.get('/stock', authMiddleware, reportController.getStockReport);
+router.get('/open-order', authMiddleware, reportController.getOpenOrderReport);
 
 module.exports = router;
