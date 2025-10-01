@@ -38,7 +38,9 @@ export default function RiwayatTransaksi() {
               {riwayat.map((order, idx) => (
                 <tr key={order.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50 hover:bg-blue-50'}>
                   <td className="px-4 py-3 border-b align-top whitespace-nowrap">
-                    {order.sentAt || order.created_at || order.createdAt || '-'}
+                    {(order.created_at || order.createdAt)
+                      ? new Date(order.created_at || order.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
+                      : '-'}
                   </td>
                   <td className="px-4 py-3 border-b align-top whitespace-nowrap">{order.customer || '-'}</td>
                   <td className="px-4 py-3 border-b align-top">
