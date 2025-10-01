@@ -1,9 +1,10 @@
 // Laporan Open Order
 exports.getOpenOrderReport = async (req, res) => {
   try {
-    // Ambil semua open order dari tabel openOrder (atau open_orders jika nama tabel berbeda)
-    const openOrders = await prisma.openOrder.findMany({});
-    // Jika ingin filter status, tambahkan where: { status: 'open' }
+    // Ambil semua open order yang status-nya masih 'open'
+    const openOrders = await prisma.openOrder.findMany({
+      where: { status: 'open' }
+    });
     res.json(openOrders);
   } catch (error) {
     console.error('Get open order report error:', error);

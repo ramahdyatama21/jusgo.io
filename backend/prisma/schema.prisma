@@ -1,3 +1,11 @@
+model OpenOrder {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  customer    String?
+  items       String   // JSON string of items
+  total       Float
+  status      String   @default("open") // 'open' or 'sent'
+}
 generator client {
   provider = "prisma-client-js"
 }
