@@ -46,6 +46,21 @@ export async function sendOpenOrderToTransaction(orderId) {
   ]).select();
   if (txError) throw txError;
 
+  // Insert items ke transaction_items
+  const transactionId = tx?.[0]?.id;
+  const items = JSON.parse(order.items || '[]');
+  if (transactionId && items.length > 0) {
+    const itemRows = items.map(i => ({
+      transaction_id: transactionId,
+      product_id: i.productId,
+      price: Number(i.price || 0),
+      qty: Number(i.qty || 0),
+      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
+    }));
+    const { error: itemsError } = await supabase.from('transaction_items').insert(itemRows);
+    if (itemsError) throw itemsError;
+  }
+
   // Update status open order menjadi 'sent'
   const { error: updError } = await supabase.from('open_orders').update({ status: 'sent' }).eq('id', orderId);
   if (updError) throw updError;
