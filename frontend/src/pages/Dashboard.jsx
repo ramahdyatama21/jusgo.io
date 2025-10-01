@@ -32,7 +32,7 @@ export default function Dashboard() {
       productMap[p.name] = { product: p, totalQty: 0, totalRevenue: 0, totalHPP: 0 };
     });
     riwayat.forEach(order => {
-      order.items.forEach(item => {
+      (order.items || []).forEach(item => {
         if (productMap[item.name]) {
           productMap[item.name].totalQty += item.qty;
           productMap[item.name].totalRevenue += (item.subtotal || (item.qty * item.price));
@@ -56,9 +56,9 @@ export default function Dashboard() {
     const profitDay = {};
     riwayat.forEach(order => {
       const tgl = toDate(order.created_at || order.sentAt);
-      const revenue = order.items.reduce((sum, i) => sum + (i.subtotal || (i.qty * i.price)), 0);
+      const revenue = (order.items || []).reduce((sum, i) => sum + (i.subtotal || (i.qty * i.price)), 0);
       perDay[tgl] = (perDay[tgl] || 0) + revenue;
-      const hpp = order.items.reduce((sum, i) => {
+      const hpp = (order.items || []).reduce((sum, i) => {
         const prod = products.find(p => p.id === i.productId || p.name === i.name);
         const buyPrice = Number(prod?.buyPrice || 0);
         return sum + (Number(i.qty) * buyPrice);

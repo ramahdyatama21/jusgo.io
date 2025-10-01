@@ -40,7 +40,7 @@ export default function RiwayatTransaksi() {
                   <td className="px-4 py-3 border-b align-top whitespace-nowrap">{order.customer || '-'}</td>
                   <td className="px-4 py-3 border-b align-top">
                     <ul className="list-disc pl-5 space-y-1">
-                      {order.items.map((item, i) => (
+                      {(order.items || []).map((item, i) => (
                         <li key={i}>{item.name} <span className="text-xs text-gray-500">x {item.qty}</span></li>
                       ))}
                     </ul>
@@ -71,7 +71,7 @@ export default function RiwayatTransaksi() {
                         const kasir = order.kasir || '-';
                         const pembayaran = order.paymentMethod ? order.paymentMethod.toUpperCase() : '-';
                         const status = order.status === 'pos' ? 'LUNAS' : 'TERKIRIM';
-                        const subtotal = order.items.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0);
+                        const subtotal = (order.items || []).reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0);
                         const diskon = order.diskon || 0;
                         const total = subtotal - diskon;
                         const printWindow = window.open('', '', 'width=400,height=700');
@@ -100,7 +100,7 @@ export default function RiwayatTransaksi() {
                           <div class='line'></div>
                           <div class='item-row bold'><span class='item-name'>Item</span><span class='item-qty'>Qty</span><span class='item-total'>Total</span></div>
                           <div class='line'></div>
-                          ${order.items.map(item => `
+                          ${(order.items || []).map(item => `
                             <div class='item-row'>
                               <span class='item-name'>${item.name}</span>
                               <span class='item-qty'>${item.qty}</span>
