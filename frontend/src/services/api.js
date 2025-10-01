@@ -105,190 +105,127 @@ export const importProducts = async (products) => {
 };
 
 // Stock
+
+// Supabase-based Stock Management
 export const getStockMovements = async (productId = null) => {
-  // Try with snake_case column names first
-  let query = supabase.from('stock_movements')
-    .select(`
-      *,
-      product:products(*)
-    `)
-    .order('created_at', { ascending: false });
-    
-  if (productId) {
-    query = query.eq('product_id', productId);
-  }
-  
-  const { data, error } = await query;
-  
-  if (error && error.code === 'PGRST204') {
-    // If first attempt failed, try with camelCase table and column names
-    let altQuery = supabase.from('StockMovement')
-      .select(`
-        *,
-        product:Product(*)
-      `)
-      .order('createdAt', { ascending: false });
-      
+  try {
+    let query = supabase
+      .from('stock_movements')
+      .select('*, product:products(*)')
+      .order('created_at', { ascending: false })
+      .limit(100);
     if (productId) {
-      altQuery = altQuery.eq('productId', productId);
+      query = query.eq('product_id', productId);
     }
-    
-    const { data: altData, error: altError } = await altQuery;
-    if (altError) {
-      console.error('Supabase getStockMovements alternate error:', altError);
-      return [];
-    }
-    return altData || [];
-  }
-  
-  if (error) {
-    console.error('Supabase getStockMovements error:', error);
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Get stock movements error:', error);
     return [];
   }
-  
-  return data || [];
 };
 
 export const addStock = async (productId, qty, description) => {
-  // First get the current product
-  const { data: product, error: productError } = await supabase
-    .from('products')
-    .select('stock')
-    .eq('id', productId)
-    .single();
-    
-  if (productError) {
-    console.error('Supabase get product error:', productError);
-    throw new Error('Gagal mendapatkan data produk');
-  }
-  
-  // Start a transaction to update both product stock and create movement
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData?.user?.id;
-  
-  // Update product stock
-  const { error: updateError } = await supabase
-    .from('products')
-    .update({ stock: (product.stock || 0) + qty })
-    .eq('id', productId);
-    
-  if (updateError) {
-    console.error('Supabase update stock error:', updateError);
-    throw new Error('Gagal menambah stok');
-  }
-  
-  // Create stock movement record with correct column names
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user?.id) {
+      throw new Error('Sesi login telah berakhir. Silakan login ulang.');
+    }
+    // Create movement record first
     const { data: movement, error: movementError } = await supabase
       .from('stock_movements')
       .insert([{
-        // Use only snake_case column names as per error message
         product_id: productId,
-        type: 'in',
-        qty,
-        description: description || '',
-        user_id: userId
-        // Let Supabase handle created_at automatically
-      }])
-      .select('*, product:products(*)');
-    
-  if (movementError) {
-    console.error('Supabase create movement error:', movementError);
-    // Try alternate column names if first attempt failed
-    const { data: altMovement, error: altError } = await supabase
-      .from('StockMovement')  // Try Pascal case table name
-      .insert([{
-        productId: productId,
         type: 'in',
         qty: qty,
         description: description || '',
-        userId: userId,
-        createdAt: new Date().toISOString()
+        user_id: userData.user.id
       }])
-      .select();
-      
-    if (altError) {
-      console.error('Alternate movement insert error:', altError);
-      throw new Error('Gagal mencatat pergerakan stok. Silakan coba lagi atau hubungi admin.');
+      .select('*, product:products(*)')
+      .single();
+    if (movementError) {
+      console.error('Create movement error:', movementError);
+      throw new Error('Gagal mencatat pergerakan stok');
     }
-    
-    return altMovement?.[0];
+    // Then update product stock using RPC
+    const { error: updateError } = await supabase.rpc('increment_stock', {
+      p_product_id: productId,
+      p_quantity: qty
+    });
+    if (updateError) {
+      // Rollback movement if stock update fails
+      await supabase
+        .from('stock_movements')
+        .delete()
+        .eq('id', movement.id)
+        .catch(rollbackError => {
+          console.error('Rollback error:', rollbackError);
+        });
+      throw new Error('Gagal memperbarui stok');
+    }
+    return movement;
+  } catch (error) {
+    console.error('Add stock error:', error);
+    throw error;
   }
-  
-  return movement?.[0];
 };
 
 export const removeStock = async (productId, qty, description) => {
-  // First get the current product
-  const { data: product, error: productError } = await supabase
-    .from('products')
-    .select('stock')
-    .eq('id', productId)
-    .single();
-    
-  if (productError) {
-    console.error('Supabase get product error:', productError);
-    throw new Error('Gagal mendapatkan data produk');
-  }
-  
-  // Check if we have enough stock
-  if ((product.stock || 0) < qty) {
-    throw new Error('Stok tidak mencukupi');
-  }
-  
-  // Start a transaction to update both product stock and create movement
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData?.user?.id;
-  
-  // Update product stock
-  const { error: updateError } = await supabase
-    .from('products')
-    .update({ stock: Math.max(0, (product.stock || 0) - qty) })
-    .eq('id', productId);
-    
-  if (updateError) {
-    console.error('Supabase update stock error:', updateError);
-    throw new Error('Gagal mengurangi stok');
-  }
-  
-  // Create stock movement record
-  const { data: movement, error: movementError } = await supabase
-    .from('stock_movements')
-    .insert([{
-      productId: productId,
-      product_id: productId, // fallback for different column naming
-      type: 'out',
-      qty: qty,
-      description: description || '',
-      userId: userId,
-      user_id: userId, // fallback for different column naming
-      created_at: new Date().toISOString()
-    }])
-    .select();
-    
-  if (movementError) {
-    console.error('Supabase create movement error:', movementError);
-    // Try alternate column names if first attempt failed
-    const { data: altMovement, error: altError } = await supabase
-      .from('StockMovement')  // Try Pascal case table name
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user?.id) {
+      throw new Error('Sesi login telah berakhir. Silakan login ulang.');
+    }
+    // Check current stock first
+    const { data: product, error: stockError } = await supabase
+      .from('products')
+      .select('stock')
+      .eq('id', productId)
+      .single();
+    if (stockError) {
+      throw new Error('Gagal memeriksa stok produk');
+    }
+    if ((product?.stock || 0) < qty) {
+      throw new Error('Stok tidak mencukupi');
+    }
+    // Create movement record first
+    const { data: movement, error: movementError } = await supabase
+      .from('stock_movements')
       .insert([{
-        productId: productId,
+        product_id: productId,
         type: 'out',
         qty: qty,
         description: description || '',
-        userId: userId,
-        createdAt: new Date().toISOString()
+        user_id: userData.user.id
       }])
-      .select();
-      
-    if (altError) {
-      console.error('Alternate movement insert error:', altError);
-      throw new Error('Gagal mencatat pergerakan stok. Silakan coba lagi atau hubungi admin.');
+      .select('*, product:products(*)')
+      .single();
+    if (movementError) {
+      console.error('Create movement error:', movementError);
+      throw new Error('Gagal mencatat pergerakan stok');
     }
-    
-    return altMovement?.[0];
+    // Then update product stock using RPC
+    const { error: updateError } = await supabase.rpc('decrement_stock', {
+      p_product_id: productId,
+      p_quantity: qty
+    });
+    if (updateError) {
+      // Rollback movement if stock update fails
+      await supabase
+        .from('stock_movements')
+        .delete()
+        .eq('id', movement.id)
+        .catch(rollbackError => {
+          console.error('Rollback error:', rollbackError);
+        });
+      throw new Error('Gagal memperbarui stok');
+    }
+    return movement;
+  } catch (error) {
+    console.error('Remove stock error:', error);
+    throw error;
   }
-  
-  return movement?.[0];
 };
 
 // Transactions (migrated to Supabase)
