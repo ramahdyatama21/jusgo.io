@@ -131,9 +131,9 @@ export default function POS() {
         notes: '',
         diskon,
         promo: promoDipilih,
-        created_at: new Date().toLocaleString('id-ID'),
+        created_at: new Date().toISOString(),
         status: 'pos',
-        id: Date.now(),
+        id: crypto.randomUUID(),
         subtotal: subtotalVal,
         total: totalVal
       };
@@ -182,7 +182,7 @@ export default function POS() {
     const diskonVal = Number(receipt?.diskon || 0);
     const total = Number(receipt?.total ?? Math.max(0, subtotal - diskonVal));
     const formatRupiahNum = n => Number(n || 0).toLocaleString('id-ID', { minimumFractionDigits: 0 });
-    const noTrans = `${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${String(receipt.id || Date.now()).slice(-3)}`;
+    const noTrans = `${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${String(receipt.id || crypto.randomUUID()).slice(-3)}`;
     const kasir = receipt.kasir || '-';
     const pembayaran = receipt.paymentMethod ? String(receipt.paymentMethod).toUpperCase() : '-';
     const status = 'LUNAS';

@@ -206,7 +206,7 @@ export default function OpenOrder() {
         {
           ...order,
           status: 'sent',
-          sentAt: new Date().toLocaleString('id-ID')
+          sentAt: new Date().toISOString()
         }
       ]);
 
