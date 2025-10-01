@@ -290,8 +290,8 @@ export const createTransaction = async (payload) => {
 
   if (items.length > 0) {
     const itemRowsSnake = items.map(i => ({
-      transactionId: transactionId,
-      productId: i.productId,
+      transaction_id: transactionId,
+      product_id: i.productId,
       price: Number(i.price || 0),
       qty: Number(i.qty || 0),
       subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
