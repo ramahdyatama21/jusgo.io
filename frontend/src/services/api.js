@@ -106,6 +106,7 @@ export const importProducts = async (products) => {
 
 // Stock
 export const getStockMovements = async (productId = null) => {
+  // Try with snake_case column names first
   let query = supabase.from('stock_movements')
     .select(`
       *,
@@ -118,10 +119,33 @@ export const getStockMovements = async (productId = null) => {
   }
   
   const { data, error } = await query;
+  
+  if (error && error.code === 'PGRST204') {
+    // If first attempt failed, try with camelCase table and column names
+    let altQuery = supabase.from('StockMovement')
+      .select(`
+        *,
+        product:Product(*)
+      `)
+      .order('createdAt', { ascending: false });
+      
+    if (productId) {
+      altQuery = altQuery.eq('productId', productId);
+    }
+    
+    const { data: altData, error: altError } = await altQuery;
+    if (altError) {
+      console.error('Supabase getStockMovements alternate error:', altError);
+      return [];
+    }
+    return altData || [];
+  }
+  
   if (error) {
     console.error('Supabase getStockMovements error:', error);
     return [];
   }
+  
   return data || [];
 };
 
@@ -157,17 +181,38 @@ export const addStock = async (productId, qty, description) => {
   const { data: movement, error: movementError } = await supabase
     .from('stock_movements')
     .insert([{
-      product_id: productId,
+      productId: productId,
+      product_id: productId, // fallback for different column naming
       type: 'in',
-      qty,
-      description,
-      user_id: userId
+      qty: qty,
+      description: description || '',
+      userId: userId,
+      user_id: userId, // fallback for different column naming
+      created_at: new Date().toISOString()
     }])
-    .select(`*, product:products(*)`);
+    .select();
     
   if (movementError) {
     console.error('Supabase create movement error:', movementError);
-    throw new Error('Gagal mencatat pergerakan stok');
+    // Try alternate column names if first attempt failed
+    const { data: altMovement, error: altError } = await supabase
+      .from('StockMovement')  // Try Pascal case table name
+      .insert([{
+        productId: productId,
+        type: 'in',
+        qty: qty,
+        description: description || '',
+        userId: userId,
+        createdAt: new Date().toISOString()
+      }])
+      .select();
+      
+    if (altError) {
+      console.error('Alternate movement insert error:', altError);
+      throw new Error('Gagal mencatat pergerakan stok. Silakan coba lagi atau hubungi admin.');
+    }
+    
+    return altMovement?.[0];
   }
   
   return movement?.[0];
@@ -210,17 +255,38 @@ export const removeStock = async (productId, qty, description) => {
   const { data: movement, error: movementError } = await supabase
     .from('stock_movements')
     .insert([{
-      product_id: productId,
+      productId: productId,
+      product_id: productId, // fallback for different column naming
       type: 'out',
-      qty,
-      description,
-      user_id: userId
+      qty: qty,
+      description: description || '',
+      userId: userId,
+      user_id: userId, // fallback for different column naming
+      created_at: new Date().toISOString()
     }])
-    .select(`*, product:products(*)`);
+    .select();
     
   if (movementError) {
     console.error('Supabase create movement error:', movementError);
-    throw new Error('Gagal mencatat pergerakan stok');
+    // Try alternate column names if first attempt failed
+    const { data: altMovement, error: altError } = await supabase
+      .from('StockMovement')  // Try Pascal case table name
+      .insert([{
+        productId: productId,
+        type: 'out',
+        qty: qty,
+        description: description || '',
+        userId: userId,
+        createdAt: new Date().toISOString()
+      }])
+      .select();
+      
+    if (altError) {
+      console.error('Alternate movement insert error:', altError);
+      throw new Error('Gagal mencatat pergerakan stok. Silakan coba lagi atau hubungi admin.');
+    }
+    
+    return altMovement?.[0];
   }
   
   return movement?.[0];
