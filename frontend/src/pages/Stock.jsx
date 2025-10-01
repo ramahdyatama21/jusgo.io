@@ -48,7 +48,8 @@ export default function Stock() {
       resetForm();
       loadData();
     } catch (error) {
-      alert('Gagal memperbarui stok');
+      console.error('Stock update error:', error);
+      alert(`Gagal memperbarui stok: ${error.message || 'Terjadi kesalahan'}`);
     } finally {
       setLoading(false);
     }

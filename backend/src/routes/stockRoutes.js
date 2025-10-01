@@ -39,6 +39,11 @@ router.post('/in', authMiddleware, async (req, res) => {
     const { productId, qty, description } = req.body;
     const userId = req.user.id;
 
+    // Validate input
+    if (!productId || !qty || qty <= 0) {
+      return res.status(400).json({ error: 'Data tidak valid' });
+    }
+
     // Update stock
     await prisma.product.update({
       where: { id: productId },
@@ -65,7 +70,8 @@ router.post('/in', authMiddleware, async (req, res) => {
 
     res.status(201).json(movement);
   } catch (error) {
-    res.status(500).json({ error: 'Gagal menambah stok' });
+    console.error('Add stock error:', error);
+    res.status(500).json({ error: 'Gagal menambah stok', details: error.message });
   }
 });
 
@@ -74,6 +80,11 @@ router.post('/out', authMiddleware, async (req, res) => {
   try {
     const { productId, qty, description } = req.body;
     const userId = req.user.id;
+
+    // Validate input
+    if (!productId || !qty || qty <= 0) {
+      return res.status(400).json({ error: 'Data tidak valid' });
+    }
 
     // Check stock
     const product = await prisma.product.findUnique({
@@ -110,7 +121,8 @@ router.post('/out', authMiddleware, async (req, res) => {
 
     res.status(201).json(movement);
   } catch (error) {
-    res.status(500).json({ error: 'Gagal mengurangi stok' });
+    console.error('Remove stock error:', error);
+    res.status(500).json({ error: 'Gagal mengurangi stok', details: error.message });
   }
 });
 

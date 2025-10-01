@@ -7,7 +7,23 @@ const API_URL = import.meta.env.VITE_API_URL
   : 'http://localhost:5000/api';
 
 const getToken = () => {
-  return localStorage.getItem('token');
+  // Try to get JWT token first
+  let token = localStorage.getItem('token');
+  
+  // If no JWT token, try to get from Supabase session
+  if (!token) {
+    const session = localStorage.getItem('supabase_session');
+    if (session) {
+      try {
+        const sessionData = JSON.parse(session);
+        token = sessionData.access_token;
+      } catch (e) {
+        console.error('Error parsing Supabase session:', e);
+      }
+    }
+  }
+  
+  return token;
 };
 
 const getHeaders = () => {
