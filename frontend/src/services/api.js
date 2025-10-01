@@ -134,15 +134,15 @@ export const addStock = async (productId, qty, description) => {
     }
     // Create movement record first
     const { data: movement, error: movementError } = await supabase
-  .from('stock_movements')
-  .insert([{
-    product_id: productId,
-    type: 'in', // atau 'out'
-    qty: qty,
-    description: description || ''
-  }])
-  .select('*, product:products(*)')
-  .single();
+      .from('stock_movements')
+      .insert([{
+        product_id: productId,
+        type: 'in', // atau 'out'
+        qty: qty,
+        description: description || ''
+      }])
+      .select('*, product:products(*)')
+      .single();
     if (movementError) {
       console.error('Create movement error:', movementError);
       throw new Error('Gagal mencatat pergerakan stok');
@@ -502,7 +502,19 @@ export const getOpenOrders = async () => {
 };
 
 export const saveOpenOrder = async (order) => {
-  const { data, error } = await supabase.from('open_orders').insert([order]);
+  // Convert camelCase to snake_case for Supabase
+  const orderData = {
+    id: order.id,
+    customer: order.customer,
+    items: order.items,
+    notes: order.notes,
+    diskon: order.diskon,
+    promo: order.promo,
+    created_at: order.createdAt || new Date().toISOString(),
+    status: order.status
+  };
+  
+  const { data, error } = await supabase.from('open_orders').insert([orderData]);
   if (error) {
     console.error('Supabase saveOpenOrder error:', error);
     throw error;
