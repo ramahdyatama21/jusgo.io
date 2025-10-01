@@ -7,7 +7,7 @@ export default function Stock() {
   const [products, setProducts] = useState([]);
   const [movements, setMovements] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState('in'); // 'in' or 'out'
+  const [modalType, setModalType] = useState('in'); // 'in' atau 'out'
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [qty, setQty] = useState(0);
   const [description, setDescription] = useState('');
@@ -68,6 +68,7 @@ export default function Stock() {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return '-';
     return new Date(dateString).toLocaleString('id-ID', {
       year: 'numeric',
       month: 'short',
@@ -81,7 +82,7 @@ export default function Stock() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-800">Manajemen Stok</h1>
 
-      {/* Products with Low Stock Alert */}
+      {/* Daftar Produk */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Daftar Produk</h2>
         <div className="overflow-x-auto">
@@ -143,7 +144,7 @@ export default function Stock() {
         </div>
       </div>
 
-      {/* Stock Movements History */}
+      {/* Riwayat Stok */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Riwayat Pergerakan Stok</h2>
         <div className="overflow-x-auto">
@@ -162,7 +163,7 @@ export default function Stock() {
               {movements.map((movement) => (
                 <tr key={movement.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDate(movement.createdAt)}
+                    {formatDate(movement.created_at || movement.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{movement.product?.name || '-'}</div>
@@ -195,7 +196,7 @@ export default function Stock() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal Form Stok */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
