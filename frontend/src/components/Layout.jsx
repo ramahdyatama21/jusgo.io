@@ -4,8 +4,11 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
-  const menuItems = [
+  const role = user?.app_metadata?.role || user?.role || '';
+  const allMenuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { path: '/products', label: 'Produk', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
     { path: '/stock', label: 'Stok', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
@@ -17,6 +20,11 @@ export default function Layout({ children }) {
     { path: '/belanja-bahan', label: 'Belanja Bahan', icon: 'M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h18v2H3v-2zm0 4h18v2H3v-2z' },
     { path: '/reports', label: 'Laporan', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' }
   ];
+
+  const menuForKasir = ['/dashboard', '/pos', '/open-order', '/riwayat-transaksi'];
+  const visibleMenu = role === 'kasir'
+    ? allMenuItems.filter(m => menuForKasir.includes(m.path))
+    : allMenuItems;
 
   const isActive = (path) => location.pathname === path;
 
@@ -51,7 +59,7 @@ export default function Layout({ children }) {
             <p className="text-sm text-gray-600 mt-1">v1.0 Beta</p>
           </div>
           <nav className="px-4 space-y-2 flex-1">
-            {menuItems.map((item) => (
+            {visibleMenu.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -76,7 +84,7 @@ export default function Layout({ children }) {
                 </div>
                 <div className="text-center w-full">
                   <div className="font-medium text-gray-800">{user.email || 'User'}</div>
-                  <div className="text-sm text-gray-500">{user.role || '-'}</div>
+                  <div className="text-sm text-gray-500">{role || '-'}</div>
                 </div>
                 <button
                   onClick={handleLogout}
@@ -91,16 +99,10 @@ export default function Layout({ children }) {
 
         {/* Main Content */}
         <div className="flex-1 md:ml-64 p-4 md:p-8 flex flex-col items-center overflow-x-auto">
-          {/* Responsive table/form wrapper for specific pages */}
-          {['KalkulatorHPP', 'Stock', 'OpenOrder'].includes(children?.type?.name) ? (
-            <div className="w-full md:max-w-4xl">
-              {children}
-            </div>
-          ) : (
-            <div className="w-full md:max-w-4xl">
-              {children}
-            </div>
-          )}
+          {/* Page container */}
+          <div className="w-full md:max-w-4xl">
+            {children}
+          </div>
         </div>
       </div>
 
@@ -121,7 +123,7 @@ export default function Layout({ children }) {
               </button>
             </div>
             <nav className="px-4 space-y-2 flex-1 overflow-y-auto">
-              {menuItems.map((item) => (
+              {visibleMenu.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -147,7 +149,7 @@ export default function Layout({ children }) {
                   </div>
                   <div className="text-center w-full">
                     <div className="font-medium text-gray-800">{user.email || 'User'}</div>
-                    <div className="text-sm text-gray-500">{user.role || '-'}</div>
+                    <div className="text-sm text-gray-500">{role || '-'}</div>
                   </div>
                   <button
                     onClick={() => { setSidebarOpen(false); handleLogout(); }}
