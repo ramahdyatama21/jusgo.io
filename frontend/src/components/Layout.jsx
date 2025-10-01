@@ -27,7 +27,7 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-100">
+  <div className="relative min-h-screen bg-gray-100 overflow-x-hidden">
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between bg-white shadow px-4 py-3">
         <button
