@@ -514,9 +514,9 @@ function downloadCSV(csv, filename) {
 // Export Sales Report to CSV
 export async function exportSalesReportCSV(startDate, endDate) {
   const data = await getSalesReport(startDate, endDate);
-  if (!Array.isArray(data)) return;
   const columns = ['date', 'invoice', 'customer', 'total', 'payment_method'];
-  const csv = arrayToCSV(data, columns);
+  const arr = Array.isArray(data) ? data : [];
+  const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, `laporan_penjualan_${startDate}_${endDate}.csv`);
 }
 
@@ -524,18 +524,18 @@ export async function exportSalesReportCSV(startDate, endDate) {
 export async function exportOpenOrderCSV() {
   // Ambil data open order dari Supabase (misal tabel 'open_orders')
   const { data, error } = await supabase.from('open_orders').select('*');
-  if (error || !Array.isArray(data)) return;
-  const columns = Object.keys(data[0] || {});
-  const csv = arrayToCSV(data, columns);
+  let arr = Array.isArray(data) ? data : [];
+  let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'created_at', 'customer', 'status'];
+  const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, 'laporan_open_order.csv');
 }
 
 // Export Stock Report to CSV
 export async function exportStockReportCSV() {
   const { data, error } = await supabase.from('products').select('id, name, stock, minStock, category');
-  if (error || !Array.isArray(data)) return;
+  const arr = Array.isArray(data) ? data : [];
   const columns = ['id', 'name', 'stock', 'minStock', 'category'];
-  const csv = arrayToCSV(data, columns);
+  const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, 'laporan_stok_barang.csv');
 }
 
@@ -543,8 +543,8 @@ export async function exportStockReportCSV() {
 export async function exportBelanjaBahanCSV(startDate, endDate) {
   // Ambil data belanja bahan dari Supabase (misal tabel 'belanja_bahan')
   const { data, error } = await supabase.from('belanja_bahan').select('*');
-  if (error || !Array.isArray(data)) return;
-  const columns = Object.keys(data[0] || {});
-  const csv = arrayToCSV(data, columns);
+  let arr = Array.isArray(data) ? data : [];
+  let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'created_at', 'supplier', 'total', 'status'];
+  const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, `laporan_belanja_bahan_${startDate}_${endDate}.csv`);
 };
