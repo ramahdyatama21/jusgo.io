@@ -502,16 +502,14 @@ export const getOpenOrders = async () => {
 };
 
 export const saveOpenOrder = async (order) => {
-  // Convert camelCase to snake_case for Supabase
+  // Only include columns that exist in the OpenOrder schema
   const orderData = {
     id: order.id,
     customer: order.customer,
-    items: order.items,
-    notes: order.notes,
-    diskon: order.diskon,
-    promo: order.promo,
+    items: JSON.stringify(order.items), // Convert to JSON string as per schema
+    total: order.total || 0,
     created_at: order.createdAt || new Date().toISOString(),
-    status: order.status
+    status: order.status || 'open'
   };
   
   const { data, error } = await supabase.from('open_orders').insert([orderData]);

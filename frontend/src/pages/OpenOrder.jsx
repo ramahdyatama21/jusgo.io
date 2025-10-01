@@ -117,9 +117,9 @@ export default function OpenOrder() {
   const handleEditOrder = (order) => {
     setEditOrderId(order.id);
     setCustomer(order.customer);
-    setNotes(order.notes);
-    setCart(order.items.map(item => ({ ...item })));
-    setDiskonManual(order.diskon ? order.diskon.replace(/[^0-9]/g, '') : '');
+    setNotes(''); // notes not in schema
+    setCart((typeof order.items === 'string' ? JSON.parse(order.items) : order.items).map(item => ({ ...item })));
+    setDiskonManual(''); // diskon not in schema
     setPromoDipilih(order.promo || '');
     setShowForm(true);
   };
@@ -136,9 +136,7 @@ export default function OpenOrder() {
         id: editOrderId,
         customer,
         items: cart,
-        notes,
-        diskon,
-        promo: promoDipilih,
+        total: cart.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0),
         created_at: new Date().toLocaleString('id-ID'),
         status: 'open'
       });
@@ -148,9 +146,7 @@ export default function OpenOrder() {
         id: Date.now(),
         customer,
         items: cart,
-        notes,
-        diskon,
-        promo: promoDipilih,
+        total: cart.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0),
         created_at: new Date().toLocaleString('id-ID'),
         status: 'open'
       });
@@ -418,19 +414,17 @@ export default function OpenOrder() {
                   <td>{order.customer}</td>
                   <td>
                     <ul>
-                      {order.items.map((item, idx) => (
+                      {(typeof order.items === 'string' ? JSON.parse(order.items) : order.items).map((item, idx) => (
                         <li key={idx}>{item.name} x {item.qty}</li>
                       ))}
                     </ul>
                   </td>
-                  <td>{order.notes}</td>
+                  <td>-</td>
                   <td><span className="text-yellow-600 font-semibold">Open</span></td>
                   <td>
-                    {order.items.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
+                    {(typeof order.items === 'string' ? JSON.parse(order.items) : order.items).reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                   </td>
-                  <td>
-                    {order.diskon ? order.diskon.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }) : '-'}
-                  </td>
+                  <td>-</td>
                   <td className="text-center">
                     <button
                       type="button"
