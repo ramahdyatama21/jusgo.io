@@ -341,24 +341,28 @@ export const createTransaction = async (payload) => {
 };
 
 export const getTransactions = async (startDate = null, endDate = null) => {
-  // Try camelCase first, then snake_case fallback for createdAt/created_at
+  // Fetch from Supabase with product join and map to UI shape
   let data, error;
-  let query = supabase.from('transactions').select('*, transaction_items(*)').order('id', { ascending: false });
+  let selectExpr = 'id, created_at, payment_method, subtotal, discount, total, notes, transaction_items(id, product_id, price, qty, subtotal, products(name))';
+  let query = supabase.from('transactions').select(selectExpr).order('id', { ascending: false });
   if (startDate && endDate) {
-    // Try date filters on createdAt first
-    query = supabase.from('transactions').select('*, transaction_items(*)')
+    query = supabase.from('transactions')
+      .select(selectExpr)
       .gte('created_at', `${startDate}T00:00:00.000Z`)
       .lte('created_at', `${endDate}T23:59:59.999Z`)
       .order('created_at', { ascending: false });
   }
   ({ data, error } = await query);
   if (error && error?.code === 'PGRST204') {
-    let q2 = supabase.from('transactions').select('*, transaction_items(*)').order('id', { ascending: false });
+    // Fallback camelCase if needed
+    selectExpr = 'id, createdAt, paymentMethod, subtotal, discount, total, notes, transaction_items(id, productId, price, qty, subtotal, products(name))';
+    let q2 = supabase.from('transactions').select(selectExpr).order('id', { ascending: false });
     if (startDate && endDate) {
-      q2 = supabase.from('transactions').select('*, transaction_items(*)')
-        .gte('created_at', `${startDate}T00:00:00.000Z`)
-        .lte('created_at', `${endDate}T23:59:59.999Z`)
-        .order('created_at', { ascending: false });
+      q2 = supabase.from('transactions')
+        .select(selectExpr)
+        .gte('createdAt', `${startDate}T00:00:00.000Z`)
+        .lte('createdAt', `${endDate}T23:59:59.999Z`)
+        .order('createdAt', { ascending: false });
     }
     ({ data, error } = await q2);
   }
@@ -366,7 +370,27 @@ export const getTransactions = async (startDate = null, endDate = null) => {
     console.error('Supabase getTransactions error:', error);
     return [];
   }
-  return data || [];
+  const rows = Array.isArray(data) ? data : [];
+  // Map to UI-friendly shape with items [{ name, qty, price, subtotal, productId }]
+  return rows.map(row => {
+    const items = Array.isArray(row.transaction_items) ? row.transaction_items.map(it => ({
+      productId: it.product_id ?? it.productId,
+      name: it.products?.name,
+      qty: Number(it.qty || 0),
+      price: Number(it.price || 0),
+      subtotal: Number(it.subtotal || (Number(it.price || 0) * Number(it.qty || 0)))
+    })) : [];
+    return {
+      id: row.id,
+      created_at: row.created_at ?? row.createdAt,
+      paymentMethod: row.payment_method ?? row.paymentMethod,
+      subtotal: Number(row.subtotal || 0),
+      discount: Number(row.discount || 0),
+      total: Number(row.total || 0),
+      notes: row.notes || '',
+      items
+    };
+  });
 };
 
 export const getTodayTransactions = async () => {

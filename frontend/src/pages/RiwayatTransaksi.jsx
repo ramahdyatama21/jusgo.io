@@ -6,11 +6,12 @@ export default function RiwayatTransaksi() {
   const [riwayat, setRiwayat] = useState([]);
 
   useEffect(() => {
-    async function fetchData() {
+    let isMounted = true;
+    (async () => {
       const data = await getTransactions();
-      setRiwayat(data || []);
-    }
-    fetchData();
+      if (isMounted) setRiwayat(Array.isArray(data) ? data : []);
+    })();
+    return () => { isMounted = false; };
   }, []);
 
   return (
@@ -36,7 +37,9 @@ export default function RiwayatTransaksi() {
             <tbody>
               {riwayat.map((order, idx) => (
                 <tr key={order.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50 hover:bg-blue-50'}>
-                  <td className="px-4 py-3 border-b align-top whitespace-nowrap">{order.sentAt || order.created_at}</td>
+                  <td className="px-4 py-3 border-b align-top whitespace-nowrap">
+                    {order.sentAt || order.created_at || order.createdAt || '-'}
+                  </td>
                   <td className="px-4 py-3 border-b align-top whitespace-nowrap">{order.customer || '-'}</td>
                   <td className="px-4 py-3 border-b align-top">
                     <ul className="list-disc pl-5 space-y-1">
@@ -66,8 +69,8 @@ export default function RiwayatTransaksi() {
                       className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
                       onClick={() => {
                         const formatRupiah = n => n.toLocaleString('id-ID', { minimumFractionDigits: 0 });
-                        const tgl = (order.sentAt || order.created_at || '').replace(/\D/g, '').slice(0,12);
-                        const noTrans = `${(order.created_at||'').slice(0,10).replace(/-/g,'')}-${String(order.id).slice(-3)}`;
+                        const tgl = (order.sentAt || order.created_at || order.createdAt || '').replace(/\D/g, '').slice(0,12);
+                        const noTrans = `${(order.created_at || order.createdAt || '').slice(0,10).replace(/-/g,'')}-${String(order.id).slice(-3)}`;
                         const kasir = order.kasir || '-';
                         const pembayaran = order.paymentMethod ? order.paymentMethod.toUpperCase() : '-';
                         const status = order.status === 'pos' ? 'LUNAS' : 'TERKIRIM';
@@ -78,24 +81,15 @@ export default function RiwayatTransaksi() {
                         printWindow.document.write(`
                           <html><head><title>Struk Transaksi</title>
                           <style>
-                            @media print {
-                              body { width: 58mm !important; }
-                            }
-                            body { font-family: monospace, Arial, sans-serif; font-size: 11px; padding: 0 2px; margin: 0; width: 58mm; }
-                            .center { text-align: center; }
-                            .bold { font-weight: bold; }
-                            .line { border-top: 1px dashed #222; margin: 6px 0; }
-                            .item-row { display: flex; justify-content: space-between; }
-                            .item-name { flex: 1; }
-                            .item-qty { width: 24px; text-align: center; }
-                            .item-total { width: 48px; text-align: right; }
+                          body{font-family:Arial,sans-serif;font-size:12px;margin:0;padding:10px} .center{text-align:center} .bold{font-weight:bold}
+                          .line{border-top:1px dashed #000;margin:6px 0} .item-row{display:flex;justify-content:space-between}
+                          .item-name{flex:1} .item-qty{width:40px;text-align:center} .item-total{width:80px;text-align:right}
                           </style></head><body>
-                          <div class='center bold' style='font-size:13px;margin-top:4px;'>Jusgo Indonesia</div>
-                          <div class='center'>Cold-Pressed Juice & More</div>
-                          <div class='center'>IG: @jusgo.id | WA: 08xxxx</div>
+                          <div class='center bold'>JUSGO</div>
+                          <div class='center'>Jl. Contoh No. 123</div>
                           <div class='line'></div>
                           <div>No. Transaksi : ${noTrans}</div>
-                          <div>Tanggal       : ${(order.sentAt||order.created_at||'').slice(0,16)}</div>
+                          <div>Tanggal       : ${(order.sentAt||order.created_at||order.createdAt||'').slice(0,16)}</div>
                           <div>Kasir         : ${kasir}</div>
                           <div class='line'></div>
                           <div class='item-row bold'><span class='item-name'>Item</span><span class='item-qty'>Qty</span><span class='item-total'>Total</span></div>
@@ -108,22 +102,19 @@ export default function RiwayatTransaksi() {
                             </div>
                           `).join('')}
                           <div class='line'></div>
-                          <div class='item-row'><span class='item-name'>Subtotal</span><span></span><span class='item-total'>${formatRupiah(subtotal)}</span></div>
-                          <div class='item-row'><span class='item-name'>Diskon</span><span></span><span class='item-total'>${diskon ? '-' + formatRupiah(diskon) : '0'}</span></div>
+                          <div class='item-row'><span class='item-name bold'>Subtotal</span><span></span><span class='item-total'>${formatRupiah(subtotal)}</span></div>
+                          <div class='item-row'><span class='item-name'>Diskon</span><span></span><span class='item-total'>${formatRupiah(diskon)}</span></div>
+                          <div class='item-row bold'><span class='item-name'>Total</span><span></span><span class='item-total'>${formatRupiah(total)}</span></div>
                           <div class='line'></div>
-                          <div class='item-row bold'><span class='item-name'>TOTAL</span><span></span><span class='item-total'>${formatRupiah(total)}</span></div>
-                          <div class='line'></div>
-                          <div>Pembayaran : ${pembayaran}</div>
-                          <div>Status     : ${status}</div>
-                          <div class='line'></div>
-                          <div class='center'>Terima kasih telah belanja!<br/>Jaga kesehatan dengan Jusgo 🍹</div>
-                          <div class='line'></div>
-                          <script>window.print();setTimeout(()=>window.close(),500);</script>
-                          </body></html>
-                        `);
+                          <div class='center'>Terima kasih!</div>
+                          </body></html>`);
+                        printWindow.document.close();
+                        printWindow.focus();
+                        printWindow.print();
+                        printWindow.close();
                       }}
                     >
-                      Print Struk
+                      Cetak
                     </button>
                   </td>
                 </tr>
