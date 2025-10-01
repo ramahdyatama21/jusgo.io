@@ -114,51 +114,7 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipe Laporan</label>
-            <select
-              value={reportType}
-              onChange={(e) => setReportType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="sales">Penjualan</option>
-              <option value="product">Produk</option>
-            </select>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="flex items-end">
-            <button
-              onClick={exportToCSV}
-              className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-            >
-              📥 Export CSV
-            </button>
-          </div>
-        </div>
-      </div>
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
