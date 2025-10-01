@@ -490,3 +490,61 @@ export const createCategory = async (name) => {
   }
   return data?.[0] || null;
 };
+
+// Utility: Convert array of objects to CSV string
+function arrayToCSV(data, columns) {
+  const header = columns.join(',');
+  const rows = data.map(row => columns.map(col => JSON.stringify(row[col] ?? '')).join(','));
+  return [header, ...rows].join('\r\n');
+}
+
+// Download CSV file
+function downloadCSV(csv, filename) {
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Export Sales Report to CSV
+export async function exportSalesReportCSV(startDate, endDate) {
+  const data = await getSalesReport(startDate, endDate);
+  if (!Array.isArray(data)) return;
+  const columns = ['date', 'invoice', 'customer', 'total', 'payment_method'];
+  const csv = arrayToCSV(data, columns);
+  downloadCSV(csv, `laporan_penjualan_${startDate}_${endDate}.csv`);
+}
+
+// Export Open Order Report to CSV
+export async function exportOpenOrderCSV() {
+  // Ambil data open order dari Supabase (misal tabel 'open_orders')
+  const { data, error } = await supabase.from('open_orders').select('*');
+  if (error || !Array.isArray(data)) return;
+  const columns = Object.keys(data[0] || {});
+  const csv = arrayToCSV(data, columns);
+  downloadCSV(csv, 'laporan_open_order.csv');
+}
+
+// Export Stock Report to CSV
+export async function exportStockReportCSV() {
+  const { data, error } = await supabase.from('products').select('id, name, stock, minStock, category');
+  if (error || !Array.isArray(data)) return;
+  const columns = ['id', 'name', 'stock', 'minStock', 'category'];
+  const csv = arrayToCSV(data, columns);
+  downloadCSV(csv, 'laporan_stok_barang.csv');
+}
+
+// Export Belanja Bahan Report to CSV
+export async function exportBelanjaBahanCSV(startDate, endDate) {
+  // Ambil data belanja bahan dari Supabase (misal tabel 'belanja_bahan')
+  const { data, error } = await supabase.from('belanja_bahan').select('*');
+  if (error || !Array.isArray(data)) return;
+  const columns = Object.keys(data[0] || {});
+  const csv = arrayToCSV(data, columns);
+  downloadCSV(csv, `laporan_belanja_bahan_${startDate}_${endDate}.csv`);
+};
