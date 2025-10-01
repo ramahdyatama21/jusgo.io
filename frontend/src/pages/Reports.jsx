@@ -13,6 +13,8 @@ export default function Reports() {
   const [endDate, setEndDate] = useState('');
   const [loading, setLoading] = useState(false);
 
+
+  // Inisialisasi tanggal hanya sekali
   useEffect(() => {
     const end = new Date();
     const start = new Date();
@@ -21,10 +23,28 @@ export default function Reports() {
     setStartDate(start.toISOString().split('T')[0]);
   }, []);
 
+  // Optimasi: fetch report hanya jika filter berubah dan tidak sedang loading
   useEffect(() => {
-    if (startDate && endDate) {
-      loadReport();
-    }
+    let ignore = false;
+    const fetchReport = async () => {
+      if (!startDate || !endDate) return;
+      setLoading(true);
+      try {
+        if (reportType === 'sales') {
+          const data = await getSalesReport(startDate, endDate);
+          if (!ignore) setSalesData(data);
+        } else {
+          const data = await getProductReport(startDate, endDate);
+          if (!ignore) setProductData(data);
+        }
+      } catch (error) {
+        console.error('Error loading report:', error);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    };
+    fetchReport();
+    return () => { ignore = true; };
   }, [startDate, endDate, reportType]);
 
   const loadReport = async () => {
