@@ -289,25 +289,15 @@ export const createTransaction = async (payload) => {
   const transactionId = transaction.id;
 
   if (items.length > 0) {
-    const itemRowsCamel = items.map(i => ({
-      transactionId: Number(transactionId),
-      productId: Number(i.productId),
-      price: Number(i.price || 0),
-      qty: Number(i.qty || 0),
-      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
-    }));
     const itemRowsSnake = items.map(i => ({
-      transaction_id: Number(transactionId),
-      product_id: Number(i.productId),
+      transaction_id: transactionId, // string UUID
+      product_id: i.productId,       // string UUID
       price: Number(i.price || 0),
       qty: Number(i.qty || 0),
       subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
     }));
     let itemsError;
-    ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsCamel));
-    if (itemsError && itemsError?.code === 'PGRST204') {
-      ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsSnake));
-    }
+    ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsSnake));
     if (itemsError) {
       console.error('Supabase insert transaction_items error:', itemsError);
       throw itemsError;
