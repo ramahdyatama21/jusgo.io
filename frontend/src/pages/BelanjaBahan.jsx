@@ -67,7 +67,8 @@ export default function BelanjaBahan() {
     // Akumulasi qty produk di open order
     const produkQty = {};
     openOrders.forEach(order => {
-      order.items.forEach(item => {
+      const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+      items.forEach(item => {
         produkQty[item.name] = (produkQty[item.name] || 0) + item.qty;
       });
     });

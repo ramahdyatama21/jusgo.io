@@ -181,10 +181,12 @@ export default function OpenOrder() {
 
   const handleSendOrder = async (order) => {
     try {
-      const subtotal = order.items.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0);
+      // Parse items if it's a JSON string
+      const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+      const subtotal = items.reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0);
       const discount = Number(order.diskon) || 0;
       const payload = {
-        items: order.items.map(item => ({
+        items: items.map(item => ({
           productId: item.productId,
           name: item.name,
           qty: item.qty,
