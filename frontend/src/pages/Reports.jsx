@@ -95,12 +95,22 @@ export default function Reports() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-800">Laporan</h1>
-
         <div className="flex items-center space-x-2">
           <span className="px-3 py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold rounded-full">
             ⭐ PRO
           </span>
           <span className="text-sm text-gray-600">Custom Report Builder</span>
+        </div>
+      </div>
+
+      {/* Export CSV Section */}
+      <div className="bg-white rounded-lg shadow p-4 mb-4">
+        <h2 className="text-lg font-semibold mb-2">Export Semua Laporan CSV</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <button onClick={() => window.exportSalesReportCSV?.(startDate, endDate)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Export Laporan Penjualan</button>
+          <button onClick={() => window.exportOpenOrderCSV?.()} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Export Laporan Open Order</button>
+          <button onClick={() => window.exportStockReportCSV?.()} className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition">Export Laporan Stok Barang</button>
+          <button onClick={() => window.exportBelanjaBahanCSV?.(startDate, endDate)} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Export Laporan Belanja Bahan</button>
         </div>
       </div>
 
