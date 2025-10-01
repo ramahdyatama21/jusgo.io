@@ -134,16 +134,15 @@ export const addStock = async (productId, qty, description) => {
     }
     // Create movement record first
     const { data: movement, error: movementError } = await supabase
-      .from('stock_movements')
-      .insert([{
-        product_id: productId,
-        type: 'in',
-        qty: qty,
-        description: description || '',
-        user_id: userData.user.id
-      }])
-      .select('*, product:products(*)')
-      .single();
+  .from('stock_movements')
+  .insert([{
+    product_id: productId,
+    type: 'in', // atau 'out'
+    qty: qty,
+    description: description || ''
+  }])
+  .select('*, product:products(*)')
+  .single();
     if (movementError) {
       console.error('Create movement error:', movementError);
       throw new Error('Gagal mencatat pergerakan stok');
