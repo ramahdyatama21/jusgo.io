@@ -153,6 +153,7 @@ export const addStock = async (productId, qty, description) => {
       p_quantity: qty
     });
     if (updateError) {
+      console.error('Supabase RPC increment_stock error:', updateError);
       // Rollback movement if stock update fails
       try {
         await supabase
