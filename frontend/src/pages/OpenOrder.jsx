@@ -14,7 +14,13 @@ export default function OpenOrder() {
   const [editOrderId, setEditOrderId] = useState(null);
   const [riwayatTransaksi, setRiwayatTransaksi] = useState(() => {
     const data = localStorage.getItem('riwayatTransaksi');
-    return data ? JSON.parse(data) : [];
+    const arr = data ? JSON.parse(data) : [];
+    if (!Array.isArray(arr)) return [];
+    return arr.sort((a, b) => {
+      const tb = new Date(b?.sentAt || b?.created_at || b?.date || 0).getTime();
+      const ta = new Date(a?.sentAt || a?.created_at || a?.date || 0).getTime();
+      return tb - ta;
+    });
   });
   const [diskonManual, setDiskonManual] = useState('');
   const [promoList, setPromoList] = useState([]);
@@ -217,14 +223,15 @@ export default function OpenOrder() {
       } catch {}
 
       // Pindahkan order ke riwayatTransaksi (lokal) untuk kompatibilitas lama
-      setRiwayatTransaksi(prev => [
-        ...prev,
-        {
-          ...order,
-          status: 'sent',
-          sentAt: new Date().toISOString()
-        }
-      ]);
+      setRiwayatTransaksi(prev => {
+        const entry = { ...order, status: 'sent', sentAt: new Date().toISOString() };
+        const next = [entry, ...prev];
+        return next.sort((a, b) => {
+          const tb = new Date(b?.sentAt || b?.created_at || b?.date || 0).getTime();
+          const ta = new Date(a?.sentAt || a?.created_at || a?.date || 0).getTime();
+          return tb - ta;
+        });
+      });
 
       // Hapus dari daftar open orders
       setOrders(orders.filter(o => o.id !== order.id));
