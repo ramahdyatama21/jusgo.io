@@ -522,9 +522,17 @@ export async function exportSalesReportCSV(startDate, endDate) {
 
 // Export Open Order Report to CSV
 export async function exportOpenOrderCSV() {
-  // Ambil data open order dari Supabase (misal tabel 'open_orders')
-  const { data, error } = await supabase.from('open_orders').select('*');
-  let arr = Array.isArray(data) ? data : [];
+  // Ambil data open order dari backend endpoint
+  const res = await fetch(`${API_URL}/reports/open-order`, {
+    headers: getHeaders()
+  });
+  let arr = [];
+  try {
+    arr = await res.json();
+    if (!Array.isArray(arr)) arr = [];
+  } catch (e) {
+    arr = [];
+  }
   let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'created_at', 'customer', 'status'];
   const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, 'laporan_open_order.csv');
