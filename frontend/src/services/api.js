@@ -502,7 +502,7 @@ export const getOpenOrders = async () => {
 };
 
 export const saveOpenOrder = async (order) => {
-  // Use camelCase to match Prisma schema
+  // Convert camelCase to snake_case for Supabase
   const orderData = {
     id: order.id,
     customer: order.customer,
@@ -510,7 +510,7 @@ export const saveOpenOrder = async (order) => {
     notes: order.notes,
     diskon: order.diskon,
     promo: order.promo,
-    createdAt: order.createdAt || new Date().toISOString(),
+    created_at: order.createdAt || new Date().toISOString(),
     status: order.status
   };
   
@@ -573,7 +573,7 @@ export async function exportOpenOrderCSV() {
   } catch (e) {
     arr = [];
   }
-  let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'createdAt', 'customer', 'status'];
+  let columns = arr.length > 0 ? Object.keys(arr[0]) : ['id', 'created_at', 'customer', 'status'];
   const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, 'laporan_open_order.csv');
 }
