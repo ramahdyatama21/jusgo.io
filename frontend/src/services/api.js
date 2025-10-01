@@ -211,6 +211,7 @@ export const removeStock = async (productId, qty, description) => {
       p_quantity: qty
     });
     if (updateError) {
+      console.error('Supabase RPC decrement_stock error:', updateError);
       // Rollback movement if stock update fails
       try {
         await supabase
