@@ -1,17 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getProducts, createTransaction } from '../services/api';
 
 const POS = () => {
   const [cart, setCart] = useState([]);
-  const [products] = useState([
-    { id: 1, name: 'Kopi Hitam', price: 15000, stock: 50 },
-    { id: 2, name: 'Nasi Goreng', price: 25000, stock: 25 },
-    { id: 3, name: 'Teh Manis', price: 8000, stock: 100 },
-    { id: 4, name: 'Mie Ayam', price: 20000, stock: 15 }
-  ]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await getProducts();
+      setProducts(data || []);
+      setError(null);
+    } catch (err) {
+      console.error('Error loading products:', err);
+      setError('Gagal memuat data produk');
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const addToCart = (product) => {
+    if (product.stock <= 0) {
+      alert('Stok produk habis!');
+      return;
+    }
+
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
+      // Check if adding one more would exceed stock
+      if (existingItem.quantity >= product.stock) {
+        alert(`Stok tidak mencukupi! Stok tersedia: ${product.stock}`);
+        return;
+      }
       setCart(cart.map(item => 
         item.id === product.id 
           ? { ...item, quantity: item.quantity + 1 }
@@ -30,6 +56,11 @@ const POS = () => {
     if (quantity <= 0) {
       removeFromCart(productId);
     } else {
+      const product = products.find(p => p.id === productId);
+      if (product && quantity > product.stock) {
+        alert(`Stok tidak mencukupi! Stok tersedia: ${product.stock}`);
+        return;
+      }
       setCart(cart.map(item => 
         item.id === productId 
           ? { ...item, quantity }
@@ -42,12 +73,39 @@ const POS = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
   
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (cart.length === 0) return;
     
-    // Simulate checkout
-    alert(`Transaksi berhasil! Total: Rp ${getTotal().toLocaleString()}`);
-    setCart([]);
+    try {
+      const transactionData = {
+        items: cart.map(item => ({
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          qty: item.quantity,
+          subtotal: item.price * item.quantity
+        })),
+        subtotal: getTotal(),
+        discount: 0,
+        total: getTotal(),
+        paymentMethod: 'tunai',
+        notes: ''
+      };
+
+      const result = await createTransaction(transactionData);
+      
+      if (result && result.id) {
+        alert(`Transaksi berhasil! ID: ${result.id}\nTotal: Rp ${getTotal().toLocaleString()}`);
+        setCart([]);
+        // Refresh products to update stock
+        loadProducts();
+      } else {
+        throw new Error('Transaksi gagal');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert(`Error: ${error.message || 'Gagal memproses transaksi'}`);
+    }
   };
   
   return (
@@ -62,32 +120,85 @@ const POS = () => {
         <div className="card">
           <div className="card-header">
             <h3 className="card-title">Daftar Produk</h3>
+            <button 
+              className="btn btn-secondary" 
+              onClick={loadProducts}
+              style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+            >
+              Refresh
+            </button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-            {products.map((product) => (
-              <div key={product.id} style={{ 
-                border: '1px solid #e5e7eb', 
-                borderRadius: '0.5rem', 
-                padding: '1rem',
-                textAlign: 'center'
-              }}>
-                <h4 style={{ marginBottom: '0.5rem' }}>{product.name}</h4>
-                <p style={{ color: '#3b82f6', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                  Rp {product.price.toLocaleString()}
-                </p>
-                <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '1rem' }}>
-                  Stok: {product.stock}
-                </p>
-                <button 
-                  className="btn btn-primary"
-                  onClick={() => addToCart(product)}
-                  style={{ width: '100%' }}
-                >
-                  Tambah ke Keranjang
-                </button>
-              </div>
-            ))}
-          </div>
+          
+          {loading ? (
+            <div className="loading">
+              <div className="spinner"></div>
+              <p>Memuat data produk...</p>
+            </div>
+          ) : error ? (
+            <div className="alert alert-error">
+              {error}
+              <button 
+                className="btn btn-primary" 
+                onClick={loadProducts}
+                style={{ marginTop: '1rem' }}
+              >
+                Coba Lagi
+              </button>
+            </div>
+          ) : products.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+              <p>Tidak ada produk tersedia</p>
+              <button 
+                className="btn btn-primary" 
+                onClick={loadProducts}
+                style={{ marginTop: '1rem' }}
+              >
+                Refresh
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+              {products.map((product) => (
+                <div key={product.id} style={{ 
+                  border: '1px solid #e5e7eb', 
+                  borderRadius: '0.5rem', 
+                  padding: '1rem',
+                  textAlign: 'center'
+                }}>
+                  <h4 style={{ marginBottom: '0.5rem' }}>{product.name}</h4>
+                  {product.category && (
+                    <p style={{ color: '#6b7280', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+                      {product.category}
+                    </p>
+                  )}
+                  <p style={{ color: '#3b82f6', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                    Rp {product.price.toLocaleString()}
+                  </p>
+                  <p style={{ 
+                    color: product.stock <= (product.minStock || 5) ? '#ef4444' : '#64748b', 
+                    fontSize: '0.875rem', 
+                    marginBottom: '1rem',
+                    fontWeight: product.stock <= (product.minStock || 5) ? 'bold' : 'normal'
+                  }}>
+                    Stok: {product.stock}
+                    {product.stock <= (product.minStock || 5) && ' (Stok Rendah)'}
+                  </p>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => addToCart(product)}
+                    disabled={product.stock <= 0}
+                    style={{ 
+                      width: '100%',
+                      opacity: product.stock <= 0 ? 0.5 : 1,
+                      cursor: product.stock <= 0 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    {product.stock <= 0 ? 'Stok Habis' : 'Tambah ke Keranjang'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         
         {/* Shopping Cart */}
@@ -178,9 +289,14 @@ const POS = () => {
                 <button 
                   className="btn btn-success"
                   onClick={handleCheckout}
-                  style={{ width: '100%' }}
+                  disabled={cart.length === 0}
+                  style={{ 
+                    width: '100%',
+                    opacity: cart.length === 0 ? 0.5 : 1,
+                    cursor: cart.length === 0 ? 'not-allowed' : 'pointer'
+                  }}
                 >
-                  Proses Pembayaran
+                  {cart.length === 0 ? 'Keranjang Kosong' : 'Proses Pembayaran'}
                 </button>
               </div>
             </>
