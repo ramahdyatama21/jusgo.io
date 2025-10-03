@@ -50,15 +50,8 @@ const Sidebar = () => {
     <div className="w-70 bg-slate-800 text-white fixed h-screen overflow-y-auto z-50 shadow-lg border-r border-slate-700">
       <div className="p-6 border-b border-slate-700 bg-slate-800 flex items-center justify-center">
         <div className="flex items-center space-x-2">
-          <img 
-            src="/assets/logos/JUSGO-16.svg" 
-            alt="JusGo Logo" 
-            className="h-8 w-auto"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
+          <h1 className="text-2xl font-bold text-orange-500">JusGo</h1>
+          <span className="text-sm font-medium text-slate-300">:)</span>
         </div>
       </div>
 
