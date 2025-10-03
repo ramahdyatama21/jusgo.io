@@ -52,7 +52,7 @@ const Sidebar = () => {
         <div className="flex items-center space-x-2">
           <img 
             src="/assets/logos/jusgo-16" 
-            alt="JusGor Logo" 
+            alt="JusGo Logo" 
             className="h-8 w-auto"
             onError={(e) => {
               e.target.style.display = 'none';
