@@ -25,62 +25,109 @@ export default function RiwayatTransaksi() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Riwayat Transaksi</h1>
-      <div className="bg-white rounded-lg shadow p-4 overflow-x-auto">
-        <h2 className="text-xl font-bold mb-4">Daftar Semua Transaksi</h2>
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Riwayat Transaksi</h1>
+        <p className="page-subtitle">Lihat semua transaksi yang telah dilakukan</p>
+      </div>
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Daftar Semua Transaksi</h3>
+        </div>
         {riwayat.length === 0 ? (
-          <div className="text-gray-500 text-center py-8">Belum ada transaksi</div>
+          <div style={{ color: '#64748b', textAlign: 'center', padding: '2rem' }}>Belum ada transaksi</div>
         ) : (
-          <table className="min-w-full text-sm border border-gray-200 rounded-lg">
-            <thead className="bg-blue-50 sticky top-0 z-10">
-              <tr>
-                <th className="px-4 py-3 border-b text-left">Waktu Transaksi</th>
-                <th className="px-4 py-3 border-b text-left">Customer</th>
-                <th className="px-4 py-3 border-b text-left">Pesanan</th>
-                <th className="px-4 py-3 border-b text-left">Catatan</th>
-                <th className="px-4 py-3 border-b text-center">Sumber</th>
-                <th className="px-4 py-3 border-b text-center">Status</th>
-                <th className="px-4 py-3 border-b text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {riwayat.map((order, idx) => (
-                <tr key={order.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50 hover:bg-blue-50'}>
-                  <td className="px-4 py-3 border-b align-top whitespace-nowrap">
-                    {(order.created_at || order.createdAt)
-                      ? new Date(order.created_at || order.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
-                      : '-'}
-                  </td>
-                  <td className="px-4 py-3 border-b align-top whitespace-nowrap">{order.customer || '-'}</td>
-                  <td className="px-4 py-3 border-b align-top">
-                    <ul className="list-disc pl-5 space-y-1">
-                      {(order.items || []).map((item, i) => (
-                        <li key={i}>{item.name} <span className="text-xs text-gray-500">x {item.qty}</span></li>
-                      ))}
-                    </ul>
-                  </td>
-                  <td className="px-4 py-3 border-b align-top">{order.notes || '-'}</td>
-                  <td className="px-4 py-3 border-b align-top text-center">
-                    {order.status === 'pos' ? (
-                      <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold">POS</span>
-                    ) : order.status === 'open' || order.status === 'open_order' ? (
-                      <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">Open Order</span>
-                    ) : (
-                      <span className="inline-block bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-semibold">{order.status || '-'}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 border-b align-top text-center">
-                    {order.status === 'pos' ? (
-                      <span className="inline-block bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold">Lunas</span>
-                    ) : (
-                      <span className="inline-block bg-green-600 text-white px-2 py-1 rounded text-xs font-semibold">Terkirim</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 border-b align-top text-center">
-                    <button
-                      type="button"
-                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
+          <div style={{ overflowX: 'auto' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Waktu Transaksi</th>
+                  <th>Customer</th>
+                  <th>Pesanan</th>
+                  <th>Catatan</th>
+                  <th style={{ textAlign: 'center' }}>Sumber</th>
+                  <th style={{ textAlign: 'center' }}>Status</th>
+                  <th style={{ textAlign: 'center' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {riwayat.map((order, idx) => (
+                  <tr key={order.id} style={{ backgroundColor: idx % 2 === 0 ? 'white' : '#f9fafb' }}>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      {(order.created_at || order.createdAt)
+                        ? new Date(order.created_at || order.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
+                        : '-'}
+                    </td>
+                    <td style={{ whiteSpace: 'nowrap' }}>{order.customer || '-'}</td>
+                    <td>
+                      <ul style={{ listStyleType: 'disc', paddingLeft: '1.25rem' }}>
+                        {(order.items || []).map((item, i) => (
+                          <li key={i}>{item.name} <span style={{ fontSize: '0.75rem', color: '#64748b' }}>x {item.qty}</span></li>
+                        ))}
+                      </ul>
+                    </td>
+                    <td>{order.notes || '-'}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      {order.status === 'pos' ? (
+                        <span style={{
+                          display: 'inline-block',
+                          backgroundColor: '#dbeafe',
+                          color: '#1d4ed8',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '0.25rem',
+                          fontSize: '0.75rem',
+                          fontWeight: '600'
+                        }}>POS</span>
+                      ) : order.status === 'open' || order.status === 'open_order' ? (
+                        <span style={{
+                          display: 'inline-block',
+                          backgroundColor: '#dcfce7',
+                          color: '#166534',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '0.25rem',
+                          fontSize: '0.75rem',
+                          fontWeight: '600'
+                        }}>Open Order</span>
+                      ) : (
+                        <span style={{
+                          display: 'inline-block',
+                          backgroundColor: '#e5e7eb',
+                          color: '#374151',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '0.25rem',
+                          fontSize: '0.75rem',
+                          fontWeight: '600'
+                        }}>{order.status || '-'}</span>
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {order.status === 'pos' ? (
+                        <span style={{
+                          display: 'inline-block',
+                          backgroundColor: '#2563eb',
+                          color: 'white',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '0.25rem',
+                          fontSize: '0.75rem',
+                          fontWeight: '600'
+                        }}>Lunas</span>
+                      ) : (
+                        <span style={{
+                          display: 'inline-block',
+                          backgroundColor: '#16a34a',
+                          color: 'white',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '0.25rem',
+                          fontSize: '0.75rem',
+                          fontWeight: '600'
+                        }}>Terkirim</span>
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        style={{ fontSize: '0.75rem' }}
                       onClick={() => {
                         const formatRupiah = n => n.toLocaleString('id-ID', { minimumFractionDigits: 0 });
                         const tgl = (order.sentAt || order.created_at || order.createdAt || '').replace(/\D/g, '').slice(0,12);
@@ -135,6 +182,7 @@ export default function RiwayatTransaksi() {
               ))}
             </tbody>
           </table>
+        </div>
         )}
       </div>
     </div>

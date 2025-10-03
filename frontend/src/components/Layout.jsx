@@ -13,6 +13,12 @@ const Layout = () => {
     { path: '/pos', label: 'Kasir', icon: '💰' },
     { path: '/transactions', label: 'Transaksi', icon: '📋' },
     { path: '/reports', label: 'Laporan', icon: '📈' },
+    { path: '/stock', label: 'Stok', icon: '📦' },
+    { path: '/open-order', label: 'Open Order', icon: '📝' },
+    { path: '/belanja-bahan', label: 'Belanja Bahan', icon: '🛒' },
+    { path: '/kalkulator-hpp', label: 'Kalkulator HPP', icon: '🧮' },
+    { path: '/promo', label: 'Promo', icon: '🎁' },
+    { path: '/riwayat-transaksi', label: 'Riwayat', icon: '📜' },
   ];
   
   const handleLogout = () => {

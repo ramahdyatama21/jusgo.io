@@ -86,60 +86,84 @@ export default function Stock() {
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Manajemen Stok</h1>
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Manajemen Stok</h1>
+        <p className="page-subtitle">Kelola stok produk dan pergerakan barang</p>
+      </div>
 
       {/* Daftar Produk */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Daftar Produk</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Daftar Produk</h3>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="table">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok Saat Ini</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Min. Stok</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                <th>Produk</th>
+                <th>SKU</th>
+                <th>Stok Saat Ini</th>
+                <th>Min. Stok</th>
+                <th>Status</th>
+                <th>Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {products.map((product) => (
-                <tr key={product.id} className={product.stock <= product.minStock ? 'bg-red-50' : ''}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                <tr key={product.id} style={{ backgroundColor: product.stock <= product.minStock ? '#fef2f2' : '' }}>
+                  <td>
+                    <div style={{ fontWeight: '500' }}>{product.name}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.sku}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-sm font-bold ${product.stock <= product.minStock ? 'text-red-600' : 'text-gray-900'}`}>
+                  <td>{product.sku}</td>
+                  <td>
+                    <span style={{ 
+                      fontWeight: 'bold', 
+                      color: product.stock <= product.minStock ? '#dc2626' : '#1e293b' 
+                    }}>
                       {product.stock} {product.unit}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td>
                     {product.minStock} {product.unit}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td>
                     {product.stock <= product.minStock ? (
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                      <span style={{
+                        padding: '0.25rem 0.5rem',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        borderRadius: '9999px',
+                        backgroundColor: '#fecaca',
+                        color: '#991b1b'
+                      }}>
                         Stok Rendah
                       </span>
                     ) : (
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                      <span style={{
+                        padding: '0.25rem 0.5rem',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        borderRadius: '9999px',
+                        backgroundColor: '#dcfce7',
+                        color: '#166534'
+                      }}>
                         Normal
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                  <td>
                     <button
                       onClick={() => openModal('in', product)}
-                      className="text-green-600 hover:text-green-900 font-medium"
+                      className="btn btn-success"
+                      style={{ marginRight: '0.5rem', fontSize: '0.875rem' }}
                     >
                       + Masuk
                     </button>
                     <button
                       onClick={() => openModal('out', product)}
-                      className="text-red-600 hover:text-red-900 font-medium"
+                      className="btn btn-danger"
+                      style={{ fontSize: '0.875rem' }}
                     >
                       - Keluar
                     </button>
@@ -152,48 +176,64 @@ export default function Stock() {
       </div>
 
       {/* Riwayat Stok */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Riwayat Pergerakan Stok</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Riwayat Pergerakan Stok</h3>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="table">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keterangan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Oleh</th>
+                <th>Waktu</th>
+                <th>Produk</th>
+                <th>Tipe</th>
+                <th>Jumlah</th>
+                <th>Keterangan</th>
+                <th>Oleh</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {movements.map((movement) => (
                 <tr key={movement.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td>
                     {formatDate(movement.created_at)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{movement.product?.name || '-'}</div>
-                    <div className="text-sm text-gray-500">{movement.product?.sku || ''}</div>
+                  <td>
+                    <div style={{ fontWeight: '500' }}>{movement.product?.name || '-'}</div>
+                    <div style={{ color: '#64748b', fontSize: '0.875rem' }}>{movement.product?.sku || ''}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td>
                     {movement.type === 'in' ? (
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                      <span style={{
+                        padding: '0.25rem 0.5rem',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        borderRadius: '9999px',
+                        backgroundColor: '#dcfce7',
+                        color: '#166534'
+                      }}>
                         Masuk
                       </span>
                     ) : (
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                      <span style={{
+                        padding: '0.25rem 0.5rem',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        borderRadius: '9999px',
+                        backgroundColor: '#fecaca',
+                        color: '#991b1b'
+                      }}>
                         Keluar
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td>
                     {movement.qty} {movement.product?.unit || ''}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
+                  <td>
                     {movement.description || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td>
                     -
                   </td>
                 </tr>
@@ -205,75 +245,93 @@ export default function Stock() {
 
       {/* Modal Form Stok */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+          padding: '1rem'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '0.5rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            maxWidth: '28rem',
+            width: '100%'
+          }}>
+            <div style={{ padding: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '1rem' }}>
                 {modalType === 'in' ? 'Stok Masuk' : 'Stok Keluar'}
               </h2>
               
-              <div className="space-y-4">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Produk</label>
+                  <label className="form-label">Produk</label>
                   <input
                     type="text"
                     value={selectedProduct?.name || ''}
                     disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                    className="form-input"
+                    style={{ backgroundColor: '#f3f4f6' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Stok Saat Ini</label>
+                  <label className="form-label">Stok Saat Ini</label>
                   <input
                     type="text"
                     value={`${selectedProduct?.stock || 0} ${selectedProduct?.unit || ''}`}
                     disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                    className="form-input"
+                    style={{ backgroundColor: '#f3f4f6' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
+                  <label className="form-label">Jumlah</label>
                   <input
                     type="number"
                     value={qty}
                     onChange={(e) => setQty(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="form-input"
                     min="1"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
+                  <label className="form-label">Keterangan</label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="form-input"
                     rows="3"
                     placeholder="Opsional"
+                    style={{ resize: 'vertical' }}
                   />
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: '1rem' }}>
                   <button
                     onClick={() => {
                       setShowModal(false);
                       resetForm();
                     }}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                    className="btn btn-secondary"
                   >
                     Batal
                   </button>
                   <button
                     onClick={handleStockAction}
                     disabled={loading}
-                    className={`px-4 py-2 rounded-lg text-white ${
-                      modalType === 'in' 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-red-600 hover:bg-red-700'
-                    } disabled:bg-gray-400`}
+                    className={`btn ${modalType === 'in' ? 'btn-success' : 'btn-danger'}`}
+                    style={{ opacity: loading ? 0.6 : 1 }}
                   >
                     {loading ? 'Memproses...' : 'Simpan'}
                   </button>

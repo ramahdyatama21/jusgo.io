@@ -84,76 +84,96 @@ export default function BelanjaBahan() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-6 mt-8">
-      <h1 className="text-2xl font-bold mb-4 text-blue-700">Belanja Bahan & Resep</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 mb-8">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label>
-          <input type="text" value={form.namaProduk} onChange={e => setForm({ ...form, namaProduk: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Belanja Bahan & Resep</h1>
+        <p className="page-subtitle">Kelola resep dan hitung kebutuhan bahan</p>
+      </div>
+      
+      <div className="card">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+          <div className="form-group">
+            <label className="form-label">Nama Produk</label>
+            <input type="text" value={form.namaProduk} onChange={e => setForm({ ...form, namaProduk: e.target.value })} className="form-input" required />
+          </div>
+          <div>
+            <label className="form-label">Daftar Bahan</label>
+            {form.bahan.map((b, i) => (
+              <div key={i} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <input type="text" placeholder="Nama Bahan" value={b.nama} onChange={e => handleBahanChange(i, 'nama', e.target.value)} className="form-input" required />
+                <input type="number" placeholder="Qty per Produk" value={b.qty} onChange={e => handleBahanChange(i, 'qty', e.target.value)} className="form-input" style={{ width: '8rem' }} min="0" required />
+                {form.bahan.length > 1 && <button type="button" onClick={() => handleRemoveBahan(i)} className="btn btn-danger" style={{ fontSize: '0.875rem' }}>Hapus</button>}
+              </div>
+            ))}
+            <button type="button" onClick={handleAddBahan} className="btn btn-primary" style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>Tambah Bahan</button>
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.5rem' }}>
+            <button type="submit" className="btn btn-primary">{editIdx !== null ? 'Update' : 'Tambah'} Resep</button>
+            {editIdx !== null && (
+              <button type="button" onClick={() => { setEditIdx(null); setForm({ namaProduk: '', bahan: [{ nama: '', qty: '' }] }); }} className="btn btn-secondary">Batal</button>
+            )}
+          </div>
+        </form>
+      </div>
+      
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Daftar Resep Produk</h3>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Daftar Bahan</label>
-          {form.bahan.map((b, i) => (
-            <div key={i} className="flex space-x-2 mb-2">
-              <input type="text" placeholder="Nama Bahan" value={b.nama} onChange={e => handleBahanChange(i, 'nama', e.target.value)} className="px-2 py-1 border border-gray-300 rounded-lg" required />
-              <input type="number" placeholder="Qty per Produk" value={b.qty} onChange={e => handleBahanChange(i, 'qty', e.target.value)} className="w-32 px-2 py-1 border border-gray-300 rounded-lg" min="0" required />
-              {form.bahan.length > 1 && <button type="button" onClick={() => handleRemoveBahan(i)} className="text-red-600 hover:text-red-800">Hapus</button>}
-            </div>
-          ))}
-          <button type="button" onClick={handleAddBahan} className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 mt-2">Tambah Bahan</button>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Produk</th>
+                <th>Bahan</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resep.map((r, i) => (
+                <tr key={i}>
+                  <td>{r.namaProduk}</td>
+                  <td>
+                    <ul style={{ listStyleType: 'disc', paddingLeft: '1rem' }}>
+                      {r.bahan.map((b, j) => (
+                        <li key={j}>{b.nama} x {b.qty}</li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td style={{ textAlign: 'center' }}>
+                    <button onClick={() => handleEdit(i)} className="btn btn-secondary" style={{ marginRight: '0.5rem', fontSize: '0.875rem' }}>Edit</button>
+                    <button onClick={() => handleDelete(i)} className="btn btn-danger" style={{ fontSize: '0.875rem' }}>Hapus</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <div className="flex space-x-3 pt-2">
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">{editIdx !== null ? 'Update' : 'Tambah'} Resep</button>
-          {editIdx !== null && (
-            <button type="button" onClick={() => { setEditIdx(null); setForm({ namaProduk: '', bahan: [{ nama: '', qty: '' }] }); }} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Batal</button>
-          )}
+      </div>
+      
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Kebutuhan Belanja Bahan (berdasarkan Open Order)</h3>
         </div>
-      </form>
-      <h2 className="text-lg font-bold mb-2">Daftar Resep Produk</h2>
-      <table className="w-full text-sm border mb-8">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-2 py-1 border">Produk</th>
-            <th className="px-2 py-1 border">Bahan</th>
-            <th className="px-2 py-1 border">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {resep.map((r, i) => (
-            <tr key={i}>
-              <td className="border px-2 py-1">{r.namaProduk}</td>
-              <td className="border px-2 py-1">
-                <ul className="list-disc pl-4">
-                  {r.bahan.map((b, j) => (
-                    <li key={j}>{b.nama} x {b.qty}</li>
-                  ))}
-                </ul>
-              </td>
-              <td className="border px-2 py-1 text-center">
-                <button onClick={() => handleEdit(i)} className="text-blue-600 hover:text-blue-900 mr-2">Edit</button>
-                <button onClick={() => handleDelete(i)} className="text-red-600 hover:text-red-900">Hapus</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <h2 className="text-lg font-bold mb-2">Kebutuhan Belanja Bahan (berdasarkan Open Order)</h2>
-      <table className="w-full text-sm border">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-2 py-1 border">Nama Bahan</th>
-            <th className="px-2 py-1 border">Total Qty</th>
-          </tr>
-        </thead>
-        <tbody>
-          {kebutuhan.map((b, i) => (
-            <tr key={i}>
-              <td className="border px-2 py-1">{b.nama}</td>
-              <td className="border px-2 py-1 text-right">{b.qty}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Nama Bahan</th>
+                <th>Total Qty</th>
+              </tr>
+            </thead>
+            <tbody>
+              {kebutuhan.map((b, i) => (
+                <tr key={i}>
+                  <td>{b.nama}</td>
+                  <td style={{ textAlign: 'right' }}>{b.qty}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

@@ -259,101 +259,145 @@ export default function OpenOrder() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800">Open Order</h1>
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Open Order</h1>
+        <p className="page-subtitle">Kelola pesanan yang belum selesai</p>
+      </div>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div></div>
         <button
           onClick={() => setShowForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="btn btn-primary"
         >
           + Tambah Order
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-lg shadow p-6 mb-4">
-          <h2 className="text-xl font-bold mb-2">Order Baru</h2>
-          <form onSubmit={handleSaveOrder} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nama Customer</label>
+        <div className="card" style={{ marginBottom: '1.5rem' }}>
+          <div className="card-header">
+            <h3 className="card-title">Order Baru</h3>
+          </div>
+          <form onSubmit={handleSaveOrder} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="form-group">
+              <label className="form-label">Nama Customer</label>
               <input
                 type="text"
                 value={customer}
                 onChange={e => setCustomer(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                className="form-input"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Cari & Tambah Produk</label>
+              <label className="form-label">Cari & Tambah Produk</label>
               <input
                 type="text"
                 placeholder="Cari produk..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-2"
+                className="form-input"
+                style={{ marginBottom: '0.5rem' }}
               />
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                 {filteredProducts.map((product) => (
                   <button
                     key={product.id}
                     type="button"
                     onClick={() => addToCart(product)}
                     disabled={product.stock === 0}
-                    className={`p-4 border rounded-lg text-left hover:shadow-md transition ${
-                      product.stock === 0 ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-blue-500'
-                    }`}
+                    style={{
+                      padding: '1rem',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.5rem',
+                      textAlign: 'left',
+                      backgroundColor: product.stock === 0 ? '#f3f4f6' : 'white',
+                      cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
+                      opacity: product.stock === 0 ? 0.6 : 1
+                    }}
+                    onMouseEnter={(e) => {
+                      if (product.stock > 0) {
+                        e.target.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                        e.target.style.borderColor = '#3b82f6';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (product.stock > 0) {
+                        e.target.style.boxShadow = 'none';
+                        e.target.style.borderColor = '#e5e7eb';
+                      }
+                    }}
                   >
-                    <div className="font-medium text-gray-800 mb-1">{product.name}</div>
-                    <div className="text-sm text-gray-500 mb-2">{product.sku}</div>
-                    <div className="text-lg font-bold text-blue-600">{product.sellPrice.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</div>
-                    <div className={`text-sm ${product.stock <= product.minStock ? 'text-red-600' : 'text-gray-500'}`}>Stok: {product.stock}</div>
+                    <div style={{ fontWeight: '500', color: '#1e293b', marginBottom: '0.25rem' }}>{product.name}</div>
+                    <div style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>{product.sku}</div>
+                    <div style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#3b82f6' }}>{product.sellPrice.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</div>
+                    <div style={{ fontSize: '0.875rem', color: product.stock <= product.minStock ? '#dc2626' : '#64748b' }}>Stok: {product.stock}</div>
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-bold mb-2 mt-4">Keranjang</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', marginBottom: '0.5rem', marginTop: '1rem' }}>Keranjang</h3>
               {cart.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">Keranjang kosong</p>
+                <p style={{ color: '#64748b', textAlign: 'center', padding: '1rem' }}>Keranjang kosong</p>
               ) : (
-                <div className="space-y-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {cart.map((item) => (
-                    <div key={item.productId} className="border-b pb-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-800">{item.name}</div>
-                          <div className="text-sm text-gray-600">{item.price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</div>
+                    <div key={item.productId} style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '0.75rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '500', color: '#1e293b' }}>{item.name}</div>
+                          <div style={{ fontSize: '0.875rem', color: '#64748b' }}>{item.price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</div>
                         </div>
                         <button
                           type="button"
                           onClick={() => removeFromCart(item.productId)}
-                          className="text-red-600 hover:text-red-800"
+                          style={{ color: '#dc2626', cursor: 'pointer' }}
+                          onMouseEnter={(e) => e.target.style.color = '#991b1b'}
+                          onMouseLeave={(e) => e.target.style.color = '#dc2626'}
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
+                          ✕
                         </button>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <button
                             type="button"
                             onClick={() => updateQty(item.productId, item.qty - 1)}
-                            className="w-8 h-8 bg-gray-200 rounded hover:bg-gray-300"
+                            style={{
+                              width: '2rem',
+                              height: '2rem',
+                              backgroundColor: '#e5e7eb',
+                              borderRadius: '0.25rem',
+                              border: 'none',
+                              cursor: 'pointer'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#d1d5db'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#e5e7eb'}
                           >
                             -
                           </button>
-                          <span className="w-12 text-center">{item.qty}</span>
+                          <span style={{ width: '3rem', textAlign: 'center' }}>{item.qty}</span>
                           <button
                             type="button"
                             onClick={() => updateQty(item.productId, item.qty + 1)}
-                            className="w-8 h-8 bg-gray-200 rounded hover:bg-gray-300"
+                            style={{
+                              width: '2rem',
+                              height: '2rem',
+                              backgroundColor: '#e5e7eb',
+                              borderRadius: '0.25rem',
+                              border: 'none',
+                              cursor: 'pointer'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#d1d5db'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#e5e7eb'}
                           >
                             +
                           </button>
                         </div>
-                        <div className="font-bold text-gray-800">
+                        <div style={{ fontWeight: 'bold', color: '#1e293b' }}>
                           {(item.subtotal).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                         </div>
                       </div>
@@ -362,44 +406,44 @@ export default function OpenOrder() {
                 </div>
               )}
             </div>
-            <div className="flex justify-between font-bold border-t pt-2">
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderTop: '1px solid #e5e7eb', paddingTop: '0.5rem' }}>
               <span>Subtotal</span>
               <span>{cart.reduce((sum, item) => sum + item.subtotal, 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</span>
             </div>
-            <div className="flex justify-between font-bold">
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
               <span>Diskon</span>
-              <span className="text-red-600">- {diskon.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</span>
+              <span style={{ color: '#dc2626' }}>- {diskon.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</span>
             </div>
-            <div className="flex justify-between font-bold text-lg border-t pt-2">
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.125rem', borderTop: '1px solid #e5e7eb', paddingTop: '0.5rem' }}>
               <span>Total</span>
-              <span className="text-blue-600">{(cart.reduce((sum, item) => sum + item.subtotal, 0) - diskon).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</span>
+              <span style={{ color: '#3b82f6' }}>{(cart.reduce((sum, item) => sum + item.subtotal, 0) - diskon).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</span>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+            <div className="form-group">
+              <label className="form-label">Catatan</label>
               <input
                 type="text"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                className="form-input"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Diskon Manual (Rp)</label>
+            <div className="form-group">
+              <label className="form-label">Diskon Manual (Rp)</label>
               <input
                 type="number"
                 value={diskonManual}
                 onChange={e => setDiskonManual(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                className="form-input"
                 min="0"
                 disabled={!!promoDipilih}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Promo</label>
+            <div className="form-group">
+              <label className="form-label">Pilih Promo</label>
               <select
                 value={promoDipilih}
                 onChange={e => setPromoDipilih(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                className="form-input"
               >
                 <option value="">-- Tidak Pakai Promo --</option>
                 {promoList.map((p, i) => (
@@ -407,32 +451,35 @@ export default function OpenOrder() {
                 ))}
               </select>
             </div>
-            <div className="flex space-x-3">
-              <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700" disabled={cart.length === 0}>Simpan Order</button>
-              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Batal</button>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button type="submit" className="btn btn-primary" disabled={cart.length === 0}>Simpan Order</button>
+              <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary">Batal</button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow p-4">
-        <h2 className="text-xl font-bold mb-4">Daftar Open Order</h2>
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Daftar Open Order</h3>
+        </div>
         {orders.length === 0 ? (
-          <div className="text-gray-500 text-center py-8">Belum ada order terbuka</div>
+          <div style={{ color: '#64748b', textAlign: 'center', padding: '2rem' }}>Belum ada order terbuka</div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th>Waktu</th>
-                <th>Customer</th>
-                <th>Pesanan</th>
-                <th>Catatan</th>
-                <th>Status</th>
-                <th>Total Harga</th>
-                <th>Diskon</th>
-                <th className="text-center">Aksi</th>
-              </tr>
-            </thead>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Waktu</th>
+                  <th>Customer</th>
+                  <th>Pesanan</th>
+                  <th>Catatan</th>
+                  <th>Status</th>
+                  <th>Total Harga</th>
+                  <th>Diskon</th>
+                  <th style={{ textAlign: 'center' }}>Aksi</th>
+                </tr>
+              </thead>
             <tbody>
               {orders.map(order => (
                 <tr key={order.id}>
@@ -446,30 +493,33 @@ export default function OpenOrder() {
                     </ul>
                   </td>
                   <td>-</td>
-                  <td><span className="text-yellow-600 font-semibold">Open</span></td>
+                  <td><span style={{ color: '#d97706', fontWeight: '600' }}>Open</span></td>
                   <td>
                     {(typeof order.items === 'string' ? JSON.parse(order.items) : order.items).reduce((sum, item) => sum + (item.subtotal || (item.qty * item.price)), 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                   </td>
                   <td>-</td>
-                  <td className="text-center">
+                  <td style={{ textAlign: 'center' }}>
                     <button
                       type="button"
                       onClick={() => handleEditOrder(order)}
-                      className="inline-block text-blue-600 hover:text-blue-900 px-2 py-1 rounded transition border border-blue-100 hover:bg-blue-50 mr-2"
+                      className="btn btn-secondary"
+                      style={{ marginRight: '0.5rem', fontSize: '0.875rem' }}
                     >
                       Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDeleteOrder(order.id)}
-                      className="inline-block text-red-600 hover:text-red-900 px-2 py-1 rounded transition border border-red-100 hover:bg-red-50"
+                      className="btn btn-danger"
+                      style={{ marginRight: '0.5rem', fontSize: '0.875rem' }}
                     >
                       Hapus
                     </button>
                     <button
                       type="button"
                       onClick={() => handleSendOrder(order)}
-                      className="inline-block text-green-600 hover:text-green-900 px-2 py-1 rounded transition border border-green-100 hover:bg-green-50 ml-2"
+                      className="btn btn-success"
+                      style={{ fontSize: '0.875rem' }}
                     >
                       Kirim
                     </button>
@@ -477,7 +527,8 @@ export default function OpenOrder() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         )}
       </div>
     </div>
