@@ -461,12 +461,12 @@ export const getDashboardStats = async () => {
     // Products stats
     const [{ count: productsCount }, { data: lowStockList, error: lowErr }] = await Promise.all([
       supabase.from('products').select('*', { count: 'exact', head: true }),
-      supabase.from('products').select('id, stock, minStock').lte('stock', supabase.rpc ? undefined : 999999)
+      supabase.from('products').select('id, stock, min_stock').lte('stock', supabase.rpc ? undefined : 999999)
     ]);
     if (lowErr) console.error('Supabase low stock error:', lowErr);
 
     const lowStock = Array.isArray(lowStockList)
-      ? lowStockList.filter(p => typeof p.stock === 'number' && typeof p.minStock === 'number' && p.stock <= p.minStock).length
+      ? lowStockList.filter(p => typeof p.stock === 'number' && typeof p.min_stock === 'number' && p.stock <= p.min_stock).length
       : 0;
 
     return {
@@ -619,9 +619,9 @@ export async function exportOpenOrderCSV() {
 
 // Export Stock Report to CSV
 export async function exportStockReportCSV() {
-  const { data, error } = await supabase.from('products').select('id, name, stock, minStock, category');
+  const { data, error } = await supabase.from('products').select('id, name, stock, min_stock, category');
   const arr = Array.isArray(data) ? data : [];
-  const columns = ['id', 'name', 'stock', 'minStock', 'category'];
+  const columns = ['id', 'name', 'stock', 'min_stock', 'category'];
   const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, 'laporan_stok_barang.csv');
 }

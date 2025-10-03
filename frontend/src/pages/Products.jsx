@@ -11,14 +11,14 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     name: '',
-    sellPrice: '',
+    sell_price: '',
     stock: '',
     category: '',
     description: '',
     sku: '',
-    minStock: 5,
+    min_stock: 5,
     unit: 'pcs',
-    buyPrice: 0
+    buy_price: 0
   });
 
   // Load products on component mount
@@ -57,10 +57,10 @@ const Products = () => {
     try {
       const productData = {
         ...formData,
-        sellPrice: parseFloat(formData.sellPrice),
-        buyPrice: parseFloat(formData.buyPrice),
+        sell_price: parseFloat(formData.sell_price),
+        buy_price: parseFloat(formData.buy_price),
         stock: parseInt(formData.stock),
-        minStock: parseInt(formData.minStock)
+        min_stock: parseInt(formData.min_stock)
       };
 
       if (editingProduct) {
@@ -81,13 +81,13 @@ const Products = () => {
     setEditingProduct(product);
     setFormData({
       name: product.name || '',
-      sellPrice: product.sellPrice || '',
-      buyPrice: product.buyPrice || '',
+      sell_price: product.sell_price || '',
+      buy_price: product.buy_price || '',
       stock: product.stock || '',
       category: product.category || '',
       description: product.description || '',
       sku: product.sku || '',
-      minStock: product.minStock || 5,
+      min_stock: product.min_stock || 5,
       unit: product.unit || 'pcs'
     });
     setShowForm(true);
@@ -108,13 +108,13 @@ const Products = () => {
   const resetForm = () => {
     setFormData({
       name: '',
-      sellPrice: '',
-      buyPrice: '',
+      sell_price: '',
+      buy_price: '',
       stock: '',
       category: '',
       description: '',
       sku: '',
-      minStock: 5,
+      min_stock: 5,
       unit: 'pcs'
     });
     setEditingProduct(null);
@@ -215,8 +215,8 @@ const Products = () => {
                 <input
                   type="number"
                   className="form-input"
-                  value={formData.sellPrice}
-                  onChange={(e) => setFormData({...formData, sellPrice: e.target.value})}
+                  value={formData.sell_price}
+                  onChange={(e) => setFormData({...formData, sell_price: e.target.value})}
                   required
                 />
               </div>
@@ -225,8 +225,8 @@ const Products = () => {
                 <input
                   type="number"
                   className="form-input"
-                  value={formData.buyPrice}
-                  onChange={(e) => setFormData({...formData, buyPrice: e.target.value})}
+                  value={formData.buy_price}
+                  onChange={(e) => setFormData({...formData, buy_price: e.target.value})}
                 />
               </div>
               <div className="form-group">
@@ -244,8 +244,8 @@ const Products = () => {
                 <input
                   type="number"
                   className="form-input"
-                  value={formData.minStock}
-                  onChange={(e) => setFormData({...formData, minStock: e.target.value})}
+                  value={formData.min_stock}
+                  onChange={(e) => setFormData({...formData, min_stock: e.target.value})}
                   placeholder="5"
                 />
               </div>
@@ -336,21 +336,21 @@ const Products = () => {
                       )}
                     </td>
                     <td>{product.sku || '-'}</td>
-                    <td>Rp {product.sellPrice?.toLocaleString() || '0'}</td>
-                    <td>Rp {product.buyPrice?.toLocaleString() || '0'}</td>
+                    <td>Rp {product.sell_price?.toLocaleString() || '0'}</td>
+                    <td>Rp {product.buy_price?.toLocaleString() || '0'}</td>
                     <td>
                       <span style={{ 
-                        color: product.stock <= product.minStock ? '#ef4444' : '#10b981',
+                        color: product.stock <= product.min_stock ? '#ef4444' : '#10b981',
                         fontWeight: '500'
                       }}>
                         {product.stock || 0}
                       </span>
                     </td>
-                    <td>{product.minStock || 0}</td>
+                    <td>{product.min_stock || 0}</td>
                     <td>{product.unit || 'pcs'}</td>
                     <td>{product.category}</td>
                     <td>
-                      {product.stock <= product.minStock ? (
+                      {product.stock <= product.min_stock ? (
                         <span style={{
                           padding: '0.25rem 0.5rem',
                           fontSize: '0.75rem',

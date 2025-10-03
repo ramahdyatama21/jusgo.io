@@ -175,13 +175,13 @@ const POS = () => {
                     Rp {(product.price || 0).toLocaleString()}
                   </p>
                   <p style={{ 
-                    color: product.stock <= (product.minStock || 5) ? '#ef4444' : '#64748b', 
+                    color: product.stock <= (product.min_stock || 5) ? '#ef4444' : '#64748b', 
                     fontSize: '0.875rem', 
                     marginBottom: '1rem',
-                    fontWeight: product.stock <= (product.minStock || 5) ? 'bold' : 'normal'
+                    fontWeight: product.stock <= (product.min_stock || 5) ? 'bold' : 'normal'
                   }}>
                     Stok: {product.stock}
-                    {product.stock <= (product.minStock || 5) && ' (Stok Rendah)'}
+                    {product.stock <= (product.min_stock || 5) && ' (Stok Rendah)'}
                   </p>
                   <button 
                     className="btn btn-primary"
