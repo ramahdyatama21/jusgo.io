@@ -2,80 +2,78 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../services/supabase';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
-
-    try {
-      // Supabase Auth login
-      const { data, error: supaError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      if (supaError) {
-        setError(supaError.message);
-      } else if (data.session) {
-        localStorage.setItem('supabase_session', JSON.stringify(data.session));
-        localStorage.setItem('supabase_user', JSON.stringify(data.user));
+    
+    // Simple mock login
+    if (email && password) {
+      // Simulate login
+      localStorage.setItem('supabase_user', JSON.stringify({
+        email: email,
+        role: 'admin'
+      }));
+      
+      setTimeout(() => {
+        setLoading(false);
         navigate('/dashboard');
-      } else {
-        setError('Login gagal.');
-      }
-    } catch (err) {
-      setError('Terjadi kesalahan. Silakan coba lagi.');
-    } finally {
+      }, 1000);
+    } else {
       setLoading(false);
+      alert('Email dan password harus diisi');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">POS System</h1>
-          <p className="text-gray-600 mt-2">Sistem Kasir & Inventory</p>
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }}>
+      <div style={{
+        background: 'white',
+        padding: '40px',
+        borderRadius: '10px',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+        width: '100%',
+        maxWidth: '400px'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', marginBottom: '10px' }}>
+            POS System
+          </h1>
+          <p style={{ color: '#6b7280' }}>Masuk ke akun Anda</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
+        <form onSubmit={handleLogin}>
+          <div className="form-group">
+            <label className="form-label">Email</label>
             <input
               type="email"
+              className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Masukkan email"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
+          <div className="form-group">
+            <label className="form-label">Password</label>
             <input
               type="password"
+              className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Masukkan password"
               required
             />
@@ -83,15 +81,26 @@ export default function Login() {
 
           <button
             type="submit"
+            className="btn"
+            style={{ width: '100%', marginTop: '20px' }}
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400"
           >
-            {loading ? 'Loading...' : 'Login'}
+            {loading ? 'Memproses...' : 'Masuk'}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>Copyright@Jusgo.id</p>
+        <div style={{ 
+          marginTop: '20px', 
+          padding: '15px', 
+          background: '#f0f9ff', 
+          borderRadius: '6px',
+          border: '1px solid #bae6fd'
+        }}>
+          <p style={{ fontSize: '14px', color: '#0369a1', margin: '0' }}>
+            <strong>Demo Login:</strong><br />
+            Email: admin@example.com<br />
+            Password: password
+          </p>
         </div>
       </div>
     </div>
