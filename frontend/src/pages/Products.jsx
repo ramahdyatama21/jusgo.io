@@ -17,8 +17,7 @@ const Products = () => {
     description: '',
     sku: '',
     min_stock: 5,
-    unit: 'pcs',
-    buy_price: 0
+    unit: 'pcs'
   });
 
   // Load products on component mount
@@ -58,7 +57,7 @@ const Products = () => {
       const productData = {
         ...formData,
         sell_price: parseFloat(formData.sell_price),
-        buy_price: parseFloat(formData.buy_price),
+        buy_price: 0, // Harga beli akan diisi otomatis dari bahan belanja
         stock: parseInt(formData.stock),
         min_stock: parseInt(formData.min_stock)
       };
@@ -82,7 +81,6 @@ const Products = () => {
     setFormData({
       name: product.name || '',
       sell_price: product.sell_price || '',
-      buy_price: product.buy_price || '',
       stock: product.stock || '',
       category: product.category || '',
       description: product.description || '',
@@ -109,7 +107,6 @@ const Products = () => {
     setFormData({
       name: '',
       sell_price: '',
-      buy_price: '',
       stock: '',
       category: '',
       description: '',
@@ -221,15 +218,6 @@ const Products = () => {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Harga Beli</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  value={formData.buy_price}
-                  onChange={(e) => setFormData({...formData, buy_price: e.target.value})}
-                />
-              </div>
-              <div className="form-group">
                 <label className="form-label">Stok</label>
                 <input
                   type="number"
@@ -308,7 +296,6 @@ const Products = () => {
                 <th>Nama Produk</th>
                 <th>SKU</th>
                 <th>Harga Jual</th>
-                <th>Harga Beli</th>
                 <th>Stok</th>
                 <th>Min. Stok</th>
                 <th>Satuan</th>
@@ -337,7 +324,6 @@ const Products = () => {
                     </td>
                     <td>{product.sku || '-'}</td>
                     <td>Rp {product.sell_price?.toLocaleString() || '0'}</td>
-                    <td>Rp {product.buy_price?.toLocaleString() || '0'}</td>
                     <td>
                       <span style={{ 
                         color: product.stock <= product.min_stock ? '#ef4444' : '#10b981',

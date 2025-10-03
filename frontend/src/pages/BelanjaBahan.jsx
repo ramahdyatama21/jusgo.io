@@ -1,5 +1,7 @@
 // frontend/src/pages/BelanjaBahan.jsx
 import { useState, useEffect } from 'react';
+import { getProducts } from '../services/api';
+import { saveBelanjaBahan, getBelanjaBahanHistory } from '../services/belanjaBahanService';
 
 export default function BelanjaBahan() {
   const [resep, setResep] = useState([]);
@@ -7,13 +9,106 @@ export default function BelanjaBahan() {
   const [editIdx, setEditIdx] = useState(null);
   const [openOrders, setOpenOrders] = useState([]);
   const [kebutuhan, setKebutuhan] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [belanjaForm, setBelanjaForm] = useState({
+    supplier: '',
+    items: [{ bahan_name: '', qty: 0, buy_price: 0, total: 0 }],
+    total: 0,
+    notes: ''
+  });
+  const [belanjaHistory, setBelanjaHistory] = useState([]);
 
   useEffect(() => {
     const data = localStorage.getItem('resepList');
     setResep(data ? JSON.parse(data) : []);
     const oo = localStorage.getItem('openOrders');
     setOpenOrders(oo ? JSON.parse(oo) : []);
+    loadProducts();
+    loadBelanjaHistory();
   }, []);
+
+  const loadProducts = async () => {
+    try {
+      const data = await getProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    }
+  };
+
+  const loadBelanjaHistory = async () => {
+    try {
+      const data = await getBelanjaBahanHistory();
+      setBelanjaHistory(data);
+    } catch (error) {
+      console.error('Error loading belanja history:', error);
+    }
+  };
+
+  // Handle bahan belanja
+  const handleBelanjaItemChange = (index, field, value) => {
+    const newItems = [...belanjaForm.items];
+    newItems[index][field] = value;
+    
+    // Calculate total for this item
+    if (field === 'qty' || field === 'buy_price') {
+      newItems[index].total = (newItems[index].qty || 0) * (newItems[index].buy_price || 0);
+    }
+    
+    setBelanjaForm({
+      ...belanjaForm,
+      items: newItems,
+      total: newItems.reduce((sum, item) => sum + item.total, 0)
+    });
+  };
+
+  const addBelanjaItem = () => {
+    setBelanjaForm({
+      ...belanjaForm,
+      items: [...belanjaForm.items, { bahan_name: '', qty: 0, buy_price: 0, total: 0 }]
+    });
+  };
+
+  const removeBelanjaItem = (index) => {
+    const newItems = belanjaForm.items.filter((_, i) => i !== index);
+    setBelanjaForm({
+      ...belanjaForm,
+      items: newItems,
+      total: newItems.reduce((sum, item) => sum + item.total, 0)
+    });
+  };
+
+  const handleBelanjaSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const belanjaData = {
+        supplier: belanjaForm.supplier,
+        items: belanjaForm.items,
+        total: belanjaForm.total,
+        notes: belanjaForm.notes,
+        created_at: new Date().toISOString()
+      };
+      
+      await saveBelanjaBahan(belanjaData);
+      
+      // Reset form
+      setBelanjaForm({
+        supplier: '',
+        items: [{ bahan_name: '', qty: 0, buy_price: 0, total: 0 }],
+        total: 0,
+        notes: ''
+      });
+      
+      // Reload data
+      await loadProducts();
+      await loadBelanjaHistory();
+      
+      alert('Bahan belanja berhasil disimpan dan harga beli produk telah diupdate!');
+    } catch (error) {
+      console.error('Error saving belanja bahan:', error);
+      alert('Error menyimpan bahan belanja');
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem('resepList', JSON.stringify(resep));
@@ -88,6 +183,13 @@ export default function BelanjaBahan() {
       <div className="page-header">
         <h1 className="page-title">Belanja Bahan & Resep</h1>
         <p className="page-subtitle">Kelola resep dan hitung kebutuhan bahan</p>
+        <div className="alert alert-info" style={{ marginTop: '1rem' }}>
+          <strong>Contoh:</strong> Pineapple Punch = 1/4 nanas + 1 apel + 1 jeruk
+          <br />
+          <strong>Harga Bahan:</strong> Nanas Rp 15.000/buah, Apel Rp 4.000/buah, Jeruk Rp 5.000/buah
+          <br />
+          <strong>HPP:</strong> (1/4 × 15.000) + (1 × 4.000) + (1 × 5.000) = Rp 12.750
+        </div>
       </div>
       
       <div className="card">
