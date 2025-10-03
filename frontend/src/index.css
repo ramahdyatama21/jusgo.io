@@ -5,18 +5,22 @@
   box-sizing: border-box;
 }
 
-/* Suppress vendor prefix warnings */
+/* Override Tailwind's problematic vendor prefixes */
 html {
-  /* Remove problematic webkit properties */
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+  /* Use only standard property, no vendor prefixes */
+  text-size-adjust: 100% !important;
 }
 
 body {
-  /* Remove problematic moz properties */
-  -moz-osx-font-smoothing: auto;
-  -webkit-font-smoothing: auto;
-  font-smoothing: auto;
+  /* Use only standard property, no vendor prefixes */
+  font-smoothing: auto !important;
+}
+
+/* Additional overrides to suppress warnings */
+html, body {
+  -webkit-text-size-adjust: none !important;
+  -moz-osx-font-smoothing: auto !important;
+  -webkit-font-smoothing: auto !important;
 }
 
 body {

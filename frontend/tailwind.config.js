@@ -18,4 +18,6 @@ export default {
     // Disable experimental features that might cause warnings
     hoverOnlyWhenSupported: true,
   },
+  // Override Tailwind's base styles to remove vendor prefixes
+  important: true,
 }
