@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { productService } from '../services/productService';
-import { testSupabaseConnection, testProductsTable } from '../utils/testSupabase';
+import { simpleTest } from '../utils/simpleTest';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -30,24 +30,15 @@ const Products = () => {
     try {
       setLoading(true);
       
-      // Test connection first
+      // Simple connection test
       console.log('🔍 Testing Supabase connection...');
-      const connectionTest = await testSupabaseConnection();
+      const test = await simpleTest();
       
-      if (!connectionTest.success) {
-        throw new Error(`Database connection failed: ${connectionTest.error}`);
+      if (!test.success) {
+        throw new Error(`Database connection failed: ${test.error}`);
       }
       
       console.log('✅ Supabase connection successful');
-      
-      // Test products table
-      const tableTest = await testProductsTable();
-      
-      if (!tableTest.success) {
-        throw new Error(`Products table error: ${tableTest.error}`);
-      }
-      
-      console.log('✅ Products table accessible');
       
       // Load products
       const data = await productService.getProducts();

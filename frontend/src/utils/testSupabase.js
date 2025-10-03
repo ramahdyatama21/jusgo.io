@@ -15,7 +15,7 @@ export const testSupabaseConnection = async () => {
     // Test 2: Test basic connection
     const { data, error } = await supabase
       .from('products')
-      .select('count(*)')
+      .select('*')
       .limit(1);
     
     if (error) {
@@ -28,12 +28,13 @@ export const testSupabaseConnection = async () => {
     }
     
     console.log('✅ Supabase connection successful');
-    console.log('📊 Products count:', data);
+    console.log('📊 Sample products:', data);
     
     return {
       success: true,
       message: 'Supabase connection successful',
-      data: data
+      data: data,
+      count: data ? data.length : 0
     };
     
   } catch (error) {
@@ -50,14 +51,31 @@ export const testProductsTable = async () => {
   try {
     console.log('🔍 Testing products table...');
     
-    // Test 1: Check if table exists
+    // Test 1: Check if table exists and get count
+    const { count, error: countError } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true });
+    
+    if (countError) {
+      console.error('❌ Products table error:', countError);
+      return {
+        success: false,
+        error: countError.message,
+        details: countError
+      };
+    }
+    
+    console.log('✅ Products table accessible');
+    console.log('📊 Total products:', count);
+    
+    // Test 2: Get sample products
     const { data, error } = await supabase
       .from('products')
       .select('*')
       .limit(5);
     
     if (error) {
-      console.error('❌ Products table error:', error);
+      console.error('❌ Sample products error:', error);
       return {
         success: false,
         error: error.message,
@@ -65,14 +83,13 @@ export const testProductsTable = async () => {
       };
     }
     
-    console.log('✅ Products table accessible');
     console.log('📊 Sample products:', data);
     
     return {
       success: true,
       message: 'Products table accessible',
       data: data,
-      count: data.length
+      count: count || 0
     };
     
   } catch (error) {
