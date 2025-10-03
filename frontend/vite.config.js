@@ -19,14 +19,12 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          supabase: ['@supabase/supabase-js'],
-          charts: ['recharts'],
           router: ['react-router-dom']
         }
       }
     },
     chunkSizeWarningLimit: 1000,
-    cssCodeSplit: true,
+    cssCodeSplit: false, // Disable CSS code splitting
     minify: 'terser',
     terserOptions: {
       compress: {
@@ -37,5 +35,9 @@ export default defineConfig({
   },
   css: {
     devSourcemap: false // Disable CSS source maps
+  },
+  define: {
+    // Disable React DevTools in production
+    __REACT_DEVTOOLS_GLOBAL_HOOK__: 'undefined'
   }
 })
