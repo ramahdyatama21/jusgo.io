@@ -1,23 +1,18 @@
-// frontend/tailwind.config.js
-
-export default {
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      width: {
+        '70': '17.5rem', // 280px
+      },
+      marginLeft: {
+        '70': '17.5rem', // 280px
+      }
+    },
   },
   plugins: [],
-  corePlugins: {
-    // Disable problematic vendor prefixes that cause warnings
-    textSizeAdjust: false,
-    fontSmoothing: false,
-  },
-  future: {
-    // Disable experimental features that might cause warnings
-    hoverOnlyWhenSupported: true,
-  },
-  // Override Tailwind's base styles to remove vendor prefixes
-  important: true,
 }
