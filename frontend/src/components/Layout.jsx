@@ -7,18 +7,39 @@ const Layout = () => {
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   
-  const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/products', label: 'Produk', icon: '📦' },
-    { path: '/pos', label: 'Kasir', icon: '💰' },
-    { path: '/transactions', label: 'Transaksi', icon: '📋' },
-    { path: '/reports', label: 'Laporan', icon: '📈' },
-    { path: '/stock', label: 'Stok', icon: '📦' },
-    { path: '/open-order', label: 'Open Order', icon: '📝' },
-    { path: '/belanja-bahan', label: 'Belanja Bahan', icon: '🛒' },
-    { path: '/kalkulator-hpp', label: 'Kalkulator HPP', icon: '🧮' },
-    { path: '/promo', label: 'Promo', icon: '🎁' },
-    { path: '/riwayat-transaksi', label: 'Riwayat', icon: '📜' },
+  const menuSections = [
+    {
+      title: 'MENU',
+      items: [
+        { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+        { path: '/products', label: 'Produk', icon: '📦' },
+        { path: '/pos', label: 'Kasir', icon: '💰' },
+        { path: '/transactions', label: 'Transaksi', icon: '📋' },
+        { path: '/reports', label: 'Laporan', icon: '📈' },
+        { path: '/stock', label: 'Stok', icon: '📦' },
+        { path: '/open-order', label: 'Open Order', icon: '📝', new: true },
+        { path: '/belanja-bahan', label: 'Belanja Bahan', icon: '🛒', new: true },
+        { path: '/kalkulator-hpp', label: 'Kalkulator HPP', icon: '🧮', new: true },
+        { path: '/promo', label: 'Promo', icon: '🎁' },
+        { path: '/riwayat-transaksi', label: 'Riwayat', icon: '📜' },
+      ]
+    },
+    {
+      title: 'Support',
+      items: [
+        { path: '/chat', label: 'Chat', icon: '💬' },
+        { path: '/support-ticket', label: 'Support Ticket', icon: '🎫', new: true },
+        { path: '/email', label: 'Email', icon: '📧' },
+      ]
+    },
+    {
+      title: 'Others',
+      items: [
+        { path: '/charts', label: 'Charts', icon: '📊' },
+        { path: '/ui-elements', label: 'UI Elements', icon: '🎨' },
+        { path: '/authentication', label: 'Authentication', icon: '🔐' },
+      ]
+    }
   ];
   
   const handleLogout = () => {
@@ -34,29 +55,39 @@ const Layout = () => {
         </div>
         
         <nav className="sidebar-nav">
-          {menuItems.map((item) => (
-            <div key={item.path} className="nav-item">
-              <button
-                className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
-                onClick={() => navigate(item.path)}
-              >
-                <span className="nav-icon">{item.icon}</span>
-                {item.label}
-              </button>
+          {menuSections.map((section, sectionIndex) => (
+            <div key={sectionIndex} className="nav-section">
+              <div className="nav-section-title">{section.title}</div>
+              {section.items.map((item) => (
+                <div key={item.path} className="nav-item">
+                  <button
+                    className={`nav-link ${location.pathname === item.path ? 'active' : ''} ${item.new ? 'new' : ''}`}
+                    onClick={() => navigate(item.path)}
+                  >
+                    <span className="nav-icon">{item.icon}</span>
+                    {item.label}
+                  </button>
+                </div>
+              ))}
             </div>
           ))}
         </nav>
         
-        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #334155' }}>
-          <p style={{ color: '#cbd5e1', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-            Selamat datang, {user.name || 'User'}
-          </p>
+        <div className="sidebar-footer">
+          <div className="sidebar-user">
+            <div className="sidebar-user-avatar">
+              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-name">{user.name || 'User'}</div>
+              <div className="sidebar-user-email">{user.email || 'user@example.com'}</div>
+            </div>
+          </div>
           <button
             onClick={handleLogout}
-            className="btn btn-secondary"
-            style={{ width: '100%', fontSize: '0.75rem' }}
+            className="sidebar-logout"
           >
-            Logout
+            Sign out
           </button>
         </div>
       </div>
