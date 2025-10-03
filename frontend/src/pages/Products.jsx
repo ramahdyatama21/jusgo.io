@@ -57,7 +57,6 @@ const Products = () => {
       const productData = {
         ...formData,
         sell_price: parseFloat(formData.sell_price),
-        buy_price: 0, // Harga beli akan diisi otomatis dari bahan belanja
         stock: parseInt(formData.stock),
         min_stock: parseInt(formData.min_stock)
       };
