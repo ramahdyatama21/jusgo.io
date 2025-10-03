@@ -62,50 +62,44 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Dashboard</h1>
-        <p className="page-subtitle">Selamat datang di POS System</p>
+      <div className="dashboard-header">
+        <div>
+          <h1 className="dashboard-title">Dashboard</h1>
+          <p className="dashboard-subtitle">Selamat datang di POS System</p>
+        </div>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: '#10b98120', color: '#10b981' }}>
-            💰
-          </div>
-          <div className="stat-value" style={{ color: '#10b981' }}>
+      <div className="quick-stats">
+        <div className="quick-stat success">
+          <div className="quick-stat-value">
             Rp {safeStats.todayRevenue?.toLocaleString() || '0'}
           </div>
-          <div className="stat-label">Omzet Hari Ini</div>
+          <div className="quick-stat-label">Omzet Hari Ini</div>
+          <div className="quick-stat-change positive">+11.01%</div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: '#3b82f620', color: '#3b82f6' }}>
-            📊
-          </div>
-          <div className="stat-value" style={{ color: '#3b82f6' }}>
+        <div className="quick-stat">
+          <div className="quick-stat-value">
             Rp {safeStats.monthRevenue?.toLocaleString() || '0'}
           </div>
-          <div className="stat-label">Omzet Bulan Ini</div>
+          <div className="quick-stat-label">Omzet Bulan Ini</div>
+          <div className="quick-stat-change positive">+9.05%</div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: '#8b5cf620', color: '#8b5cf6' }}>
-            📦
-          </div>
-          <div className="stat-value" style={{ color: '#8b5cf6' }}>
+        <div className="quick-stat warning">
+          <div className="quick-stat-value">
             {safeStats.totalProducts || 0}
           </div>
-          <div className="stat-label">Total Produk</div>
+          <div className="quick-stat-label">Total Produk</div>
+          <div className="quick-stat-change positive">+5.2%</div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: '#ef444420', color: '#ef4444' }}>
-            ⚠️
-          </div>
-          <div className="stat-value" style={{ color: '#ef4444' }}>
+        <div className="quick-stat danger">
+          <div className="quick-stat-value">
             {safeStats.lowStock || 0}
           </div>
-          <div className="stat-label">Stok Rendah</div>
+          <div className="quick-stat-label">Stok Rendah</div>
+          <div className="quick-stat-change negative">Perhatian!</div>
         </div>
       </div>
 
