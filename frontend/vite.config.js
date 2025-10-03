@@ -33,10 +33,7 @@ export default defineConfig({
     assetsDir: 'assets'
   },
   css: {
-    devSourcemap: false,
-    postcss: {
-      plugins: []
-    }
+    devSourcemap: false
   },
   define: {
     __REACT_DEVTOOLS_GLOBAL_HOOK__: 'undefined',
