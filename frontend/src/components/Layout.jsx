@@ -37,7 +37,26 @@ const Layout = () => {
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-lg fixed h-full">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-orange-500">JusGo POS</h1>
+          <div className="flex items-center space-x-2">
+            <img 
+              src="/assets/logos/jusgo-16" 
+              alt="JusGo Logo" 
+              className="h-8 w-auto"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className="flex items-center space-x-1" style={{display: 'none'}}>
+              <span className="text-orange-500 font-bold text-lg">Jus</span>
+              <span className="text-white font-bold text-lg">Go</span>
+              <span className="text-white font-bold text-lg">!</span>
+              <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center ml-2">
+                <span className="text-white text-sm font-bold">→</span>
+              </div>
+            </div>
+            <span className="text-sm font-medium text-gray-600">POS</span>
+          </div>
           <p className="text-sm text-gray-600 mt-1">v1.0 Beta</p>
         </div>
 
