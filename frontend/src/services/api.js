@@ -414,55 +414,75 @@ export const getTodayTransactions = async () => {
 
 // Reports (basic dashboard stats from Supabase)
 export const getDashboardStats = async () => {
-  // Today
-  const today = new Date();
-  const yyyy = today.getUTCFullYear();
-  const mm = String(today.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(today.getUTCDate()).padStart(2, '0');
-  const startToday = `${yyyy}-${mm}-${dd}T00:00:00.000Z`;
-  const endToday = `${yyyy}-${mm}-${dd}T23:59:59.999Z`;
+  try {
+    // Check if Supabase is properly configured
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      console.warn('Supabase not configured, returning default stats');
+      return {
+        today: { revenue: 0, transactionCount: 0 },
+        month: { revenue: 0, transactionCount: 0 },
+        products: { total: 0, lowStock: 0 }
+      };
+    }
 
-  // This month
-  const monthStart = `${yyyy}-${mm}-01T00:00:00.000Z`;
-  const monthEndDate = new Date(Date.UTC(yyyy, Number(mm), 0)).getUTCDate();
-  const monthEnd = `${yyyy}-${mm}-${String(monthEndDate).padStart(2, '0')}T23:59:59.999Z`;
+    // Today
+    const today = new Date();
+    const yyyy = today.getUTCFullYear();
+    const mm = String(today.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(today.getUTCDate()).padStart(2, '0');
+    const startToday = `${yyyy}-${mm}-${dd}T00:00:00.000Z`;
+    const endToday = `${yyyy}-${mm}-${dd}T23:59:59.999Z`;
 
-  // Fetch transactions for today and month
-  let todayTx, todayErr, monthTx, monthErr;
-  [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
-    supabase.from('transactions').select('total').gte('created_at', startToday).lte('created_at', endToday),
-    supabase.from('transactions').select('total').gte('created_at', monthStart).lte('created_at', monthEnd)
-  ]);
-  if (todayErr?.code === 'PGRST204' || monthErr?.code === 'PGRST204') {
+    // This month
+    const monthStart = `${yyyy}-${mm}-01T00:00:00.000Z`;
+    const monthEndDate = new Date(Date.UTC(yyyy, Number(mm), 0)).getUTCDate();
+    const monthEnd = `${yyyy}-${mm}-${String(monthEndDate).padStart(2, '0')}T23:59:59.999Z`;
+
+    // Fetch transactions for today and month
+    let todayTx, todayErr, monthTx, monthErr;
     [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
       supabase.from('transactions').select('total').gte('created_at', startToday).lte('created_at', endToday),
       supabase.from('transactions').select('total').gte('created_at', monthStart).lte('created_at', monthEnd)
     ]);
+    if (todayErr?.code === 'PGRST204' || monthErr?.code === 'PGRST204') {
+      [{ data: todayTx, error: todayErr }, { data: monthTx, error: monthErr }] = await Promise.all([
+        supabase.from('transactions').select('total').gte('created_at', startToday).lte('created_at', endToday),
+        supabase.from('transactions').select('total').gte('created_at', monthStart).lte('created_at', monthEnd)
+      ]);
+    }
+
+    if (todayErr) console.error('Supabase today stats error:', todayErr);
+    if (monthErr) console.error('Supabase month stats error:', monthErr);
+
+    const todayRevenue = Array.isArray(todayTx) ? todayTx.reduce((s, t) => s + Number(t.total || 0), 0) : 0;
+    const monthRevenue = Array.isArray(monthTx) ? monthTx.reduce((s, t) => s + Number(t.total || 0), 0) : 0;
+    const todayCount = Array.isArray(todayTx) ? todayTx.length : 0;
+
+    // Products stats
+    const [{ count: productsCount }, { data: lowStockList, error: lowErr }] = await Promise.all([
+      supabase.from('products').select('*', { count: 'exact', head: true }),
+      supabase.from('products').select('id, stock, minStock').lte('stock', supabase.rpc ? undefined : 999999)
+    ]);
+    if (lowErr) console.error('Supabase low stock error:', lowErr);
+
+    const lowStock = Array.isArray(lowStockList)
+      ? lowStockList.filter(p => typeof p.stock === 'number' && typeof p.minStock === 'number' && p.stock <= p.minStock).length
+      : 0;
+
+    return {
+      today: { revenue: todayRevenue, transactionCount: todayCount },
+      month: { revenue: monthRevenue },
+      products: { total: productsCount || 0, lowStock }
+    };
+  } catch (error) {
+    console.error('Error in getDashboardStats:', error);
+    // Return default stats on error
+    return {
+      today: { revenue: 0, transactionCount: 0 },
+      month: { revenue: 0, transactionCount: 0 },
+      products: { total: 0, lowStock: 0 }
+    };
   }
-
-  if (todayErr) console.error('Supabase today stats error:', todayErr);
-  if (monthErr) console.error('Supabase month stats error:', monthErr);
-
-  const todayRevenue = Array.isArray(todayTx) ? todayTx.reduce((s, t) => s + Number(t.total || 0), 0) : 0;
-  const monthRevenue = Array.isArray(monthTx) ? monthTx.reduce((s, t) => s + Number(t.total || 0), 0) : 0;
-  const todayCount = Array.isArray(todayTx) ? todayTx.length : 0;
-
-  // Products stats
-  const [{ count: productsCount }, { data: lowStockList, error: lowErr }] = await Promise.all([
-    supabase.from('products').select('*', { count: 'exact', head: true }),
-    supabase.from('products').select('id, stock, minStock')
-  ]);
-  if (lowErr) console.error('Supabase low stock error:', lowErr);
-
-  const lowStock = Array.isArray(lowStockList)
-    ? lowStockList.filter(p => typeof p.stock === 'number' && typeof p.minStock === 'number' && p.stock <= p.minStock).length
-    : 0;
-
-  return {
-    today: { revenue: todayRevenue, transactionCount: todayCount },
-    month: { revenue: monthRevenue },
-    products: { total: productsCount || 0, lowStock }
-  };
 };
 
 export const getSalesReport = async (startDate, endDate) => {

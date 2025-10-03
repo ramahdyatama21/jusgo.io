@@ -1,207 +1,201 @@
-// frontend/src/pages/Reports.jsx
+import React, { useState } from 'react';
 
-import { useState, useEffect } from 'react';
-import { getSalesReport, getProductReport, exportSalesReportCSV, exportOpenOrderCSV, exportStockReportCSV, exportBelanjaBahanCSV } from '../services/api';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import Papa from 'papaparse';
-
-export default function Reports() {
-  const [reportType, setReportType] = useState('sales');
-  const [salesData, setSalesData] = useState(null);
-  const [productData, setProductData] = useState([]);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [loading, setLoading] = useState(false);
-
-
-  // Inisialisasi tanggal hanya sekali
-  useEffect(() => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - 30);
-    setEndDate(end.toISOString().split('T')[0]);
-    setStartDate(start.toISOString().split('T')[0]);
-  }, []);
-
-  // Optimasi: fetch report hanya jika filter berubah dan tidak sedang loading
-  useEffect(() => {
-    let ignore = false;
-    const fetchReport = async () => {
-      if (!startDate || !endDate) return;
-      setLoading(true);
-      try {
-        if (reportType === 'sales') {
-          const data = await getSalesReport(startDate, endDate);
-          if (!ignore) setSalesData(data);
-        } else {
-          const data = await getProductReport(startDate, endDate);
-          if (!ignore) setProductData(data);
-        }
-      } catch (error) {
-        console.error('Error loading report:', error);
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    };
-    fetchReport();
-    return () => { ignore = true; };
-  }, [startDate, endDate, reportType]);
-
-  const loadReport = async () => {
-    setLoading(true);
-    try {
-      if (reportType === 'sales') {
-        const data = await getSalesReport(startDate, endDate);
-        setSalesData(data);
-      } else {
-        const data = await getProductReport(startDate, endDate);
-        setProductData(data);
-      }
-    } catch (error) {
-      console.error('Error loading report:', error);
-    } finally {
-      setLoading(false);
+const Reports = () => {
+  const [selectedPeriod, setSelectedPeriod] = useState('today');
+  
+  const reportData = {
+    today: {
+      revenue: 1250000,
+      transactions: 12,
+      topProducts: [
+        { name: 'Kopi Hitam', sold: 8, revenue: 120000 },
+        { name: 'Nasi Goreng', sold: 5, revenue: 125000 },
+        { name: 'Teh Manis', sold: 10, revenue: 80000 }
+      ]
+    },
+    week: {
+      revenue: 8750000,
+      transactions: 85,
+      topProducts: [
+        { name: 'Kopi Hitam', sold: 45, revenue: 675000 },
+        { name: 'Nasi Goreng', sold: 38, revenue: 950000 },
+        { name: 'Mie Ayam', sold: 42, revenue: 840000 }
+      ]
+    },
+    month: {
+      revenue: 15750000,
+      transactions: 156,
+      topProducts: [
+        { name: 'Kopi Hitam', sold: 89, revenue: 1335000 },
+        { name: 'Nasi Goreng', sold: 67, revenue: 1675000 },
+        { name: 'Mie Ayam', sold: 78, revenue: 1560000 }
+      ]
     }
   };
-
-  const exportToCSV = () => {
-    let data = [];
-    let filename = '';
-
-    if (reportType === 'sales' && salesData) {
-      data = salesData.data.map(item => ({
-        'Tanggal': item.date,
-        'Pendapatan': item.revenue,
-        'Jumlah Transaksi': item.transactionCount,
-        'Item Terjual': item.itemsSold
-      }));
-      filename = 'laporan-penjualan.csv';
-    } else if (reportType === 'product') {
-      data = productData.map(item => ({
-        'SKU': item.product.sku,
-        'Nama Produk': item.product.name,
-        'Kategori': item.product.category,
-        'Jumlah Terjual': item.totalQty,
-        'Total Pendapatan': item.totalRevenue,
-        'Profit': item.profit
-      }));
-      filename = 'laporan-produk.csv';
-    }
-
-    const csv = Papa.unparse(data);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-  };
-
-  const formatRupiah = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'short'
-    });
-  };
+  
+  const currentData = reportData[selectedPeriod];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800">Laporan</h1>
-        <div className="flex items-center space-x-2">
-          <span className="px-3 py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold rounded-full">
-            ⭐ PRO
-          </span>
-          <span className="text-sm text-gray-600">Custom Report Builder</span>
-        </div>
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Laporan Penjualan</h1>
+        <p className="page-subtitle">Analisis data penjualan dan performa bisnis</p>
       </div>
 
-      {/* Export CSV Section */}
-      <div className="bg-white rounded-lg shadow p-4 mb-4">
-        <h2 className="text-lg font-semibold mb-2">Export Semua Laporan CSV</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {/* Period Selector */}
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Pilih Periode Laporan</h3>
+        </div>
+        <div style={{ display: 'flex', gap: '1rem' }}>
           <button
-            onClick={async () => {
-              try {
-                await exportSalesReportCSV(startDate, endDate);
-              } catch (e) {
-                alert('Export Laporan Penjualan gagal atau data kosong!');
-              }
-            }}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            className={`btn ${selectedPeriod === 'today' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setSelectedPeriod('today')}
           >
-            Export Laporan Penjualan
+            Hari Ini
           </button>
           <button
-            onClick={async () => {
-              try {
-                await exportOpenOrderCSV();
-              } catch (e) {
-                alert('Export Laporan Open Order gagal atau data kosong!');
-              }
-            }}
-            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
+            className={`btn ${selectedPeriod === 'week' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setSelectedPeriod('week')}
           >
-            Export Laporan Open Order
+            Minggu Ini
           </button>
           <button
-            onClick={async () => {
-              try {
-                await exportStockReportCSV();
-              } catch (e) {
-                alert('Export Laporan Stok Barang gagal atau data kosong!');
-              }
-            }}
-            className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition"
+            className={`btn ${selectedPeriod === 'month' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setSelectedPeriod('month')}
           >
-            Export Laporan Stok Barang
-          </button>
-          <button
-            onClick={async () => {
-              try {
-                await exportBelanjaBahanCSV(startDate, endDate);
-              } catch (e) {
-                alert('Export Laporan Belanja Bahan gagal atau data kosong!');
-              }
-            }}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-          >
-            Export Laporan Belanja Bahan
+            Bulan Ini
           </button>
         </div>
       </div>
 
-
-
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading...</div>
+      {/* Summary Stats */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon" style={{ backgroundColor: '#10b98120', color: '#10b981' }}>
+            💰
+          </div>
+          <div className="stat-value" style={{ color: '#10b981' }}>
+            Rp {currentData.revenue.toLocaleString()}
+          </div>
+          <div className="stat-label">Total Pendapatan</div>
         </div>
-      ) : (
-        <>
-          {/* Sales Report */}
-          {reportType === 'sales' && salesData && (
-            <>
-              {/* Summary Cards */}
-              {/* ... (rest of your original code remains unchanged) ... */}
-            </>
-          )}
-
-          {/* Product Report */}
-          {reportType === 'product' && productData.length > 0 && (
-            <>
-              {/* ... (rest of your original code remains unchanged) ... */}
-            </>
-          )}
-        </>
-      )}
+        
+        <div className="stat-card">
+          <div className="stat-icon" style={{ backgroundColor: '#3b82f620', color: '#3b82f6' }}>
+            📋
+          </div>
+          <div className="stat-value" style={{ color: '#3b82f6' }}>
+            {currentData.transactions}
+          </div>
+          <div className="stat-label">Total Transaksi</div>
+        </div>
+        
+        <div className="stat-card">
+          <div className="stat-icon" style={{ backgroundColor: '#8b5cf620', color: '#8b5cf6' }}>
+            📊
+          </div>
+          <div className="stat-value" style={{ color: '#8b5cf6' }}>
+            Rp {Math.round(currentData.revenue / currentData.transactions).toLocaleString()}
+          </div>
+          <div className="stat-label">Rata-rata per Transaksi</div>
+        </div>
+      </div>
+      
+      {/* Top Products */}
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Produk Terlaris</h3>
+        </div>
+        
+        <div style={{ overflowX: 'auto' }}>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Ranking</th>
+                <th>Nama Produk</th>
+                <th>Terjual</th>
+                <th>Pendapatan</th>
+                <th>Persentase</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentData.topProducts.map((product, index) => (
+                <tr key={product.name}>
+                  <td>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      backgroundColor: index === 0 ? '#fbbf24' : index === 1 ? '#9ca3af' : '#cd7c2f',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold'
+                    }}>
+                      {index + 1}
+                    </span>
+                  </td>
+                  <td style={{ fontWeight: '500' }}>{product.name}</td>
+                  <td>{product.sold} pcs</td>
+                  <td style={{ fontWeight: '500' }}>
+                    Rp {product.revenue.toLocaleString()}
+                  </td>
+                  <td>
+                    {Math.round((product.revenue / currentData.revenue) * 100)}%
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      {/* Sales Chart Placeholder */}
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Grafik Penjualan</h3>
+        </div>
+        <div style={{ 
+          height: '300px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          background: '#f8fafc',
+          borderRadius: '0.5rem',
+          color: '#64748b'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📈</div>
+            <p>Grafik penjualan akan ditampilkan di sini</p>
+            <p style={{ fontSize: '0.875rem' }}>
+              Fitur chart akan ditambahkan dengan library seperti Chart.js atau Recharts
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Export Options */}
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Export Laporan</h3>
+        </div>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button className="btn btn-primary">
+            📄 Export PDF
+          </button>
+          <button className="btn btn-secondary">
+            📊 Export Excel
+          </button>
+          <button className="btn btn-success">
+            📧 Kirim Email
+          </button>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Reports;

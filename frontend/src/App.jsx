@@ -1,8 +1,7 @@
-// frontend/src/App.jsx
-
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
@@ -54,73 +53,75 @@ function ProtectedRoute({ children, allow }) {
 function App() {
   console.log('App component rendering...');
   return (
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        
-        <Route path="/dashboard" element={
-          <ProtectedRoute allow={["admin"]}>
-            <Layout><Dashboard /></Layout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/products" element={
-          <ProtectedRoute allow={["admin"]}>
-            <Layout><Products /></Layout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/stock" element={
-          <ProtectedRoute allow={["admin"]}>
-            <Layout><Stock /></Layout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/pos" element={
-          <ProtectedRoute allow={["admin","kasir"]}>
-            <Layout><POS /></Layout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/reports" element={
-          <ProtectedRoute allow={["admin"]}>
-            <Layout><Reports /></Layout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/open-order" element={
-          <ProtectedRoute allow={["admin","kasir"]}>
-            <Layout><OpenOrder /></Layout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/riwayat-transaksi" element={
-          <ProtectedRoute allow={["admin"]}>
-            <Layout><RiwayatTransaksi /></Layout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/kalkulator-hpp" element={
-          <ProtectedRoute allow={["admin"]}>
-            <Layout><KalkulatorHPP /></Layout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/promo" element={
-          <ProtectedRoute allow={["admin"]}>
-            <Layout><Promo /></Layout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/belanja-bahan" element={
-          <ProtectedRoute allow={["admin"]}>
-            <Layout><BelanjaBahan /></Layout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/" element={<Navigate to="/login" />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          
+          <Route path="/dashboard" element={
+            <ProtectedRoute allow={["admin"]}>
+              <Layout><Dashboard /></Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/products" element={
+            <ProtectedRoute allow={["admin"]}>
+              <Layout><Products /></Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/stock" element={
+            <ProtectedRoute allow={["admin"]}>
+              <Layout><Stock /></Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/pos" element={
+            <ProtectedRoute allow={["admin", "kasir"]}>
+              <Layout><POS /></Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/reports" element={
+            <ProtectedRoute allow={["admin"]}>
+              <Layout><Reports /></Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/open-order" element={
+            <ProtectedRoute allow={["admin", "kasir"]}>
+              <Layout><OpenOrder /></Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/riwayat-transaksi" element={
+            <ProtectedRoute allow={["admin"]}>
+              <Layout><RiwayatTransaksi /></Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/kalkulator-hpp" element={
+            <ProtectedRoute allow={["admin"]}>
+              <Layout><KalkulatorHPP /></Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/promo" element={
+            <ProtectedRoute allow={["admin"]}>
+              <Layout><Promo /></Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/belanja-bahan" element={
+            <ProtectedRoute allow={["admin"]}>
+              <Layout><BelanjaBahan /></Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/" element={<Navigate to="/login" />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
