@@ -14,6 +14,7 @@ import BelanjaBahan from './pages/BelanjaBahan';
 import KalkulatorHPP from './pages/KalkulatorHPP';
 import Promo from './pages/Promo';
 import RiwayatTransaksi from './pages/RiwayatTransaksi';
+import SupabaseTest from './components/SupabaseTest';
 
 function App() {
   return (
@@ -78,6 +79,7 @@ function App() {
               <RiwayatTransaksi />
             </ProtectedRoute>
           } />
+          <Route path="supabase-test" element={<SupabaseTest />} />
         </Route>
       </Routes>
     </Router>
