@@ -62,6 +62,7 @@ export default function Dashboard() {
 
   return (
     <div>
+      {/* Header Section */}
       <div className="dashboard-header">
         <div>
           <h1 className="dashboard-title">Dashboard</h1>
@@ -69,6 +70,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Quick Stats like TailAdmin */}
       <div className="quick-stats">
         <div className="quick-stat success">
           <div className="quick-stat-value">
@@ -103,23 +105,120 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Two Column Layout like TailAdmin */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+        {/* Left Column - Charts/Data */}
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">Monthly Sales</h3>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>View More</button>
+              <button className="btn btn-danger" style={{ fontSize: '0.75rem' }}>Delete</button>
+            </div>
+          </div>
+          <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '0.5rem' }}>
+            <div style={{ fontSize: '3rem', fontWeight: 'bold', color: '#3b82f6', marginBottom: '1rem' }}>📊</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '0.5rem' }}>Rp 1,250,000</div>
+            <div style={{ color: '#64748b' }}>Total Penjualan Bulan Ini</div>
+            <div style={{ marginTop: '1rem', padding: '1rem', background: 'white', borderRadius: '0.5rem' }}>
+              <div style={{ fontSize: '0.875rem', color: '#10b981', fontWeight: '600' }}>+10%</div>
+              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>You earn Rp 328,700 today, it's higher than last month. Keep up your good work!</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Target/Stats */}
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">Monthly Target</h3>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>View More</button>
+              <button className="btn btn-danger" style={{ fontSize: '0.75rem' }}>Delete</button>
+            </div>
+          </div>
+          <div style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1e293b' }}>Target</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#3b82f6' }}>Rp 20K</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1e293b' }}>Revenue</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981' }}>Rp 20K</div>
+              </div>
+            </div>
+            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1e293b' }}>Today</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#3b82f6' }}>Rp 20K</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Orders Table like TailAdmin */}
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title">Ringkasan Hari Ini</h3>
+          <h3 className="card-title">Recent Orders</h3>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>Filter</button>
+            <button className="btn btn-primary" style={{ fontSize: '0.75rem' }}>See all</button>
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          <div style={{ textAlign: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981' }}>12</div>
-            <div style={{ color: '#64748b', fontSize: '0.875rem' }}>Transaksi Hari Ini</div>
-          </div>
-          <div style={{ textAlign: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#3b82f6' }}>8</div>
-            <div style={{ color: '#64748b', fontSize: '0.875rem' }}>Produk Terjual</div>
-          </div>
-          <div style={{ textAlign: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#8b5cf6' }}>Rp 104,167</div>
-            <div style={{ color: '#64748b', fontSize: '0.875rem' }}>Rata-rata per Transaksi</div>
-          </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Products</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: '2rem', height: '2rem', background: '#f3f4f6', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📱</div>
+                    <div>
+                      <div style={{ fontWeight: '600' }}>Macbook pro 13"</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>2 Variants</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Laptop</td>
+                <td>Rp 23,990,000</td>
+                <td><span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: '600', background: '#dcfce7', color: '#166534' }}>Delivered</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: '2rem', height: '2rem', background: '#f3f4f6', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⌚</div>
+                    <div>
+                      <div style={{ fontWeight: '600' }}>Apple Watch Ultra</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>1 Variants</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Watch</td>
+                <td>Rp 8,790,000</td>
+                <td><span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: '600', background: '#fef3c7', color: '#d97706' }}>Pending</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: '2rem', height: '2rem', background: '#f3f4f6', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📱</div>
+                    <div>
+                      <div style={{ fontWeight: '600' }}>iPhone 15 Pro Max</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>2 Variants</div>
+                    </div>
+                  </div>
+                </td>
+                <td>SmartPhone</td>
+                <td>Rp 18,690,000</td>
+                <td><span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: '600', background: '#dcfce7', color: '#166534' }}>Delivered</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
