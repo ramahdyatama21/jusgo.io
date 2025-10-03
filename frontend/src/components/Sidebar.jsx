@@ -59,15 +59,6 @@ const Sidebar = () => {
               e.target.nextSibling.style.display = 'flex';
             }}
           />
-          <div className="flex items-center space-x-1" style={{display: 'none'}}>
-            <span className="text-orange-500 font-bold text-lg">Jus</span>
-            <span className="text-white font-bold text-lg">Go</span>
-            <span className="text-white font-bold text-lg">!</span>
-            <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center ml-2">
-              <span className="text-white text-sm font-bold">→</span>
-            </div>
-          </div>
-          <span className="text-sm font-medium text-slate-300">POS</span>
         </div>
       </div>
 
