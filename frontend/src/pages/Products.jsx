@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { productService } from '../services/productService';
+import { testSupabaseConnection, testProductsTable } from '../utils/testSupabase';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -10,12 +11,14 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     name: '',
-    price: '',
+    sellPrice: '',
     stock: '',
     category: '',
     description: '',
     sku: '',
-    min_stock: 0
+    minStock: 5,
+    unit: 'pcs',
+    buyPrice: 0
   });
 
   // Load products on component mount
@@ -26,11 +29,33 @@ const Products = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
+      
+      // Test connection first
+      console.log('🔍 Testing Supabase connection...');
+      const connectionTest = await testSupabaseConnection();
+      
+      if (!connectionTest.success) {
+        throw new Error(`Database connection failed: ${connectionTest.error}`);
+      }
+      
+      console.log('✅ Supabase connection successful');
+      
+      // Test products table
+      const tableTest = await testProductsTable();
+      
+      if (!tableTest.success) {
+        throw new Error(`Products table error: ${tableTest.error}`);
+      }
+      
+      console.log('✅ Products table accessible');
+      
+      // Load products
       const data = await productService.getProducts();
       setProducts(data || []);
+      
     } catch (err) {
       console.error('Error loading products:', err);
-      setError('Gagal memuat data produk');
+      setError(`Database error: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -41,9 +66,10 @@ const Products = () => {
     try {
       const productData = {
         ...formData,
-        price: parseInt(formData.price),
+        sellPrice: parseFloat(formData.sellPrice),
+        buyPrice: parseFloat(formData.buyPrice),
         stock: parseInt(formData.stock),
-        min_stock: parseInt(formData.min_stock) || 0
+        minStock: parseInt(formData.minStock)
       };
 
       if (editingProduct) {
@@ -64,12 +90,14 @@ const Products = () => {
     setEditingProduct(product);
     setFormData({
       name: product.name || '',
-      price: product.price || '',
+      sellPrice: product.sellPrice || '',
+      buyPrice: product.buyPrice || '',
       stock: product.stock || '',
       category: product.category || '',
       description: product.description || '',
       sku: product.sku || '',
-      min_stock: product.min_stock || 0
+      minStock: product.minStock || 5,
+      unit: product.unit || 'pcs'
     });
     setShowForm(true);
   };
@@ -89,12 +117,14 @@ const Products = () => {
   const resetForm = () => {
     setFormData({
       name: '',
-      price: '',
+      sellPrice: '',
+      buyPrice: '',
       stock: '',
       category: '',
       description: '',
       sku: '',
-      min_stock: 0
+      minStock: 5,
+      unit: 'pcs'
     });
     setEditingProduct(null);
     setShowForm(false);
@@ -190,13 +220,22 @@ const Products = () => {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Harga</label>
+                <label className="form-label">Harga Jual</label>
                 <input
                   type="number"
                   className="form-input"
-                  value={formData.price}
-                  onChange={(e) => setFormData({...formData, price: e.target.value})}
+                  value={formData.sellPrice}
+                  onChange={(e) => setFormData({...formData, sellPrice: e.target.value})}
                   required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Harga Beli</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={formData.buyPrice}
+                  onChange={(e) => setFormData({...formData, buyPrice: e.target.value})}
                 />
               </div>
               <div className="form-group">
@@ -214,10 +253,24 @@ const Products = () => {
                 <input
                   type="number"
                   className="form-input"
-                  value={formData.min_stock}
-                  onChange={(e) => setFormData({...formData, min_stock: e.target.value})}
-                  placeholder="0"
+                  value={formData.minStock}
+                  onChange={(e) => setFormData({...formData, minStock: e.target.value})}
+                  placeholder="5"
                 />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Satuan</label>
+                <select
+                  className="form-input"
+                  value={formData.unit}
+                  onChange={(e) => setFormData({...formData, unit: e.target.value})}
+                >
+                  <option value="pcs">Pcs</option>
+                  <option value="kg">Kg</option>
+                  <option value="gram">Gram</option>
+                  <option value="liter">Liter</option>
+                  <option value="ml">ML</option>
+                </select>
               </div>
               <div className="form-group">
                 <label className="form-label">Kategori</label>
@@ -263,9 +316,11 @@ const Products = () => {
               <tr>
                 <th>Nama Produk</th>
                 <th>SKU</th>
-                <th>Harga</th>
+                <th>Harga Jual</th>
+                <th>Harga Beli</th>
                 <th>Stok</th>
                 <th>Min. Stok</th>
+                <th>Satuan</th>
                 <th>Kategori</th>
                 <th>Status</th>
                 <th>Aksi</th>
@@ -274,7 +329,7 @@ const Products = () => {
             <tbody>
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
                     {searchQuery ? 'Tidak ada produk yang ditemukan' : 'Belum ada produk'}
                   </td>
                 </tr>
@@ -290,19 +345,21 @@ const Products = () => {
                       )}
                     </td>
                     <td>{product.sku || '-'}</td>
-                    <td>Rp {product.price?.toLocaleString() || '0'}</td>
+                    <td>Rp {product.sellPrice?.toLocaleString() || '0'}</td>
+                    <td>Rp {product.buyPrice?.toLocaleString() || '0'}</td>
                     <td>
                       <span style={{ 
-                        color: product.stock <= product.min_stock ? '#ef4444' : '#10b981',
+                        color: product.stock <= product.minStock ? '#ef4444' : '#10b981',
                         fontWeight: '500'
                       }}>
                         {product.stock || 0}
                       </span>
                     </td>
-                    <td>{product.min_stock || 0}</td>
+                    <td>{product.minStock || 0}</td>
+                    <td>{product.unit || 'pcs'}</td>
                     <td>{product.category}</td>
                     <td>
-                      {product.stock <= product.min_stock ? (
+                      {product.stock <= product.minStock ? (
                         <span style={{
                           padding: '0.25rem 0.5rem',
                           fontSize: '0.75rem',

@@ -7,7 +7,7 @@ export const productService = {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('createdAt', { ascending: false });
       
       if (error) throw error;
       return data;
@@ -110,7 +110,7 @@ export const productService = {
         .from('products')
         .select('*')
         .or(`name.ilike.%${query}%,category.ilike.%${query}%`)
-        .order('created_at', { ascending: false });
+        .order('createdAt', { ascending: false });
       
       if (error) throw error;
       return data;
