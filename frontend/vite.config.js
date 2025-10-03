@@ -26,14 +26,11 @@ export default defineConfig({
       }
     },
     chunkSizeWarningLimit: 1000,
-    cssCodeSplit: false,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }
+    cssCodeSplit: true,
+    minify: 'esbuild',
+    target: 'es2015',
+    outDir: 'dist',
+    assetsDir: 'assets'
   },
   css: {
     devSourcemap: false,
