@@ -52,76 +52,23 @@ function ProtectedRoute({ children, allow }) {
 
 function App() {
   console.log('App component rendering...');
+  
+  // Simple test first
   return (
-    <ErrorBoundary>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          
-          <Route path="/dashboard" element={
-            <ProtectedRoute allow={["admin"]}>
-              <Layout><Dashboard /></Layout>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/products" element={
-            <ProtectedRoute allow={["admin"]}>
-              <Layout><Products /></Layout>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/stock" element={
-            <ProtectedRoute allow={["admin"]}>
-              <Layout><Stock /></Layout>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/pos" element={
-            <ProtectedRoute allow={["admin", "kasir"]}>
-              <Layout><POS /></Layout>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/reports" element={
-            <ProtectedRoute allow={["admin"]}>
-              <Layout><Reports /></Layout>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/open-order" element={
-            <ProtectedRoute allow={["admin", "kasir"]}>
-              <Layout><OpenOrder /></Layout>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/riwayat-transaksi" element={
-            <ProtectedRoute allow={["admin"]}>
-              <Layout><RiwayatTransaksi /></Layout>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/kalkulator-hpp" element={
-            <ProtectedRoute allow={["admin"]}>
-              <Layout><KalkulatorHPP /></Layout>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/promo" element={
-            <ProtectedRoute allow={["admin"]}>
-              <Layout><Promo /></Layout>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/belanja-bahan" element={
-            <ProtectedRoute allow={["admin"]}>
-              <Layout><BelanjaBahan /></Layout>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/" element={<Navigate to="/login" />} />
-        </Routes>
-      </BrowserRouter>
-    </ErrorBoundary>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-blue-600 mb-4">Jusgo.io POS System</h1>
+        <p className="text-gray-600 mb-8">Sistem Kasir & Inventory</p>
+        <div className="space-y-4">
+          <a href="/login" className="block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            Login
+          </a>
+          <a href="/dashboard" className="block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+            Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
   );
 }
 
