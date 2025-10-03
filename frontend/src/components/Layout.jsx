@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Outlet } from 'react-router-dom';
+import PWAInstallButton from './PWAInstallButton';
+import NetworkStatus from './NetworkStatus';
 
 const Layout = () => {
   const navigate = useNavigate();
@@ -35,7 +37,7 @@ const Layout = () => {
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-lg fixed h-full">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-blue-600">POS System</h1>
+          <h1 className="text-2xl font-bold text-orange-500">JusGor POS</h1>
           <p className="text-sm text-gray-600 mt-1">v1.0 Beta</p>
         </div>
 
@@ -81,6 +83,12 @@ const Layout = () => {
       <div className="ml-64 flex-1 p-8">
         <Outlet />
       </div>
+      
+      {/* Network Status */}
+      <NetworkStatus />
+      
+      {/* PWA Install Button */}
+      <PWAInstallButton />
     </div>
   );
 };
