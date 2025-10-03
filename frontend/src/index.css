@@ -1,4 +1,4 @@
-/* Modern CSS Reset */
+/* TailAdmin CSS Reset */
 * {
   margin: 0;
   padding: 0;
@@ -15,6 +15,7 @@ body {
   color: #1e293b;
   line-height: 1.6;
   min-height: 100vh;
+  font-size: 14px;
 }
 
 .app {
@@ -24,6 +25,7 @@ body {
   background: transparent;
 }
 
+/* TailAdmin Sidebar */
 .sidebar {
   width: 280px;
   background: #1e293b;
@@ -33,28 +35,34 @@ body {
   overflow-y: auto;
   z-index: 1000;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid #334155;
 }
 
 .sidebar-header {
   padding: 1.5rem;
   border-bottom: 1px solid #334155;
   background: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sidebar-header h2 {
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: white;
   text-align: center;
   letter-spacing: -0.025em;
 }
 
+/* TailAdmin Navigation */
 .sidebar-nav {
-  padding: 1.5rem 0;
+  padding: 1rem 0;
+  flex: 1;
 }
 
 .nav-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .nav-section-title {
@@ -77,10 +85,16 @@ body {
   padding: 0.75rem 1.5rem;
   color: #cbd5e1;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   font-weight: 500;
   border-radius: 0.375rem;
   margin: 0.125rem 0.75rem;
+  position: relative;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
 .nav-link:hover {
@@ -184,7 +198,7 @@ body {
   background: #f8fafc;
 }
 
-/* Header Bar like TailAdmin */
+/* TailAdmin Header Bar */
 .header-bar {
   background: white;
   border-bottom: 1px solid #e5e7eb;
@@ -196,6 +210,7 @@ body {
   top: 0;
   z-index: 100;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-height: 64px;
 }
 
 .header-left {
@@ -216,6 +231,7 @@ body {
   align-items: center;
 }
 
+/* TailAdmin Search */
 .search-input {
   padding: 0.5rem 1rem 0.5rem 2.5rem;
   border: 1px solid #d1d5db;
@@ -223,12 +239,14 @@ body {
   background: #f9fafb;
   width: 300px;
   font-size: 0.875rem;
+  transition: all 0.2s ease;
 }
 
 .search-input:focus {
   outline: none;
   border-color: #3b82f6;
   background: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .search-icon {
@@ -333,12 +351,19 @@ body {
   font-size: 1rem;
 }
 
+/* TailAdmin Cards */
 .card {
   background: white;
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
@@ -391,6 +416,7 @@ body {
   font-size: 0.875rem;
 }
 
+/* TailAdmin Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -401,7 +427,9 @@ body {
   text-decoration: none;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  line-height: 1.5;
 }
 
 .btn-primary {
@@ -537,7 +565,7 @@ body {
 }
 
 
-/* Dashboard specific styles like TailAdmin */
+/* TailAdmin Dashboard */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -551,14 +579,17 @@ body {
   font-size: 1.875rem;
   font-weight: 700;
   color: #1e293b;
+  line-height: 1.2;
 }
 
 .dashboard-subtitle {
   color: #64748b;
   font-size: 1rem;
   margin-top: 0.25rem;
+  font-weight: 400;
 }
 
+/* TailAdmin Quick Stats */
 .quick-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -572,6 +603,12 @@ body {
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border-left: 4px solid #3b82f6;
+  transition: all 0.2s ease;
+}
+
+.quick-stat:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 .quick-stat.success {
