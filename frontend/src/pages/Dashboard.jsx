@@ -23,7 +23,6 @@ export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
 
   useEffect(() => {
-    console.log('Dashboard useEffect triggered');
     loadStats();
     try {
       // Hitung produk terlaris dari riwayat transaksi dan produk
@@ -130,9 +129,7 @@ export default function Dashboard() {
 
   const loadStats = async () => {
     try {
-      console.log('Loading dashboard stats...');
       const data = await getDashboardStats();
-      console.log('Dashboard stats loaded:', data);
       setStats(data);
       setError(null);
     } catch (error) {
@@ -157,10 +154,7 @@ export default function Dashboard() {
     }).format(amount);
   };
 
-  console.log('Dashboard render - loading:', loading, 'stats:', stats);
-  
   if (loading) {
-    console.log('Dashboard showing loading state');
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading...</div>
@@ -169,15 +163,12 @@ export default function Dashboard() {
   }
   
   if (!stats) {
-    console.log('Dashboard showing error state - no stats');
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg text-red-500">Gagal memuat data dashboard.</div>
       </div>
     );
   }
-  
-  console.log('Dashboard rendering main content');
 
   return (
     <div className="space-y-6">
