@@ -343,14 +343,14 @@ export const getTransactions = async (startDate = null, endDate = null) => {
   ({ data, error } = await query);
   if (error && error?.code === 'PGRST204') {
     // Fallback camelCase if needed
-    selectExpr = 'id, createdAt, paymentMethod, subtotal, discount, total, notes, transaction_items(id, productId, price, qty, subtotal, products(name))';
-    let q2 = supabase.from('transactions').select(selectExpr).order('createdAt', { ascending: false });
+    selectExpr = 'id, created_at, payment_method, subtotal, discount, total, notes, transaction_items(id, product_id, price, qty, subtotal, products(name))';
+    let q2 = supabase.from('transactions').select(selectExpr).order('created_at', { ascending: false });
     if (startDate && endDate) {
       q2 = supabase.from('transactions')
         .select(selectExpr)
-        .gte('createdAt', `${startDate}T00:00:00.000Z`)
-        .lte('createdAt', `${endDate}T23:59:59.999Z`)
-        .order('createdAt', { ascending: false });
+        .gte('created_at', `${startDate}T00:00:00.000Z`)
+        .lte('created_at', `${endDate}T23:59:59.999Z`)
+        .order('created_at', { ascending: false });
     }
     ({ data, error } = await q2);
   }
