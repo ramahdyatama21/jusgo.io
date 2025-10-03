@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [topProducts, setTopProducts] = useState([]);
   const [salesPerDay, setSalesPerDay] = useState([]);
   const [salesPerWeek, setSalesPerWeek] = useState([]);
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
 
   useEffect(() => {
+    console.log('Dashboard useEffect triggered');
     loadStats();
     try {
       // Hitung produk terlaris dari riwayat transaksi dan produk
@@ -132,8 +134,10 @@ export default function Dashboard() {
       const data = await getDashboardStats();
       console.log('Dashboard stats loaded:', data);
       setStats(data);
+      setError(null);
     } catch (error) {
       console.error('Error loading stats:', error);
+      setError(error.message);
       // Set a default stats object to prevent blank screen
       setStats({
         today: { revenue: 0, transactionCount: 0 },
@@ -153,7 +157,10 @@ export default function Dashboard() {
     }).format(amount);
   };
 
+  console.log('Dashboard render - loading:', loading, 'stats:', stats);
+  
   if (loading) {
+    console.log('Dashboard showing loading state');
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading...</div>
@@ -162,18 +169,26 @@ export default function Dashboard() {
   }
   
   if (!stats) {
+    console.log('Dashboard showing error state - no stats');
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg text-red-500">Gagal memuat data dashboard.</div>
       </div>
     );
   }
+  
+  console.log('Dashboard rendering main content');
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
         <p className="text-gray-600 mt-1">Selamat datang, {user.email || 'User'}!</p>
+        {error && (
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mt-2">
+            <strong>Warning:</strong> {error}
+          </div>
+        )}
       </div>
 
       {/* Stats Cards */}
