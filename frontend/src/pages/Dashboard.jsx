@@ -23,9 +23,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadStats();
-    // Hitung produk terlaris dari riwayat transaksi dan produk
-    const products = JSON.parse(localStorage.getItem('products') || '[]');
-    const riwayat = JSON.parse(localStorage.getItem('riwayatTransaksi') || '[]');
+    try {
+      // Hitung produk terlaris dari riwayat transaksi dan produk
+      const products = JSON.parse(localStorage.getItem('products') || '[]');
+      const riwayat = JSON.parse(localStorage.getItem('riwayatTransaksi') || '[]');
     // Akumulasi qty, revenue, dan HPP per produk
     const productMap = {};
     products.forEach(p => {
@@ -110,14 +111,25 @@ export default function Dashboard() {
     // Total belanja bahan sepanjang riwayat lokal
     const totalCostAll = Object.values(costDay).reduce((s, v) => s + v, 0);
     setTotalBelanjaBahan(totalCostAll);
+    } catch (error) {
+      console.error('Error processing dashboard data:', error);
+    }
   }, []);
 
   const loadStats = async () => {
     try {
+      console.log('Loading dashboard stats...');
       const data = await getDashboardStats();
+      console.log('Dashboard stats loaded:', data);
       setStats(data);
     } catch (error) {
       console.error('Error loading stats:', error);
+      // Set a default stats object to prevent blank screen
+      setStats({
+        today: { revenue: 0, transactionCount: 0 },
+        month: { revenue: 0, transactionCount: 0 },
+        products: { total: 0, lowStock: 0 }
+      });
     } finally {
       setLoading(false);
     }
@@ -138,6 +150,7 @@ export default function Dashboard() {
       </div>
     );
   }
+  
   if (!stats) {
     return (
       <div className="flex items-center justify-center h-64">
