@@ -96,36 +96,73 @@ export const createProduct = async (data) => {
 
 export const updateProduct = async (id, data) => {
   try {
-    console.log('Updating product:', { id, data });
+    console.log('🔄 Updating product:', { id, data });
     
-    // Clean data - remove undefined values
+    // Clean data - remove undefined values and validate column names
     const cleanData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined)
+      Object.entries(data).filter(([key, value]) => {
+        if (value === undefined) return false;
+        
+        // Map camelCase to snake_case for known columns
+        const columnMap = {
+          'sellPrice': 'sell_price',
+          'minStock': 'min_stock',
+          'buyPrice': 'buy_price'
+        };
+        
+        const mappedKey = columnMap[key] || key;
+        console.log(`📝 Mapping column: ${key} -> ${mappedKey}`);
+        return true;
+      })
     );
     
-    console.log('Clean data:', cleanData);
+    // Apply column mapping
+    const mappedData = {};
+    Object.entries(cleanData).forEach(([key, value]) => {
+      const columnMap = {
+        'sellPrice': 'sell_price',
+        'minStock': 'min_stock',
+        'buyPrice': 'buy_price'
+      };
+      const mappedKey = columnMap[key] || key;
+      mappedData[mappedKey] = value;
+    });
+    
+    console.log('🧹 Clean data:', cleanData);
+    console.log('🗺️ Mapped data:', mappedData);
+    
+    // Validate required fields
+    const requiredFields = ['name', 'sell_price', 'stock', 'category'];
+    const missingFields = requiredFields.filter(field => !(field in mappedData));
+    if (missingFields.length > 0) {
+      console.warn('⚠️ Missing required fields:', missingFields);
+    }
     
     const { data: result, error } = await supabase
       .from('products')
-      .update(cleanData)
+      .update(mappedData)
       .eq('id', id)
       .select();
       
     if (error) {
-      console.error('Supabase updateProduct error:', error);
-      console.error('Error details:', {
+      console.error('❌ Supabase updateProduct error:', error);
+      console.error('🔍 Error details:', {
         message: error.message,
         details: error.details,
         hint: error.hint,
-        code: error.code
+        code: error.code,
+        status: error.status,
+        statusText: error.statusText
       });
+      console.error('📤 Data sent:', mappedData);
+      console.error('🆔 Product ID:', id);
       throw error;
     }
     
-    console.log('Product updated successfully:', result);
+    console.log('✅ Product updated successfully:', result);
     return result?.[0] || null;
   } catch (err) {
-    console.error('Update product failed:', err);
+    console.error('💥 Update product failed:', err);
     throw err;
   }
 };

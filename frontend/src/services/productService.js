@@ -54,17 +54,38 @@ export const productService = {
   // Update product
   async updateProduct(id, productData) {
     try {
+      console.log('🔄 ProductService updating product:', { id, productData });
+      
+      // Map camelCase to snake_case
+      const mappedData = {};
+      Object.entries(productData).forEach(([key, value]) => {
+        const columnMap = {
+          'sellPrice': 'sell_price',
+          'minStock': 'min_stock',
+          'buyPrice': 'buy_price'
+        };
+        const mappedKey = columnMap[key] || key;
+        mappedData[mappedKey] = value;
+      });
+      
+      console.log('🗺️ Mapped data:', mappedData);
+      
       const { data, error } = await supabase
         .from('products')
-        .update(productData)
+        .update(mappedData)
         .eq('id', id)
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ ProductService update error:', error);
+        throw error;
+      }
+      
+      console.log('✅ ProductService update successful:', data);
       return data;
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error('💥 ProductService update failed:', error);
       throw error;
     }
   },
