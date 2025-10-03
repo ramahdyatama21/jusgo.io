@@ -36,11 +36,13 @@ sql/
 
 # Assets folder (don't push to repo)
 assets/
+!assets/logos/
 *.png
 *.jpg
 *.jpeg
 *.gif
 *.svg
+!assets/logos/*.svg
 *.ico
 
 # Logs
