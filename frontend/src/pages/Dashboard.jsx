@@ -203,16 +203,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Selamat datang, {user.email || 'User'}!</p>
-        {error && (
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mt-2">
-            <strong>Warning:</strong> {error}
-          </div>
-        )}
-      </div>
+    <div className="dashboard-container">
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Selamat datang, {user.email || 'User'}!</p>
+          {error && (
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mt-2">
+              <strong>Warning:</strong> {error}
+            </div>
+          )}
+        </div>
 
       {/* Fallback UI jika tidak ada data */}
       {!safeStats && (
@@ -447,6 +448,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
+    </div>
     </div>
   );
 }

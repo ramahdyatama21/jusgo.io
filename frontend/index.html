@@ -5,13 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>POS System - Aplikasi Kasir & Inventory</title>
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/index.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/src/index.css"></noscript>
     <style>
-      /* Prevent flash of unstyled content and layout shifts */
+      /* Critical CSS untuk mencegah FOUC */
       * { box-sizing: border-box; }
       body { 
         margin: 0; 
         font-family: system-ui, -apple-system, sans-serif;
         background-color: #f3f4f6;
+        color: #1f2937;
       }
       #root { 
         min-height: 100vh; 
@@ -24,6 +28,24 @@
         align-items: center;
         justify-content: center;
         min-height: 400px;
+      }
+      /* Dashboard critical styles */
+      .dashboard-container {
+        padding: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .stat-card {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
       }
     </style>
   </head>
