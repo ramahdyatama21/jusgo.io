@@ -1,8 +1,22 @@
-/* Minimal CSS without vendor prefixes */
+/* CSS Reset with proper vendor prefix handling */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* Suppress vendor prefix warnings */
+html {
+  /* Remove problematic webkit properties */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  /* Remove problematic moz properties */
+  -moz-osx-font-smoothing: auto;
+  -webkit-font-smoothing: auto;
+  font-smoothing: auto;
 }
 
 body {

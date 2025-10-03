@@ -9,4 +9,13 @@ export default {
     extend: {},
   },
   plugins: [],
+  corePlugins: {
+    // Disable problematic vendor prefixes that cause warnings
+    textSizeAdjust: false,
+    fontSmoothing: false,
+  },
+  future: {
+    // Disable experimental features that might cause warnings
+    hoverOnlyWhenSupported: true,
+  },
 }
