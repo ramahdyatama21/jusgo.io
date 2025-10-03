@@ -70,7 +70,7 @@ const POS = () => {
   };
   
   const getTotal = () => {
-    return cart.reduce((total, item) => total + ((item.price || 0) * (item.quantity || 0)), 0);
+    return cart.reduce((total, item) => total + ((item.sell_price || 0) * (item.quantity || 0)), 0);
   };
   
   const handleCheckout = async () => {
@@ -81,9 +81,9 @@ const POS = () => {
         items: cart.map(item => ({
           productId: item.id,
           name: item.name || '',
-          price: item.price || 0,
+          price: item.sell_price || 0,
           qty: item.quantity || 0,
-          subtotal: (item.price || 0) * (item.quantity || 0)
+          subtotal: (item.sell_price || 0) * (item.quantity || 0)
         })),
         subtotal: getTotal(),
         discount: 0,
@@ -172,7 +172,7 @@ const POS = () => {
                     </p>
                   )}
                   <p style={{ color: '#3b82f6', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                    Rp {(product.price || 0).toLocaleString()}
+                    Rp {(product.sell_price || 0).toLocaleString()}
                   </p>
                   <p style={{ 
                     color: product.stock <= (product.min_stock || 5) ? '#ef4444' : '#64748b', 
@@ -225,7 +225,7 @@ const POS = () => {
                     <div>
                       <div style={{ fontWeight: '500' }}>{item.name}</div>
                       <div style={{ color: '#64748b', fontSize: '0.875rem' }}>
-                        Rp {(item.price || 0).toLocaleString()}
+                        Rp {(item.sell_price || 0).toLocaleString()}
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
