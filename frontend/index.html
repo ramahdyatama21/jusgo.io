@@ -5,6 +5,27 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>POS System - Aplikasi Kasir & Inventory</title>
+    <style>
+      /* Prevent flash of unstyled content and layout shifts */
+      * { box-sizing: border-box; }
+      body { 
+        margin: 0; 
+        font-family: system-ui, -apple-system, sans-serif;
+        background-color: #f3f4f6;
+      }
+      #root { 
+        min-height: 100vh; 
+        display: flex;
+        flex-direction: column;
+      }
+      /* Loading state styles */
+      .loading-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

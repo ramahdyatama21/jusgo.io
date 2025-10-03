@@ -12,5 +12,20 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  build: {
+    sourcemap: false, // Disable source maps in production
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          supabase: ['@supabase/supabase-js'],
+          charts: ['recharts']
+        }
+      }
+    }
+  },
+  css: {
+    devSourcemap: false // Disable CSS source maps
   }
 })
