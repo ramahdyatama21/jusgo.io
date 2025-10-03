@@ -39,7 +39,7 @@ const Layout = () => {
         <div className="p-6">
           <div className="flex items-center space-x-2">
             <img 
-              src="/assets/logos/jusgo-16" 
+              src="/assets/logos/JUSGO-16.svg" 
               alt="JusGo Logo" 
               className="h-8 w-auto"
               onError={(e) => {

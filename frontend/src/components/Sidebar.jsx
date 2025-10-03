@@ -51,7 +51,7 @@ const Sidebar = () => {
       <div className="p-6 border-b border-slate-700 bg-slate-800 flex items-center justify-center">
         <div className="flex items-center space-x-2">
           <img 
-            src="/assets/logos/jusgo-16" 
+            src="/assets/logos/JUSGO-16.svg" 
             alt="JusGo Logo" 
             className="h-8 w-auto"
             onError={(e) => {
