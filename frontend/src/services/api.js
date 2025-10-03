@@ -115,7 +115,7 @@ export const getStockMovements = async (productId = null) => {
       .order('created_at', { ascending: false })
       .limit(100);
     if (productId) {
-      query = query.eq('productId', productId);
+      query = query.eq('product_id', productId);
     }
     const { data, error } = await query;
     if (error) throw error;
@@ -132,15 +132,17 @@ export const addStock = async (productId, qty, description) => {
     if (!userData?.user?.id) {
       throw new Error('Sesi login telah berakhir. Silakan login ulang.');
     }
-    // Create movement record first
+    // Create movement record first (snake_case)
     const { data: movement, error: movementError } = await supabase
       .from('stock_movements')
-      .insert([{
-        productId: productId,
-        type: 'in', // atau 'out'
-        qty: qty,
-        description: description || ''
-      }])
+      .insert([
+        {
+          product_id: productId,
+          type: 'in',
+          qty: qty,
+          description: description || ''
+        }
+      ])
       .select('*, product:products(*)')
       .single();
     if (movementError) {
@@ -190,15 +192,17 @@ export const removeStock = async (productId, qty, description) => {
     if ((product?.stock || 0) < qty) {
       throw new Error('Stok tidak mencukupi');
     }
-    // Create movement record first
+    // Create movement record first (snake_case)
     const { data: movement, error: movementError } = await supabase
       .from('stock_movements')
-      .insert([{
-        productId: productId,
-        type: 'out',
-        qty: qty,
-        description: description || ''
-      }])
+      .insert([
+        {
+          product_id: productId,
+          type: 'out',
+          qty: qty,
+          description: description || ''
+        }
+      ])
       .select('*, product:products(*)')
       .single();
     if (movementError) {
@@ -289,25 +293,15 @@ export const createTransaction = async (payload) => {
   const transactionId = transaction.id;
 
   if (items.length > 0) {
-    const itemRowsCamel = items.map(i => ({
-      transactionId: Number(transactionId),
-      productId: Number(i.productId),
-      price: Number(i.price || 0),
-      qty: Number(i.qty || 0),
-      subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
-    }));
     const itemRowsSnake = items.map(i => ({
-      transaction_id: Number(transactionId),
-      product_id: Number(i.productId),
+      transaction_id: transactionId,
+      product_id: i.productId,
       price: Number(i.price || 0),
       qty: Number(i.qty || 0),
       subtotal: Number(i.subtotal ?? (Number(i.price || 0) * Number(i.qty || 0)))
     }));
     let itemsError;
-    ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsCamel));
-    if (itemsError && itemsError?.code === 'PGRST204') {
-      ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsSnake));
-    }
+    ({ error: itemsError } = await supabase.from('transaction_items').insert(itemRowsSnake));
     if (itemsError) {
       console.error('Supabase insert transaction_items error:', itemsError);
       throw itemsError;
@@ -316,15 +310,9 @@ export const createTransaction = async (payload) => {
     for (const i of items) {
       const qty = Number(i.qty) || 0;
       if (!i.productId || qty <= 0) continue;
-      let moveError;
-      ({ error: moveError } = await supabase.from('stock_movements').insert([
-        { productId: i.productId, qty, description: 'Penjualan', type: 'out' }
-      ]));
-      if (moveError && moveError?.code === 'PGRST204') {
-        ({ error: moveError } = await supabase.from('stock_movements').insert([
-          { product_id: i.productId, qty, description: 'Penjualan', type: 'out' }
-        ]));
-      }
+      const { error: moveError } = await supabase.from('stock_movements').insert([
+        { product_id: i.productId, qty, description: 'Penjualan', type: 'out' }
+      ]);
       if (moveError) {
         console.error('Supabase movement (sale) error:', moveError);
         throw moveError;
@@ -344,7 +332,7 @@ export const getTransactions = async (startDate = null, endDate = null) => {
   // Fetch from Supabase with product join and map to UI shape
   let data, error;
   let selectExpr = 'id, created_at, payment_method, subtotal, discount, total, notes, transaction_items(id, product_id, price, qty, subtotal, products(name))';
-  let query = supabase.from('transactions').select(selectExpr).order('id', { ascending: false });
+  let query = supabase.from('transactions').select(selectExpr).order('created_at', { ascending: false });
   if (startDate && endDate) {
     query = supabase.from('transactions')
       .select(selectExpr)
@@ -356,7 +344,7 @@ export const getTransactions = async (startDate = null, endDate = null) => {
   if (error && error?.code === 'PGRST204') {
     // Fallback camelCase if needed
     selectExpr = 'id, createdAt, paymentMethod, subtotal, discount, total, notes, transaction_items(id, productId, price, qty, subtotal, products(name))';
-    let q2 = supabase.from('transactions').select(selectExpr).order('id', { ascending: false });
+    let q2 = supabase.from('transactions').select(selectExpr).order('createdAt', { ascending: false });
     if (startDate && endDate) {
       q2 = supabase.from('transactions')
         .select(selectExpr)
@@ -537,12 +525,21 @@ export const createCategory = async (name) => {
 
 // Open Orders
 export const getOpenOrders = async () => {
-  const { data, error } = await supabase.from('open_orders').select('*');
+  const { data, error } = await supabase.from('open_orders').select('*').eq('status', 'open').order('created_at', { ascending: false });
   if (error) {
     console.error('Supabase getOpenOrders error:', error);
     return [];
   }
   return data || [];
+};
+
+export const markOpenOrderSent = async (id) => {
+  const { error } = await supabase.from('open_orders').update({ status: 'sent' }).eq('id', id);
+  if (error) {
+    console.error('Supabase markOpenOrderSent error:', error);
+    throw error;
+  }
+  return true;
 };
 
 export const saveOpenOrder = async (order) => {

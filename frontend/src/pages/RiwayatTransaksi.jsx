@@ -9,7 +9,17 @@ export default function RiwayatTransaksi() {
     let isMounted = true;
     (async () => {
       const data = await getTransactions();
-      if (isMounted) setRiwayat(Array.isArray(data) ? data : []);
+      if (isMounted) {
+        const rows = Array.isArray(data) ? data : [];
+        const normalized = rows
+          .map(r => ({
+            ...r,
+            items: Array.isArray(r.items) ? r.items : [],
+            created_at: r.created_at || r.createdAt || null
+          }))
+          .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        setRiwayat(normalized);
+      }
     })();
     return () => { isMounted = false; };
   }, []);

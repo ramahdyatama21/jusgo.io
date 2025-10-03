@@ -16,7 +16,7 @@ import Promo from './pages/Promo';
 import BelanjaBahan from './pages/BelanjaBahan';
 import { supabase } from './services/supabase';
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, allow }) {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
 
@@ -34,8 +34,16 @@ function ProtectedRoute({ children }) {
     };
   }, []);
 
-  if (loading) return null; // atau loading spinner
-  return session ? children : <Navigate to="/login" />;
+  if (loading) return null; // or spinner
+  if (!session) return <Navigate to="/login" />;
+
+  const role = session?.user?.app_metadata?.role || '';
+  if (Array.isArray(allow) && allow.length > 0 && !allow.includes(role)) {
+    // If unauthorized, send kasir to POS, others to dashboard
+    return <Navigate to={role === 'kasir' ? '/pos' : '/dashboard'} replace />;
+  }
+
+  return children;
 }
 
 function App() {
@@ -45,61 +53,61 @@ function App() {
         <Route path="/login" element={<Login />} />
         
         <Route path="/dashboard" element={
-          <ProtectedRoute>
+          <ProtectedRoute allow={["admin"]}>
             <Layout><Dashboard /></Layout>
           </ProtectedRoute>
         } />
         
         <Route path="/products" element={
-          <ProtectedRoute>
+          <ProtectedRoute allow={["admin"]}>
             <Layout><Products /></Layout>
           </ProtectedRoute>
         } />
         
         <Route path="/stock" element={
-          <ProtectedRoute>
+          <ProtectedRoute allow={["admin"]}>
             <Layout><Stock /></Layout>
           </ProtectedRoute>
         } />
         
         <Route path="/pos" element={
-          <ProtectedRoute>
+          <ProtectedRoute allow={["admin","kasir"]}>
             <Layout><POS /></Layout>
           </ProtectedRoute>
         } />
         
         <Route path="/reports" element={
-          <ProtectedRoute>
+          <ProtectedRoute allow={["admin"]}>
             <Layout><Reports /></Layout>
           </ProtectedRoute>
         } />
 
         <Route path="/open-order" element={
-          <ProtectedRoute>
+          <ProtectedRoute allow={["admin","kasir"]}>
             <Layout><OpenOrder /></Layout>
           </ProtectedRoute>
         } />
 
         <Route path="/riwayat-transaksi" element={
-          <ProtectedRoute>
+          <ProtectedRoute allow={["admin"]}>
             <Layout><RiwayatTransaksi /></Layout>
           </ProtectedRoute>
         } />
 
         <Route path="/kalkulator-hpp" element={
-          <ProtectedRoute>
+          <ProtectedRoute allow={["admin"]}>
             <Layout><KalkulatorHPP /></Layout>
           </ProtectedRoute>
         } />
 
         <Route path="/promo" element={
-          <ProtectedRoute>
+          <ProtectedRoute allow={["admin"]}>
             <Layout><Promo /></Layout>
           </ProtectedRoute>
         } />
 
         <Route path="/belanja-bahan" element={
-          <ProtectedRoute>
+          <ProtectedRoute allow={["admin"]}>
             <Layout><BelanjaBahan /></Layout>
           </ProtectedRoute>
         } />

@@ -1,6 +1,7 @@
 // frontend/src/pages/OpenOrder.jsx
 import { useState, useEffect } from 'react';
 import { getProducts, createTransaction, getOpenOrders, saveOpenOrder, deleteOpenOrder } from '../services/api';
+import { markOpenOrderSent } from '../services/api';
 
 export default function OpenOrder() {
   const [products, setProducts] = useState([]);
@@ -13,7 +14,13 @@ export default function OpenOrder() {
   const [editOrderId, setEditOrderId] = useState(null);
   const [riwayatTransaksi, setRiwayatTransaksi] = useState(() => {
     const data = localStorage.getItem('riwayatTransaksi');
-    return data ? JSON.parse(data) : [];
+    const arr = data ? JSON.parse(data) : [];
+    if (!Array.isArray(arr)) return [];
+    return arr.sort((a, b) => {
+      const tb = new Date(b?.sentAt || b?.created_at || b?.date || 0).getTime();
+      const ta = new Date(a?.sentAt || a?.created_at || a?.date || 0).getTime();
+      return tb - ta;
+    });
   });
   const [diskonManual, setDiskonManual] = useState('');
   const [promoList, setPromoList] = useState([]);
@@ -202,15 +209,32 @@ export default function OpenOrder() {
 
       await createTransaction(payload);
 
+      // Tandai open order sebagai sent di Supabase
+      try {
+        await markOpenOrderSent(order.id);
+      } catch (e) {
+        console.error('Gagal menandai order sent:', e);
+      }
+
+      // Refresh daftar open orders dari Supabase
+      try {
+        const data = await getOpenOrders();
+        setOrders(data || []);
+      } catch {}
+
       // Pindahkan order ke riwayatTransaksi (lokal) untuk kompatibilitas lama
-      setRiwayatTransaksi(prev => [
-        ...prev,
-        {
-          ...order,
-          status: 'sent',
-          sentAt: new Date().toISOString()
-        }
-      ]);
+      setRiwayatTransaksi(prev => {
+        const normalizedItems = Array.isArray(order.items)
+          ? order.items
+          : (typeof order.items === 'string' ? (() => { try { return JSON.parse(order.items); } catch { return []; } })() : []);
+        const entry = { ...order, items: normalizedItems, status: 'sent', sentAt: new Date().toISOString() };
+        const next = [entry, ...prev];
+        return next.sort((a, b) => {
+          const tb = new Date(b?.sentAt || b?.created_at || b?.date || 0).getTime();
+          const ta = new Date(a?.sentAt || a?.created_at || a?.date || 0).getTime();
+          return tb - ta;
+        });
+      });
 
       // Hapus dari daftar open orders
       setOrders(orders.filter(o => o.id !== order.id));

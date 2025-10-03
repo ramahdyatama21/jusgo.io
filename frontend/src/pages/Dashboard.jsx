@@ -26,7 +26,17 @@ export default function Dashboard() {
     try {
       // Hitung produk terlaris dari riwayat transaksi dan produk
       const products = JSON.parse(localStorage.getItem('products') || '[]');
-      const riwayat = JSON.parse(localStorage.getItem('riwayatTransaksi') || '[]');
+      const riwayatRaw = JSON.parse(localStorage.getItem('riwayatTransaksi') || '[]');
+      const riwayat = Array.isArray(riwayatRaw)
+        ? riwayatRaw.map((order) => {
+            let items = [];
+            if (Array.isArray(order?.items)) items = order.items;
+            else if (typeof order?.items === 'string') {
+              try { items = JSON.parse(order.items); } catch { items = []; }
+            } else { items = []; }
+            return { ...order, items };
+          })
+        : [];
     // Akumulasi qty, revenue, dan HPP per produk
     const productMap = {};
     products.forEach(p => {
@@ -197,7 +207,7 @@ export default function Dashboard() {
             </div>
             <div className="bg-blue-100 p-3 rounded-full">
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 19h16M4 15h10M4 11h7M4 7h13" />
               </svg>
             </div>
           </div>
