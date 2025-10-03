@@ -34,7 +34,12 @@ function ProtectedRoute({ children, allow }) {
     };
   }, []);
 
-  if (loading) return null; // or spinner
+  if (loading) return <div className="flex items-center justify-center min-h-screen">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Loading...</p>
+    </div>
+  </div>;
   if (!session) return <Navigate to="/login" />;
 
   const role = session?.user?.app_metadata?.role || '';
@@ -47,8 +52,9 @@ function ProtectedRoute({ children, allow }) {
 }
 
 function App() {
+  console.log('App component rendering...');
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/login" element={<Login />} />
         
