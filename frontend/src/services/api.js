@@ -53,19 +53,36 @@ export const getProfile = async () => {
 
 // Products
 export const getProducts = async (search = '', category = '') => {
-  let query = supabase.from('products').select('*');
-  if (search) {
-    query = query.ilike('name', `%${search}%`);
-  }
-  if (category) {
-    query = query.eq('category', category);
-  }
-  const { data, error } = await query;
-  if (error) {
-    console.error('Supabase getProducts error:', error);
+  try {
+    console.log('Fetching products with params:', { search, category });
+    
+    let query = supabase.from('products').select('*');
+    if (search) {
+      query = query.ilike('name', `%${search}%`);
+    }
+    if (category) {
+      query = query.eq('category', category);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Supabase getProducts error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+      return [];
+    }
+    
+    console.log('Products fetched successfully:', data?.length || 0, 'items');
+    return data || [];
+  } catch (err) {
+    console.error('Get products failed:', err);
     return [];
   }
-  return data || [];
 };
 
 export const createProduct = async (data) => {
@@ -78,12 +95,39 @@ export const createProduct = async (data) => {
 };
 
 export const updateProduct = async (id, data) => {
-  const { data: result, error } = await supabase.from('products').update(data).eq('id', id).select();
-  if (error) {
-    console.error('Supabase updateProduct error:', error);
-    throw error;
+  try {
+    console.log('Updating product:', { id, data });
+    
+    // Clean data - remove undefined values
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
+    
+    console.log('Clean data:', cleanData);
+    
+    const { data: result, error } = await supabase
+      .from('products')
+      .update(cleanData)
+      .eq('id', id)
+      .select();
+      
+    if (error) {
+      console.error('Supabase updateProduct error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+      throw error;
+    }
+    
+    console.log('Product updated successfully:', result);
+    return result?.[0] || null;
+  } catch (err) {
+    console.error('Update product failed:', err);
+    throw err;
   }
-  return result?.[0] || null;
 };
 
 export const deleteProduct = async (id) => {
