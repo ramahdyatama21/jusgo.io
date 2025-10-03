@@ -125,128 +125,140 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="loading">
-        <div className="spinner"></div>
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-lg">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="dashboard-header">
-        <div>
-          <h1 className="dashboard-title">Dashboard</h1>
-          <p className="dashboard-subtitle">Selamat datang, {user.name || 'User'}!</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+        <p className="text-gray-600 mt-1">Selamat datang, {user.name || 'User'}!</p>
       </div>
 
       {/* Quick Stats */}
-      <div className="quick-stats">
-        <div className="quick-stat success">
-          <div className="quick-stat-value">{stats.totalProducts}</div>
-          <div className="quick-stat-label">Total Produk</div>
-          <div className="quick-stat-change positive">Produk aktif</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Total Produk</p>
+              <p className="text-2xl font-bold text-gray-800 mt-1">{stats.totalProducts}</p>
+            </div>
+            <div className="bg-green-100 p-3 rounded-full">
+              <span className="text-2xl">📦</span>
+            </div>
+          </div>
+          <p className="text-sm text-green-600 mt-2">Produk aktif</p>
         </div>
-        
-        <div className="quick-stat">
-          <div className="quick-stat-value">{stats.totalSales}</div>
-          <div className="quick-stat-label">Total Transaksi</div>
-          <div className="quick-stat-change positive">Semua waktu</div>
+
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Total Transaksi</p>
+              <p className="text-2xl font-bold text-gray-800 mt-1">{stats.totalSales}</p>
+            </div>
+            <div className="bg-blue-100 p-3 rounded-full">
+              <span className="text-2xl">📊</span>
+            </div>
+          </div>
+          <p className="text-sm text-blue-600 mt-2">Semua waktu</p>
         </div>
-        
-        <div className="quick-stat warning">
-          <div className="quick-stat-value">{formatCurrency(stats.totalRevenue)}</div>
-          <div className="quick-stat-label">Total Pendapatan</div>
-          <div className="quick-stat-change positive">Semua waktu</div>
+
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Total Pendapatan</p>
+              <p className="text-2xl font-bold text-gray-800 mt-1">{formatCurrency(stats.totalRevenue)}</p>
+            </div>
+            <div className="bg-yellow-100 p-3 rounded-full">
+              <span className="text-2xl">💰</span>
+            </div>
+          </div>
+          <p className="text-sm text-yellow-600 mt-2">Semua waktu</p>
         </div>
-        
-        <div className="quick-stat danger">
-          <div className="quick-stat-value">{stats.lowStock}</div>
-          <div className="quick-stat-label">Stok Rendah</div>
-          <div className="quick-stat-change negative">Perlu restok</div>
+
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Stok Rendah</p>
+              <p className="text-2xl font-bold text-gray-800 mt-1">{stats.lowStock}</p>
+            </div>
+            <div className="bg-red-100 p-3 rounded-full">
+              <span className="text-2xl">⚠️</span>
+            </div>
+          </div>
+          <p className="text-sm text-red-600 mt-2">Perlu restok</p>
         </div>
       </div>
 
       {/* Two Column Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">Pendapatan Bulan Ini</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">Pendapatan Bulan Ini</h3>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: '700', color: '#10b981' }}>
+          <div className="text-3xl font-bold text-green-600">
             {formatCurrency(stats.totalRevenue)}
           </div>
-          <div style={{ color: '#64748b', marginTop: '0.5rem' }}>
+          <div className="text-gray-500 mt-2">
             Target: {formatCurrency(stats.totalRevenue * 1.2)}
           </div>
         </div>
         
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">Target Bulan Ini</h3>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">Target Bulan Ini</h3>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: '700', color: '#3b82f6' }}>
+          <div className="text-3xl font-bold text-blue-600">
             {formatCurrency(stats.totalRevenue * 1.2)}
           </div>
-          <div style={{ color: '#64748b', marginTop: '0.5rem' }}>
+          <div className="text-gray-500 mt-2">
             Progress: {Math.round((stats.totalRevenue / (stats.totalRevenue * 1.2)) * 100)}%
           </div>
         </div>
       </div>
 
       {/* Top Products */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Produk Terlaris</h3>
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-800">Produk Terlaris</h3>
         </div>
         {topProducts.length > 0 ? (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="table">
-              <thead>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th>Produk</th>
-                  <th>Kategori</th>
-                  <th>Harga Jual</th>
-                  <th>Stok</th>
-                  <th>Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produk</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Jual</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white divide-y divide-gray-200">
                 {topProducts.map((product) => (
-                  <tr key={product.id}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '1.5rem' }}>📦</span>
+                  <tr key={product.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">📦</span>
                         <div>
-                          <div style={{ fontWeight: '600' }}>{product.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>SKU: {product.sku}</div>
+                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                          <div className="text-sm text-gray-500">SKU: {product.sku}</div>
                         </div>
                       </div>
                     </td>
-                    <td>{product.category}</td>
-                    <td>{formatCurrency(product.sellPrice)}</td>
-                    <td>{product.stock} {product.unit}</td>
-                    <td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.category}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(product.sellPrice)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.stock} {product.unit}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       {product.stock <= product.minStock ? (
-                        <span style={{
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.75rem',
-                          fontWeight: '600',
-                          borderRadius: '9999px',
-                          backgroundColor: '#fecaca',
-                          color: '#991b1b'
-                        }}>
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                           Stok Rendah
                         </span>
                       ) : (
-                        <span style={{
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.75rem',
-                          fontWeight: '600',
-                          borderRadius: '9999px',
-                          backgroundColor: '#dcfce7',
-                          color: '#166534'
-                        }}>
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                           Tersedia
                         </span>
                       )}
@@ -257,7 +269,7 @@ const Dashboard = () => {
             </table>
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+          <div className="text-center py-8 text-gray-500">
             Belum ada data produk
           </div>
         )}
@@ -265,22 +277,17 @@ const Dashboard = () => {
 
       {/* Sales Charts */}
       {salesPerDay.length > 0 && (
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">Grafik Penjualan</h3>
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-6 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800">Grafik Penjualan</h3>
           </div>
-          <div style={{ marginBottom: '2rem' }}>
-            <h4 style={{ fontWeight: '600', marginBottom: '1rem' }}>Per Hari</h4>
-            <div style={{ height: '200px', overflow: 'auto' }}>
+          <div className="p-6">
+            <h4 className="font-semibold mb-4">Per Hari</h4>
+            <div className="h-48 overflow-auto">
               {salesPerDay.map((item, index) => (
-                <div key={index} style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  padding: '0.5rem',
-                  borderBottom: '1px solid #e5e7eb'
-                }}>
-                  <span>{item.date}</span>
-                  <span style={{ fontWeight: '600' }}>{formatCurrency(item.total)}</span>
+                <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">{item.date}</span>
+                  <span className="text-sm font-semibold text-gray-900">{formatCurrency(item.total)}</span>
                 </div>
               ))}
             </div>
