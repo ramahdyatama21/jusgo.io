@@ -98,13 +98,6 @@ const Login = () => {
           </button>
         </form>
         
-        <div className="alert alert-success" style={{ marginTop: '1rem' }}>
-          <p style={{ margin: 0, fontSize: '0.875rem' }}>
-            <strong>Demo Login:</strong><br />
-            Email: admin@example.com<br />
-            Password: password
-          </p>
-        </div>
       </div>
     </div>
   );
