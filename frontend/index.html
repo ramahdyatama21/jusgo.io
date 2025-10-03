@@ -10,6 +10,13 @@
       if (typeof window !== 'undefined') {
         window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = undefined;
         window.__REDUX_DEVTOOLS_EXTENSION__ = undefined;
+        // Disable source map requests
+        window.addEventListener('error', function(e) {
+          if (e.message && e.message.includes('source map')) {
+            e.preventDefault();
+            return false;
+          }
+        });
       }
     </script>
   </head>

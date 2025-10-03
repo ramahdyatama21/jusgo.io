@@ -36,7 +36,10 @@ export default defineConfig({
     }
   },
   css: {
-    devSourcemap: false
+    devSourcemap: false,
+    postcss: {
+      plugins: []
+    }
   },
   define: {
     __REACT_DEVTOOLS_GLOBAL_HOOK__: 'undefined',
