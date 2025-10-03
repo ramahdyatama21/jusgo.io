@@ -80,7 +80,7 @@ const Dashboard = () => {
       const { data: transactions, error } = await supabase
         .from('transactions')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
 
@@ -90,7 +90,7 @@ const Dashboard = () => {
       const perMonth = {};
 
       transactions?.forEach(transaction => {
-        const date = new Date(transaction.createdAt);
+        const date = new Date(transaction.created_at);
         const dayKey = date.toISOString().split('T')[0];
         const weekKey = getWeekKey(date);
         const monthKey = date.toISOString().slice(0, 7);
