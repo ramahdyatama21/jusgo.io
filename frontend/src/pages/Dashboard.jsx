@@ -8,6 +8,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mounted, setMounted] = useState(false);
   const [topProducts, setTopProducts] = useState([]);
   const [salesPerDay, setSalesPerDay] = useState([]);
   const [salesPerWeek, setSalesPerWeek] = useState([]);
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
 
   useEffect(() => {
+    setMounted(true);
     loadStats();
     try {
       // Hitung produk terlaris dari riwayat transaksi dan produk
@@ -146,6 +148,13 @@ export default function Dashboard() {
     }
   };
 
+  // Fallback data untuk mencegah crash
+  const safeStats = stats || {
+    today: { revenue: 0, transactionCount: 0 },
+    month: { revenue: 0, transactionCount: 0 },
+    products: { total: 0, lowStock: 0 }
+  };
+
   const formatRupiah = (amount) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -153,6 +162,18 @@ export default function Dashboard() {
       minimumFractionDigits: 0
     }).format(amount);
   };
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="loading-container">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="text-lg text-gray-600">Initializing...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -167,8 +188,16 @@ export default function Dashboard() {
   
   if (!stats) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-red-500">Gagal memuat data dashboard.</div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="text-lg text-red-500 mb-4">Gagal memuat data dashboard.</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Coba Lagi
+          </button>
+        </div>
       </div>
     );
   }
@@ -185,6 +214,25 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Fallback UI jika tidak ada data */}
+      {!safeStats && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800">Dashboard Siap Digunakan</h3>
+              <div className="mt-2 text-sm text-blue-700">
+                <p>Dashboard berhasil dimuat. Data akan ditampilkan setelah ada transaksi atau produk.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
@@ -192,7 +240,7 @@ export default function Dashboard() {
             <div>
               <p className="text-sm text-gray-600">Omzet Hari Ini</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">
-                {formatRupiah(stats?.today?.revenue || 0)}
+                {formatRupiah(safeStats.today.revenue)}
               </p>
             </div>
             <div className="bg-green-100 p-3 rounded-full">
@@ -202,7 +250,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-sm text-gray-500 mt-2">
-            {stats?.today?.transactionCount || 0} transaksi
+            {safeStats.today.transactionCount} transaksi
           </p>
         </div>
 
@@ -211,7 +259,7 @@ export default function Dashboard() {
             <div>
               <p className="text-sm text-gray-600">Omzet Bulan Ini</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">
-                {formatRupiah(stats?.month?.revenue || 0)}
+                {formatRupiah(safeStats.month.revenue)}
               </p>
             </div>
             <div className="bg-blue-100 p-3 rounded-full">
@@ -221,7 +269,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-sm text-gray-500 mt-2">
-            {stats?.month?.transactionCount || 0} transaksi
+            {safeStats.month.transactionCount || 0} transaksi
           </p>
         </div>
 
@@ -230,7 +278,7 @@ export default function Dashboard() {
             <div>
               <p className="text-sm text-gray-600">Total Produk</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">
-                {stats?.products?.total || 0}
+                {safeStats.products.total}
               </p>
             </div>
             <div className="bg-purple-100 p-3 rounded-full">

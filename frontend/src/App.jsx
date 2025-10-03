@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
@@ -48,15 +49,16 @@ function ProtectedRoute({ children, allow }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        
-        <Route path="/dashboard" element={
-          <ProtectedRoute allow={["admin"]}>
-            <Layout><Dashboard /></Layout>
-          </ProtectedRoute>
-        } />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          
+          <Route path="/dashboard" element={
+            <ProtectedRoute allow={["admin"]}>
+              <Layout><Dashboard /></Layout>
+            </ProtectedRoute>
+          } />
         
         <Route path="/products" element={
           <ProtectedRoute allow={["admin"]}>
@@ -115,6 +117,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
