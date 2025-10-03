@@ -12,17 +12,10 @@ html {
   -webkit-text-size-adjust: 100% !important;
 }
 
-body {
-  /* Remove all problematic properties */
-  font-smoothing: auto !important;
-  -webkit-font-smoothing: auto !important;
-  -moz-osx-font-smoothing: auto !important;
-}
 
 /* Force override any Tailwind defaults */
 html, body {
   text-size-adjust: 100% !important;
-  font-smoothing: auto !important;
 }
 
 body {
