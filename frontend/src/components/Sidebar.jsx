@@ -49,7 +49,26 @@ const Sidebar = () => {
   return (
     <div className="w-70 bg-slate-800 text-white fixed h-screen overflow-y-auto z-50 shadow-lg border-r border-slate-700">
       <div className="p-6 border-b border-slate-700 bg-slate-800 flex items-center justify-center">
-        <h2 className="text-xl font-bold text-white text-center tracking-tight">POS System</h2>
+        <div className="flex items-center space-x-2">
+          <img 
+            src="/logo-jusgor.png" 
+            alt="JusGor Logo" 
+            className="h-8 w-auto"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="flex items-center space-x-1" style={{display: 'none'}}>
+            <span className="text-orange-500 font-bold text-lg">Jus</span>
+            <span className="text-white font-bold text-lg">Gor</span>
+            <span className="text-white font-bold text-lg">!</span>
+            <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center ml-2">
+              <span className="text-white text-sm font-bold">→</span>
+            </div>
+          </div>
+          <span className="text-sm font-medium text-slate-300">POS</span>
+        </div>
       </div>
 
       <nav className="p-4 flex-1">

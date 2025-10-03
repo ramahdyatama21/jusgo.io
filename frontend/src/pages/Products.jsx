@@ -13,7 +13,7 @@ const Products = () => {
     name: '',
     sell_price: '',
     stock: '',
-    category: '',
+    category: 'ColdPressJuice',
     description: '',
     sku: '',
     min_stock: 5,
@@ -81,7 +81,7 @@ const Products = () => {
       name: product.name || '',
       sell_price: product.sell_price || '',
       stock: product.stock || '',
-      category: product.category || '',
+      category: 'ColdPressJuice',
       description: product.description || '',
       sku: product.sku || '',
       min_stock: product.min_stock || 5,
@@ -107,7 +107,7 @@ const Products = () => {
       name: '',
       sell_price: '',
       stock: '',
-      category: '',
+      category: 'ColdPressJuice',
       description: '',
       sku: '',
       min_stock: 5,
@@ -252,19 +252,16 @@ const Products = () => {
               </div>
               <div className="form-group">
                 <label className="form-label">Kategori</label>
-                <select
-                  className="form-input"
-                  value={formData.category}
-                  onChange={(e) => setFormData({...formData, category: e.target.value})}
-                  required
-                >
-                  <option value="">Pilih Kategori</option>
-                  <option value="Makanan">Makanan</option>
-                  <option value="Minuman">Minuman</option>
-                  <option value="Snack">Snack</option>
-                  <option value="Dessert">Dessert</option>
-                  <option value="Lainnya">Lainnya</option>
-                </select>
+                <div style={{
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.375rem',
+                  backgroundColor: '#f9fafb',
+                  color: '#6b7280',
+                  fontSize: '0.875rem'
+                }}>
+                  ColdPressJuice (Otomatis)
+                </div>
               </div>
             </div>
             <div className="form-group">
