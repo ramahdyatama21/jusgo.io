@@ -39,6 +39,10 @@ export default defineConfig({
     devSourcemap: false
   },
   define: {
-    __REACT_DEVTOOLS_GLOBAL_HOOK__: 'undefined'
+    __REACT_DEVTOOLS_GLOBAL_HOOK__: 'undefined',
+    'process.env.NODE_ENV': '"production"'
+  },
+  esbuild: {
+    drop: ['console', 'debugger']
   }
 })
