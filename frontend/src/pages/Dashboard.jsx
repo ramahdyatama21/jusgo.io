@@ -1,34 +1,127 @@
-import { useState, useEffect } from 'react';
-import { getDashboardStats } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { productService } from '../services/productService';
+import { supabase } from '../services/supabase';
 
-export default function Dashboard() {
-  const [stats, setStats] = useState(null);
+const Dashboard = () => {
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    totalSales: 0,
+    totalRevenue: 0,
+    lowStock: 0
+  });
+  const [topProducts, setTopProducts] = useState([]);
+  const [salesPerDay, setSalesPerDay] = useState([]);
+  const [salesPerWeek, setSalesPerWeek] = useState([]);
+  const [salesPerMonth, setSalesPerMonth] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    const loadStats = async () => {
-      try {
-        setLoading(true);
-        const data = await getDashboardStats();
-        setStats(data);
-      } catch (err) {
-        console.error('Error loading dashboard stats:', err);
-        setError('Gagal memuat data dashboard');
-        // Set default stats if API fails
-        setStats({
-          todayRevenue: 0,
-          monthRevenue: 0,
-          totalProducts: 0,
-          lowStock: 0
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadStats();
+    loadTopProducts();
+    loadSalesData();
   }, []);
+
+  const loadStats = async () => {
+    try {
+      // Get products count
+      const { data: products, error: productsError } = await supabase
+        .from('products')
+        .select('*');
+      
+      if (productsError) throw productsError;
+
+      // Get transactions count and revenue
+      const { data: transactions, error: transactionsError } = await supabase
+        .from('transactions')
+        .select('*');
+      
+      if (transactionsError) throw transactionsError;
+
+      // Calculate stats
+      const totalProducts = products?.length || 0;
+      const lowStock = products?.filter(p => p.stock <= p.minStock).length || 0;
+      const totalSales = transactions?.length || 0;
+      const totalRevenue = transactions?.reduce((sum, t) => sum + (t.total || 0), 0) || 0;
+
+      setStats({
+        totalProducts,
+        totalSales,
+        totalRevenue,
+        lowStock
+      });
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadTopProducts = async () => {
+    try {
+      // Get products with sales data
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('stock', { ascending: false })
+        .limit(5);
+      
+      if (error) throw error;
+      
+      setTopProducts(products || []);
+    } catch (error) {
+      console.error('Error loading top products:', error);
+    }
+  };
+
+  const loadSalesData = async () => {
+    try {
+      // Get transactions for charts
+      const { data: transactions, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('createdAt', { ascending: false });
+      
+      if (error) throw error;
+
+      // Process sales data
+      const perDay = {};
+      const perWeek = {};
+      const perMonth = {};
+
+      transactions?.forEach(transaction => {
+        const date = new Date(transaction.createdAt);
+        const dayKey = date.toISOString().split('T')[0];
+        const weekKey = getWeekKey(date);
+        const monthKey = date.toISOString().slice(0, 7);
+
+        perDay[dayKey] = (perDay[dayKey] || 0) + (transaction.total || 0);
+        perWeek[weekKey] = (perWeek[weekKey] || 0) + (transaction.total || 0);
+        perMonth[monthKey] = (perMonth[monthKey] || 0) + (transaction.total || 0);
+      });
+
+      setSalesPerDay(Object.entries(perDay).map(([date, total]) => ({ date, total })));
+      setSalesPerWeek(Object.entries(perWeek).map(([week, total]) => ({ week, total })));
+      setSalesPerMonth(Object.entries(perMonth).map(([month, total]) => ({ month, total })));
+    } catch (error) {
+      console.error('Error loading sales data:', error);
+    }
+  };
+
+  const getWeekKey = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const week = Math.ceil((date.getDate() - 1) / 7) + 1;
+    return `${year}-${String(month).padStart(2, '0')}-W${week}`;
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
 
   if (loading) {
     return (
@@ -38,189 +131,164 @@ export default function Dashboard() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="alert alert-error">
-        <h3>Error</h3>
-        <p>{error}</p>
-        <button 
-          className="btn btn-primary" 
-          onClick={() => window.location.reload()}
-        >
-          Muat Ulang
-        </button>
-      </div>
-    );
-  }
-
-  const safeStats = stats || {
-    todayRevenue: 0,
-    monthRevenue: 0,
-    totalProducts: 0,
-    lowStock: 0
-  };
-
   return (
     <div>
-      {/* Header Section */}
       <div className="dashboard-header">
         <div>
           <h1 className="dashboard-title">Dashboard</h1>
-          <p className="dashboard-subtitle">Selamat datang di POS System</p>
+          <p className="dashboard-subtitle">Selamat datang, {user.name || 'User'}!</p>
         </div>
       </div>
 
-      {/* Quick Stats like TailAdmin */}
+      {/* Quick Stats */}
       <div className="quick-stats">
         <div className="quick-stat success">
-          <div className="quick-stat-value">
-            Rp {safeStats.todayRevenue?.toLocaleString() || '0'}
-          </div>
-          <div className="quick-stat-label">Omzet Hari Ini</div>
-          <div className="quick-stat-change positive">+11.01%</div>
-        </div>
-
-        <div className="quick-stat">
-          <div className="quick-stat-value">
-            Rp {safeStats.monthRevenue?.toLocaleString() || '0'}
-          </div>
-          <div className="quick-stat-label">Omzet Bulan Ini</div>
-          <div className="quick-stat-change positive">+9.05%</div>
-        </div>
-
-        <div className="quick-stat warning">
-          <div className="quick-stat-value">
-            {safeStats.totalProducts || 0}
-          </div>
+          <div className="quick-stat-value">{stats.totalProducts}</div>
           <div className="quick-stat-label">Total Produk</div>
-          <div className="quick-stat-change positive">+5.2%</div>
+          <div className="quick-stat-change positive">Produk aktif</div>
         </div>
-
+        
+        <div className="quick-stat">
+          <div className="quick-stat-value">{stats.totalSales}</div>
+          <div className="quick-stat-label">Total Transaksi</div>
+          <div className="quick-stat-change positive">Semua waktu</div>
+        </div>
+        
+        <div className="quick-stat warning">
+          <div className="quick-stat-value">{formatCurrency(stats.totalRevenue)}</div>
+          <div className="quick-stat-label">Total Pendapatan</div>
+          <div className="quick-stat-change positive">Semua waktu</div>
+        </div>
+        
         <div className="quick-stat danger">
-          <div className="quick-stat-value">
-            {safeStats.lowStock || 0}
-          </div>
+          <div className="quick-stat-value">{stats.lowStock}</div>
           <div className="quick-stat-label">Stok Rendah</div>
-          <div className="quick-stat-change negative">Perhatian!</div>
+          <div className="quick-stat-change negative">Perlu restok</div>
         </div>
       </div>
 
-      {/* Two Column Layout like TailAdmin */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
-        {/* Left Column - Charts/Data */}
+      {/* Two Column Layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">Monthly Sales</h3>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>View More</button>
-              <button className="btn btn-danger" style={{ fontSize: '0.75rem' }}>Delete</button>
-            </div>
+            <h3 className="card-title">Pendapatan Bulan Ini</h3>
           </div>
-          <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '0.5rem' }}>
-            <div style={{ fontSize: '3rem', fontWeight: 'bold', color: '#3b82f6', marginBottom: '1rem' }}>📊</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '0.5rem' }}>Rp 1,250,000</div>
-            <div style={{ color: '#64748b' }}>Total Penjualan Bulan Ini</div>
-            <div style={{ marginTop: '1rem', padding: '1rem', background: 'white', borderRadius: '0.5rem' }}>
-              <div style={{ fontSize: '0.875rem', color: '#10b981', fontWeight: '600' }}>+10%</div>
-              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>You earn Rp 328,700 today, it's higher than last month. Keep up your good work!</div>
-            </div>
+          <div style={{ fontSize: '2rem', fontWeight: '700', color: '#10b981' }}>
+            {formatCurrency(stats.totalRevenue)}
+          </div>
+          <div style={{ color: '#64748b', marginTop: '0.5rem' }}>
+            Target: {formatCurrency(stats.totalRevenue * 1.2)}
           </div>
         </div>
-
-        {/* Right Column - Target/Stats */}
+        
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">Monthly Target</h3>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>View More</button>
-              <button className="btn btn-danger" style={{ fontSize: '0.75rem' }}>Delete</button>
-            </div>
+            <h3 className="card-title">Target Bulan Ini</h3>
           </div>
-          <div style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1e293b' }}>Target</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#3b82f6' }}>Rp 20K</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1e293b' }}>Revenue</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981' }}>Rp 20K</div>
-              </div>
-            </div>
-            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1e293b' }}>Today</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#3b82f6' }}>Rp 20K</div>
-            </div>
+          <div style={{ fontSize: '2rem', fontWeight: '700', color: '#3b82f6' }}>
+            {formatCurrency(stats.totalRevenue * 1.2)}
+          </div>
+          <div style={{ color: '#64748b', marginTop: '0.5rem' }}>
+            Progress: {Math.round((stats.totalRevenue / (stats.totalRevenue * 1.2)) * 100)}%
           </div>
         </div>
       </div>
 
-      {/* Recent Orders Table like TailAdmin */}
+      {/* Top Products */}
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title">Recent Orders</h3>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>Filter</button>
-            <button className="btn btn-primary" style={{ fontSize: '0.75rem' }}>See all</button>
+          <h3 className="card-title">Produk Terlaris</h3>
+        </div>
+        {topProducts.length > 0 ? (
+          <div style={{ overflowX: 'auto' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Produk</th>
+                  <th>Kategori</th>
+                  <th>Harga Jual</th>
+                  <th>Stok</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topProducts.map((product) => (
+                  <tr key={product.id}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '1.5rem' }}>📦</span>
+                        <div>
+                          <div style={{ fontWeight: '600' }}>{product.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>SKU: {product.sku}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{product.category}</td>
+                    <td>{formatCurrency(product.sellPrice)}</td>
+                    <td>{product.stock} {product.unit}</td>
+                    <td>
+                      {product.stock <= product.minStock ? (
+                        <span style={{
+                          padding: '0.25rem 0.5rem',
+                          fontSize: '0.75rem',
+                          fontWeight: '600',
+                          borderRadius: '9999px',
+                          backgroundColor: '#fecaca',
+                          color: '#991b1b'
+                        }}>
+                          Stok Rendah
+                        </span>
+                      ) : (
+                        <span style={{
+                          padding: '0.25rem 0.5rem',
+                          fontSize: '0.75rem',
+                          fontWeight: '600',
+                          borderRadius: '9999px',
+                          backgroundColor: '#dcfce7',
+                          color: '#166534'
+                        }}>
+                          Tersedia
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+            Belum ada data produk
+          </div>
+        )}
+      </div>
+
+      {/* Sales Charts */}
+      {salesPerDay.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">Grafik Penjualan</h3>
+          </div>
+          <div style={{ marginBottom: '2rem' }}>
+            <h4 style={{ fontWeight: '600', marginBottom: '1rem' }}>Per Hari</h4>
+            <div style={{ height: '200px', overflow: 'auto' }}>
+              {salesPerDay.map((item, index) => (
+                <div key={index} style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  padding: '0.5rem',
+                  borderBottom: '1px solid #e5e7eb'
+                }}>
+                  <span>{item.date}</span>
+                  <span style={{ fontWeight: '600' }}>{formatCurrency(item.total)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Products</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '2rem', height: '2rem', background: '#f3f4f6', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📱</div>
-                    <div>
-                      <div style={{ fontWeight: '600' }}>Macbook pro 13"</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>2 Variants</div>
-                    </div>
-                  </div>
-                </td>
-                <td>Laptop</td>
-                <td>Rp 23,990,000</td>
-                <td><span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: '600', background: '#dcfce7', color: '#166534' }}>Delivered</span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '2rem', height: '2rem', background: '#f3f4f6', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⌚</div>
-                    <div>
-                      <div style={{ fontWeight: '600' }}>Apple Watch Ultra</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>1 Variants</div>
-                    </div>
-                  </div>
-                </td>
-                <td>Watch</td>
-                <td>Rp 8,790,000</td>
-                <td><span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: '600', background: '#fef3c7', color: '#d97706' }}>Pending</span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '2rem', height: '2rem', background: '#f3f4f6', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📱</div>
-                    <div>
-                      <div style={{ fontWeight: '600' }}>iPhone 15 Pro Max</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>2 Variants</div>
-                    </div>
-                  </div>
-                </td>
-                <td>SmartPhone</td>
-                <td>Rp 18,690,000</td>
-                <td><span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: '600', background: '#dcfce7', color: '#166534' }}>Delivered</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      )}
     </div>
   );
-}
+};
+
+export default Dashboard;
