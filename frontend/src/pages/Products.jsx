@@ -1,341 +1,145 @@
-// frontend/src/pages/Products.jsx
+import React, { useState } from 'react';
 
-import { useState, useEffect } from 'react';
-import { getProducts, createProduct, updateProduct, deleteProduct, getCategories, createCategory } from '../services/api';
-
-export default function Products() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [search, setSearch] = useState('');
+const Products = () => {
+  const [products, setProducts] = useState([
+    { id: 1, name: 'Kopi Hitam', price: 15000, stock: 50, category: 'Minuman' },
+    { id: 2, name: 'Nasi Goreng', price: 25000, stock: 25, category: 'Makanan' },
+    { id: 3, name: 'Teh Manis', price: 8000, stock: 100, category: 'Minuman' },
+    { id: 4, name: 'Mie Ayam', price: 20000, stock: 15, category: 'Makanan' }
+  ]);
+  
+  const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    sku: '',
     name: '',
-    category: 'Umum',
-    unit: 'pcs',
-    buyPrice: 0,
-    sellPrice: 0,
-    stock: 0,
-    minStock: 5,
-    description: ''
+    price: '',
+    stock: '',
+    category: ''
   });
-  const [categories, setCategories] = useState([]);
-
-  const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
-  const isAdmin = user.role === 'authenticated';
-
-  useEffect(() => {
-    loadProducts();
-    loadCategories();
-  }, [search]);
-
-  const loadProducts = async () => {
-    try {
-      const data = await getProducts(search);
-      setProducts(data);
-    } catch (error) {
-      console.error('Error loading products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadCategories = async () => {
-    const data = await getCategories();
-    setCategories(data);
-  };
-
-  const handleSubmit = async (e) => {
+  
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      if (editingProduct) {
-        await updateProduct(editingProduct.id, formData);
-      } else {
-        await createProduct(formData);
-      }
-      setShowModal(false);
-      resetForm();
-      loadProducts();
-    } catch (error) {
-      alert(`Gagal menyimpan produk: ${error?.message || 'Unknown error'}`);
-    }
+    const newProduct = {
+      id: products.length + 1,
+      ...formData,
+      price: parseInt(formData.price),
+      stock: parseInt(formData.stock)
+    };
+    setProducts([...products, newProduct]);
+    setFormData({ name: '', price: '', stock: '', category: '' });
+    setShowForm(false);
   };
-
-  const handleEdit = (product) => {
-    setEditingProduct(product);
-    setFormData(product);
-    setShowModal(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (confirm('Yakin ingin menghapus produk ini?')) {
-      try {
-        await deleteProduct(id);
-        loadProducts();
-      } catch (error) {
-        alert('Gagal menghapus produk');
-      }
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      sku: '',
-      name: '',
-      category: 'Umum',
-      unit: 'pcs',
-      buyPrice: 0,
-      sellPrice: 0,
-      stock: 0,
-      minStock: 5,
-      description: ''
-    });
-    setEditingProduct(null);
-  };
-
-  const formatRupiah = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
-  if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading...</div>;
-  }
-
+  
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800">Manajemen Produk</h1>
-        {isAdmin && (
-          <button
-            onClick={() => {
-              resetForm();
-              setShowModal(true);
-            }}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Manajemen Produk</h1>
+        <p className="page-subtitle">Kelola produk dan stok</p>
+      </div>
+      
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Daftar Produk</h3>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowForm(!showForm)}
           >
-            + Tambah Produk
+            {showForm ? 'Batal' : 'Tambah Produk'}
           </button>
+        </div>
+        
+        {showForm && (
+          <form onSubmit={handleSubmit} style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <div className="form-group">
+                <label className="form-label">Nama Produk</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Harga</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={formData.price}
+                  onChange={(e) => setFormData({...formData, price: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Stok</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={formData.stock}
+                  onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Kategori</label>
+                <select
+                  className="form-input"
+                  value={formData.category}
+                  onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  required
+                >
+                  <option value="">Pilih Kategori</option>
+                  <option value="Makanan">Makanan</option>
+                  <option value="Minuman">Minuman</option>
+                  <option value="Snack">Snack</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" className="btn btn-success">Simpan Produk</button>
+          </form>
         )}
-      </div>
-
-      {/* Search */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <input
-          type="text"
-          placeholder="Cari produk (nama atau SKU)..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-      </div>
-
-      {/* Products Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        
+        <div style={{ overflowX: 'auto' }}>
+          <table className="table">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Produk</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga Jual</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok</th>
-                {isAdmin && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                )}
+                <th>Nama Produk</th>
+                <th>Harga</th>
+                <th>Stok</th>
+                <th>Kategori</th>
+                <th>Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {products.map((product) => (
-                <tr key={product.id} className={product.stock <= product.minStock ? 'bg-red-50' : ''}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.sku}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                    <div className="text-sm text-gray-500">{product.unit}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.category}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatRupiah(product.sellPrice)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-sm ${product.stock <= product.minStock ? 'text-red-600 font-bold' : 'text-gray-900'}`}>
+                <tr key={product.id}>
+                  <td>{product.name}</td>
+                  <td>Rp {product.price.toLocaleString()}</td>
+                  <td>
+                    <span style={{ 
+                      color: product.stock < 20 ? '#ef4444' : '#10b981',
+                      fontWeight: '500'
+                    }}>
                       {product.stock}
                     </span>
                   </td>
-                  {isAdmin && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                      <button
-                        onClick={() => handleEdit(product)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Hapus
-                      </button>
-                    </td>
-                  )}
+                  <td>{product.category}</td>
+                  <td>
+                    <button className="btn btn-secondary" style={{ marginRight: '0.5rem' }}>
+                      Edit
+                    </button>
+                    <button className="btn btn-danger">
+                      Hapus
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
-
-      {/* Modal Form */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                {editingProduct ? 'Edit Produk' : 'Tambah Produk Baru'}
-              </h2>
-              
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                    <input
-                      type="text"
-                      value={formData.sku}
-                      onChange={(e) => setFormData({...formData, sku: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                    <div className="flex gap-2">
-                      <select
-                        value={formData.category}
-                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">-- Pilih Kategori --</option>
-                        {categories.map((c) => (
-                          <option key={c.id} value={c.name}>{c.name}</option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const name = prompt('Nama kategori baru');
-                          if (name) {
-                            try {
-                              const created = await createCategory(name);
-                              await loadCategories();
-                              setFormData({ ...formData, category: created?.name || name });
-                            } catch (err) {
-                              alert(`Gagal menambah kategori: ${err?.message || 'Unknown error'}`);
-                            }
-                          }
-                        }}
-                        className="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-                        title="Tambah kategori"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Satuan</label>
-                    <select
-                      value={formData.unit}
-                      onChange={(e) => setFormData({...formData, unit: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="pcs">pcs</option>
-                      <option value="kg">kg</option>
-                      <option value="liter">liter</option>
-                      <option value="box">box</option>
-                      <option value="lusin">lusin</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Harga Jual</label>
-                    <input
-                      type="number"
-                      value={formData.sellPrice}
-                      onChange={(e) => setFormData({...formData, sellPrice: parseFloat(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Stok Awal</label>
-                    <input
-                      type="number"
-                      value={formData.stock}
-                      onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      required
-                      disabled={editingProduct}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Stok Minimum</label>
-                    <input
-                      type="number"
-                      value={formData.minStock}
-                      onChange={(e) => setFormData({...formData, minStock: parseInt(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      rows="3"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowModal(false);
-                      resetForm();
-                    }}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    {editingProduct ? 'Update' : 'Simpan'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-}
+};
+
+export default Products;

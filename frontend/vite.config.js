@@ -14,17 +14,19 @@ export default defineConfig({
     }
   },
   build: {
-    sourcemap: false, // Disable source maps in production
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
+          supabase: ['@supabase/supabase-js'],
+          charts: ['recharts'],
           router: ['react-router-dom']
         }
       }
     },
     chunkSizeWarningLimit: 1000,
-    cssCodeSplit: false, // Disable CSS code splitting
+    cssCodeSplit: false,
     minify: 'terser',
     terserOptions: {
       compress: {
@@ -34,10 +36,9 @@ export default defineConfig({
     }
   },
   css: {
-    devSourcemap: false // Disable CSS source maps
+    devSourcemap: false
   },
   define: {
-    // Disable React DevTools in production
     __REACT_DEVTOOLS_GLOBAL_HOOK__: 'undefined'
   }
 })

@@ -1,60 +1,69 @@
-// frontend/src/pages/Login.jsx
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function Login() {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
-
-  const handleLogin = async (e) => {
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     
-    // Simple mock login
-    if (email && password) {
+    try {
       // Simulate login
-      localStorage.setItem('supabase_user', JSON.stringify({
-        email: email,
-        role: 'admin'
-      }));
-      
-      setTimeout(() => {
+      if (email && password) {
+        // Mock authentication
+        const user = {
+          id: 1,
+          name: 'Admin',
+          email: email,
+          role: 'admin'
+        };
+        
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        setTimeout(() => {
+          setLoading(false);
+          navigate('/dashboard');
+        }, 1000);
+      } else {
+        setError('Email dan password harus diisi');
         setLoading(false);
-        navigate('/dashboard');
-      }, 1000);
-    } else {
+      }
+    } catch (err) {
+      setError('Terjadi kesalahan saat login');
       setLoading(false);
-      alert('Email dan password harus diisi');
     }
   };
-
+  
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '1rem'
     }}>
-      <div style={{
-        background: 'white',
-        padding: '40px',
-        borderRadius: '10px',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-        width: '100%',
-        maxWidth: '400px'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', marginBottom: '10px' }}>
+      <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '0.5rem' }}>
             POS System
           </h1>
-          <p style={{ color: '#6b7280' }}>Masuk ke akun Anda</p>
+          <p style={{ color: '#64748b' }}>Masuk ke akun Anda</p>
         </div>
-
-        <form onSubmit={handleLogin}>
+        
+        {error && (
+          <div className="alert alert-error">
+            {error}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Email</label>
             <input
@@ -66,7 +75,7 @@ export default function Login() {
               required
             />
           </div>
-
+          
           <div className="form-group">
             <label className="form-label">Password</label>
             <input
@@ -78,25 +87,19 @@ export default function Login() {
               required
             />
           </div>
-
+          
           <button
             type="submit"
-            className="btn"
-            style={{ width: '100%', marginTop: '20px' }}
+            className="btn btn-primary"
+            style={{ width: '100%' }}
             disabled={loading}
           >
             {loading ? 'Memproses...' : 'Masuk'}
           </button>
         </form>
-
-        <div style={{ 
-          marginTop: '20px', 
-          padding: '15px', 
-          background: '#f0f9ff', 
-          borderRadius: '6px',
-          border: '1px solid #bae6fd'
-        }}>
-          <p style={{ fontSize: '14px', color: '#0369a1', margin: '0' }}>
+        
+        <div className="alert alert-success" style={{ marginTop: '1rem' }}>
+          <p style={{ margin: 0, fontSize: '0.875rem' }}>
             <strong>Demo Login:</strong><br />
             Email: admin@example.com<br />
             Password: password
@@ -105,4 +108,6 @@ export default function Login() {
       </div>
     </div>
   );
-}
+};
+
+export default Login;
