@@ -1,43 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getTransactions } from '../services/api';
+import PrintReceipt from '../components/PrintReceipt';
 
 const Transactions = () => {
-  const [transactions] = useState([
-    {
-      id: 'TXN001',
-      date: '2024-01-15',
-      time: '14:30',
-      items: 'Kopi Hitam, Nasi Goreng',
-      total: 40000,
-      paymentMethod: 'Cash',
-      status: 'Completed'
-    },
-    {
-      id: 'TXN002',
-      date: '2024-01-15',
-      time: '15:45',
-      items: 'Teh Manis, Mie Ayam',
-      total: 28000,
-      paymentMethod: 'QRIS',
-      status: 'Completed'
-    },
-    {
-      id: 'TXN003',
-      date: '2024-01-15',
-      time: '16:20',
-      items: 'Kopi Hitam',
-      total: 15000,
-      paymentMethod: 'Cash',
-      status: 'Completed'
-    }
-  ]);
-  
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+
+  useEffect(() => {
+    loadTransactions();
+  }, []);
+
+  const loadTransactions = async () => {
+    try {
+      setLoading(true);
+      const data = await getTransactions();
+      setTransactions(data || []);
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePrintReceipt = (transaction) => {
+    // Prepare transaction data for receipt
+    const receiptData = {
+      id: transaction.id,
+      items: transaction.items || [],
+      subtotal: transaction.subtotal || transaction.total || 0,
+      discount: transaction.discount || 0,
+      tax: transaction.tax || 0,
+      total: transaction.total || 0,
+      payment: transaction.payment || transaction.total || 0,
+      change: transaction.change || 0,
+      paymentMethod: transaction.paymentMethod || transaction.payment_method || 'tunai',
+      cashier: transaction.cashier || 'Admin',
+      created_at: transaction.created_at || new Date()
+    };
+    
+    setSelectedTransaction(receiptData);
+    setShowReceipt(true);
+  };
   
   const filteredTransactions = transactions.filter(transaction => {
-    const matchesFilter = filter === 'all' || transaction.status.toLowerCase() === filter;
-    const matchesSearch = transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.items.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filter === 'all' || (transaction.status || '').toLowerCase() === filter;
+    const transactionId = (transaction.id || '').toString().toLowerCase();
+    const itemsText = Array.isArray(transaction.items) 
+      ? transaction.items.map(item => item.name || '').join(' ').toLowerCase()
+      : (transaction.items || '').toString().toLowerCase();
+    const matchesSearch = transactionId.includes(searchTerm.toLowerCase()) ||
+                         itemsText.includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
   
@@ -138,14 +154,24 @@ const Transactions = () => {
             <tbody>
               {filteredTransactions.map((transaction) => (
                 <tr key={transaction.id}>
-                  <td style={{ fontWeight: '500' }}>{transaction.id}</td>
+                  <td style={{ fontWeight: '500' }}>#{(transaction.id || '').slice(0, 8)}</td>
                   <td>
-                    <div>{transaction.date}</div>
+                    <div>
+                      {new Date(transaction.created_at || transaction.date).toLocaleDateString('id-ID')}
+                    </div>
                     <div style={{ color: '#64748b', fontSize: '0.875rem' }}>
-                      {transaction.time}
+                      {new Date(transaction.created_at || transaction.date).toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
                     </div>
                   </td>
-                  <td>{transaction.items}</td>
+                  <td>
+                    {Array.isArray(transaction.items) 
+                      ? transaction.items.map(item => item.name).join(', ')
+                      : transaction.items || '-'
+                    }
+                  </td>
                   <td style={{ fontWeight: '500' }}>
                     Rp {transaction.total.toLocaleString()}
                   </td>
@@ -163,9 +189,21 @@ const Transactions = () => {
                     </span>
                   </td>
                   <td>
-                    <button className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>
-                      Detail
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}
+                        onClick={() => handlePrintReceipt(transaction)}
+                      >
+                        🖨️ Print
+                      </button>
+                      <button 
+                        className="btn btn-secondary" 
+                        style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}
+                      >
+                        👁️ Detail
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -175,10 +213,18 @@ const Transactions = () => {
         
         {filteredTransactions.length === 0 && (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-            Tidak ada transaksi yang ditemukan
+            {loading ? 'Memuat transaksi...' : 'Tidak ada transaksi yang ditemukan'}
           </div>
         )}
       </div>
+
+      {/* Print Receipt Modal */}
+      {showReceipt && selectedTransaction && (
+        <PrintReceipt 
+          transaction={selectedTransaction}
+          onClose={() => setShowReceipt(false)}
+        />
+      )}
     </div>
   );
 };
