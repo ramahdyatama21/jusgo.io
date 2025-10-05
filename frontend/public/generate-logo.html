@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate JusGor Logo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1e293b;
+            font-family: Arial, sans-serif;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .logo {
+            position: relative;
+            width: 200px;
+            height: 80px;
+            background: #1e293b;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .jus-text {
+            color: #f97316;
+            font-size: 32px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .gor-text {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .exclamation {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .leaves {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            color: #22c55e;
+            font-size: 16px;
+        }
+        .circle {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: #dc2626;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .arrow {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .download-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <button class="download-btn" onclick="downloadLogo()">Download PNG</button>
+    
+    <div class="logo-container">
+        <div class="logo" id="logo">
+            <div class="leaves">🍃</div>
+            <span class="jus-text">Jus</span>
+            <span class="gor-text">Gor</span>
+            <span class="exclamation">!</span>
+            <div class="circle">
+                <span class="arrow">→</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function downloadLogo() {
+            const logo = document.getElementById('logo');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = 200;
+            canvas.height = 80;
+            
+            // Fill background
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, 200, 80);
+            
+            // Draw leaves
+            ctx.fillStyle = '#22c55e';
+            ctx.font = '16px Arial';
+            ctx.fillText('🍃', 20, 20);
+            
+            // Draw "Jus" text
+            ctx.fillStyle = '#f97316';
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText('Jus', 20, 50);
+            
+            // Draw "Gor" text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText('Gor', 80, 50);
+            
+            // Draw exclamation
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText('!', 120, 50);
+            
+            // Draw circle
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.arc(160, 40, 20, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw arrow
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText('→', 150, 45);
+            
+            // Download
+            const link = document.createElement('a');
+            link.download = 'logo-jusgor.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    </script>
+</body>
+</html>
