@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts, createTransaction } from '../services/api';
+import PrintReceipt from '../components/PrintReceipt';
 
 const POS = () => {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [lastTransaction, setLastTransaction] = useState(null);
 
   useEffect(() => {
     loadProducts();
@@ -99,8 +102,25 @@ const POS = () => {
       const result = await createTransaction(transactionData);
       
       if (result && result.id) {
-        alert(`Transaksi berhasil! ID: ${result.id}\nTotal: Rp ${getTotal().toLocaleString()}`);
+        // Prepare transaction data for receipt
+        const receiptData = {
+          id: result.id,
+          items: cart,
+          subtotal: getTotal(),
+          discount: 0,
+          tax: 0,
+          total: getTotal(),
+          payment: 0,
+          change: 0,
+          paymentMethod: 'tunai',
+          cashier: 'Admin',
+          created_at: new Date()
+        };
+        
+        setLastTransaction(receiptData);
+        setShowReceipt(true);
         setCart([]);
+        
         // Refresh products to update stock
         loadProducts();
       } else {
@@ -322,6 +342,14 @@ const POS = () => {
           )}
         </div>
       </div>
+
+      {/* Print Receipt Modal */}
+      {showReceipt && lastTransaction && (
+        <PrintReceipt 
+          transaction={lastTransaction}
+          onClose={() => setShowReceipt(false)}
+        />
+      )}
     </div>
   );
 };

@@ -56,30 +56,59 @@ export const productService = {
     try {
       console.log('🔄 ProductService updating product:', { id, productData });
       
-      // Map camelCase to snake_case
-      const mappedData = {};
+      // Validate ID
+      if (!id) {
+        throw new Error('Product ID is required');
+      }
+      
+      // Clean and validate data
+      const validColumns = [
+        'name', 'sell_price', 'stock', 'category', 'description', 
+        'sku', 'min_stock', 'unit', 'is_active', 'image_url'
+      ];
+      
+      const cleanData = {};
       Object.entries(productData).forEach(([key, value]) => {
+        // Skip undefined, null, or empty string values
+        if (value === undefined || value === null || value === '') {
+          return;
+        }
+        
+        // Map camelCase to snake_case
         const columnMap = {
           'sellPrice': 'sell_price',
           'minStock': 'min_stock',
           'buyPrice': 'buy_price'
         };
+        
         const mappedKey = columnMap[key] || key;
-        mappedData[mappedKey] = value;
+        
+        // Only include valid columns
+        if (validColumns.includes(mappedKey)) {
+          cleanData[mappedKey] = value;
+        }
       });
       
-      console.log('🗺️ Mapped data:', mappedData);
+      // Ensure we have data to update
+      if (Object.keys(cleanData).length === 0) {
+        throw new Error('No valid data to update');
+      }
+      
+      // Add updated_at timestamp
+      cleanData.updated_at = new Date().toISOString();
+      
+      console.log('🗺️ Clean data:', cleanData);
       
       const { data, error } = await supabase
         .from('products')
-        .update(mappedData)
+        .update(cleanData)
         .eq('id', id)
         .select()
         .single();
       
       if (error) {
         console.error('❌ ProductService update error:', error);
-        throw error;
+        throw new Error(`Update failed: ${error.message}`);
       }
       
       console.log('✅ ProductService update successful:', data);

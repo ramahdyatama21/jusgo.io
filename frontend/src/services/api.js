@@ -94,49 +94,52 @@ export const updateProduct = async (id, data) => {
   try {
     console.log('🔄 Updating product:', { id, data });
     
-    // Clean data - remove undefined values and validate column names
-    const cleanData = Object.fromEntries(
-      Object.entries(data).filter(([key, value]) => {
-        if (value === undefined) return false;
-        
-        // Map camelCase to snake_case for known columns
-        const columnMap = {
-          'sellPrice': 'sell_price',
-          'minStock': 'min_stock',
-          'buyPrice': 'buy_price'
-        };
-        
-        const mappedKey = columnMap[key] || key;
-        console.log(`📝 Mapping column: ${key} -> ${mappedKey}`);
-        return true;
-      })
-    );
+    // Validate ID
+    if (!id) {
+      throw new Error('Product ID is required');
+    }
     
-    // Apply column mapping
-    const mappedData = {};
-    Object.entries(cleanData).forEach(([key, value]) => {
+    // Clean and validate data
+    const validColumns = [
+      'name', 'sell_price', 'stock', 'category', 'description', 
+      'sku', 'min_stock', 'unit', 'is_active', 'image_url'
+    ];
+    
+    const cleanData = {};
+    Object.entries(data).forEach(([key, value]) => {
+      // Skip undefined, null, or empty string values
+      if (value === undefined || value === null || value === '') {
+        return;
+      }
+      
+      // Map camelCase to snake_case
       const columnMap = {
         'sellPrice': 'sell_price',
         'minStock': 'min_stock',
         'buyPrice': 'buy_price'
       };
+      
       const mappedKey = columnMap[key] || key;
-      mappedData[mappedKey] = value;
+      
+      // Only include valid columns
+      if (validColumns.includes(mappedKey)) {
+        cleanData[mappedKey] = value;
+      }
     });
     
-    console.log('🧹 Clean data:', cleanData);
-    console.log('🗺️ Mapped data:', mappedData);
-    
-    // Validate required fields
-    const requiredFields = ['name', 'sell_price', 'stock', 'category'];
-    const missingFields = requiredFields.filter(field => !(field in mappedData));
-    if (missingFields.length > 0) {
-      console.warn('⚠️ Missing required fields:', missingFields);
+    // Ensure we have data to update
+    if (Object.keys(cleanData).length === 0) {
+      throw new Error('No valid data to update');
     }
+    
+    // Add updated_at timestamp
+    cleanData.updated_at = new Date().toISOString();
+    
+    console.log('🧹 Clean data:', cleanData);
     
     const { data: result, error } = await supabase
       .from('products')
-      .update(mappedData)
+      .update(cleanData)
       .eq('id', id)
       .select();
       
@@ -146,13 +149,11 @@ export const updateProduct = async (id, data) => {
         message: error.message,
         details: error.details,
         hint: error.hint,
-        code: error.code,
-        status: error.status,
-        statusText: error.statusText
+        code: error.code
       });
-      console.error('📤 Data sent:', mappedData);
+      console.error('📤 Data sent:', cleanData);
       console.error('🆔 Product ID:', id);
-      throw error;
+      throw new Error(`Update failed: ${error.message}`);
     }
     
     console.log('✅ Product updated successfully:', result);
