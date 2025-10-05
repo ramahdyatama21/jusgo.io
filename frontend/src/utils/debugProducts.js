@@ -52,3 +52,4 @@ export const testProductsAPI = async () => {
     console.error('❌ API Test error:', err);
   }
 };
+

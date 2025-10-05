@@ -92,3 +92,4 @@ export const runAllTests = async () => {
     allPassed: connectionTest.success && productsTest.success
   };
 };
+
