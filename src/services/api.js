@@ -53,19 +53,32 @@ export const getProfile = async () => {
 
 // Products
 export const getProducts = async (search = '', category = '') => {
-  let query = supabase.from('products').select('*');
-  if (search) {
-    query = query.ilike('name', `%${search}%`);
-  }
-  if (category) {
-    query = query.eq('category', category);
-  }
-  const { data, error } = await query;
-  if (error) {
-    console.error('Supabase getProducts error:', error);
+  try {
+    let query = supabase
+      .from('products')
+      .select('*')
+      .eq('is_active', true) // Only get active products
+      .order('name'); // Sort by name for consistent ordering
+    
+    if (search) {
+      query = query.ilike('name', `%${search}%`);
+    }
+    if (category) {
+      query = query.eq('category', category);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Supabase getProducts error:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (err) {
+    console.error('Get products failed:', err);
     return [];
   }
-  return data || [];
 };
 
 export const createProduct = async (data) => {
@@ -78,12 +91,77 @@ export const createProduct = async (data) => {
 };
 
 export const updateProduct = async (id, data) => {
-  const { data: result, error } = await supabase.from('products').update(data).eq('id', id).select();
-  if (error) {
-    console.error('Supabase updateProduct error:', error);
-    throw error;
+  try {
+    console.log('🔄 Updating product:', { id, data });
+    
+    // Validate ID
+    if (!id) {
+      throw new Error('Product ID is required');
+    }
+    
+    // Clean and validate data
+    const validColumns = [
+      'name', 'sell_price', 'stock', 'category', 'description', 
+      'sku', 'min_stock', 'unit', 'is_active', 'image_url'
+    ];
+    
+    const cleanData = {};
+    Object.entries(data).forEach(([key, value]) => {
+      // Skip undefined, null, or empty string values
+      if (value === undefined || value === null || value === '') {
+        return;
+      }
+      
+      // Map camelCase to snake_case
+      const columnMap = {
+        'sellPrice': 'sell_price',
+        'minStock': 'min_stock',
+        'buyPrice': 'buy_price'
+      };
+      
+      const mappedKey = columnMap[key] || key;
+      
+      // Only include valid columns
+      if (validColumns.includes(mappedKey)) {
+        cleanData[mappedKey] = value;
+      }
+    });
+    
+    // Ensure we have data to update
+    if (Object.keys(cleanData).length === 0) {
+      throw new Error('No valid data to update');
+    }
+    
+    // Add updated_at timestamp
+    cleanData.updated_at = new Date().toISOString();
+    
+    console.log('🧹 Clean data:', cleanData);
+    
+    const { data: result, error } = await supabase
+      .from('products')
+      .update(cleanData)
+      .eq('id', id)
+      .select();
+      
+    if (error) {
+      console.error('❌ Supabase updateProduct error:', error);
+      console.error('🔍 Error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+      console.error('📤 Data sent:', cleanData);
+      console.error('🆔 Product ID:', id);
+      throw new Error(`Update failed: ${error.message}`);
+    }
+    
+    console.log('✅ Product updated successfully:', result);
+    return result?.[0] || null;
+  } catch (err) {
+    console.error('💥 Update product failed:', err);
+    throw err;
   }
-  return result?.[0] || null;
 };
 
 export const deleteProduct = async (id) => {
@@ -343,14 +421,14 @@ export const getTransactions = async (startDate = null, endDate = null) => {
   ({ data, error } = await query);
   if (error && error?.code === 'PGRST204') {
     // Fallback camelCase if needed
-    selectExpr = 'id, createdAt, paymentMethod, subtotal, discount, total, notes, transaction_items(id, productId, price, qty, subtotal, products(name))';
-    let q2 = supabase.from('transactions').select(selectExpr).order('createdAt', { ascending: false });
+    selectExpr = 'id, created_at, payment_method, subtotal, discount, total, notes, transaction_items(id, product_id, price, qty, subtotal, products(name))';
+    let q2 = supabase.from('transactions').select(selectExpr).order('created_at', { ascending: false });
     if (startDate && endDate) {
       q2 = supabase.from('transactions')
         .select(selectExpr)
-        .gte('createdAt', `${startDate}T00:00:00.000Z`)
-        .lte('createdAt', `${endDate}T23:59:59.999Z`)
-        .order('createdAt', { ascending: false });
+        .gte('created_at', `${startDate}T00:00:00.000Z`)
+        .lte('created_at', `${endDate}T23:59:59.999Z`)
+        .order('created_at', { ascending: false });
     }
     ({ data, error } = await q2);
   }
@@ -461,12 +539,12 @@ export const getDashboardStats = async () => {
     // Products stats
     const [{ count: productsCount }, { data: lowStockList, error: lowErr }] = await Promise.all([
       supabase.from('products').select('*', { count: 'exact', head: true }),
-      supabase.from('products').select('id, stock, minStock').lte('stock', supabase.rpc ? undefined : 999999)
+      supabase.from('products').select('id, stock, min_stock').lte('stock', supabase.rpc ? undefined : 999999)
     ]);
     if (lowErr) console.error('Supabase low stock error:', lowErr);
 
     const lowStock = Array.isArray(lowStockList)
-      ? lowStockList.filter(p => typeof p.stock === 'number' && typeof p.minStock === 'number' && p.stock <= p.minStock).length
+      ? lowStockList.filter(p => typeof p.stock === 'number' && typeof p.min_stock === 'number' && p.stock <= p.min_stock).length
       : 0;
 
     return {
@@ -619,9 +697,9 @@ export async function exportOpenOrderCSV() {
 
 // Export Stock Report to CSV
 export async function exportStockReportCSV() {
-  const { data, error } = await supabase.from('products').select('id, name, stock, minStock, category');
+  const { data, error } = await supabase.from('products').select('id, name, stock, min_stock, category');
   const arr = Array.isArray(data) ? data : [];
-  const columns = ['id', 'name', 'stock', 'minStock', 'category'];
+  const columns = ['id', 'name', 'stock', 'min_stock', 'category'];
   const csv = arrayToCSV(arr, columns);
   downloadCSV(csv, 'laporan_stok_barang.csv');
 }

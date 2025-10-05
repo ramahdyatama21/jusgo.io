@@ -8,6 +8,12 @@
 /* css-lint-enable unknownAtRules */
 /* eslint-enable */
 
+/* Spinner animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 html {
   -webkit-text-size-adjust: none;
   -moz-text-size-adjust: none;

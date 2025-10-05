@@ -21,7 +21,6 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/supabase-test" element={<SupabaseTest />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         
         <Route path="/" element={<Layout />}>
@@ -80,6 +79,7 @@ function App() {
               <RiwayatTransaksi />
             </ProtectedRoute>
           } />
+          <Route path="supabase-test" element={<SupabaseTest />} />
         </Route>
       </Routes>
     </Router>

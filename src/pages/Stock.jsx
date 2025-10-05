@@ -111,7 +111,7 @@ export default function Stock() {
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id} style={{ backgroundColor: product.stock <= product.minStock ? '#fef2f2' : '' }}>
+                <tr key={product.id} style={{ backgroundColor: product.stock <= product.min_stock ? '#fef2f2' : '' }}>
                   <td>
                     <div style={{ fontWeight: '500' }}>{product.name}</div>
                   </td>
@@ -119,16 +119,16 @@ export default function Stock() {
                   <td>
                     <span style={{ 
                       fontWeight: 'bold', 
-                      color: product.stock <= product.minStock ? '#dc2626' : '#1e293b' 
+                      color: product.stock <= product.min_stock ? '#dc2626' : '#1e293b' 
                     }}>
                       {product.stock} {product.unit}
                     </span>
                   </td>
                   <td>
-                    {product.minStock} {product.unit}
+                    {product.min_stock} {product.unit}
                   </td>
                   <td>
-                    {product.stock <= product.minStock ? (
+                    {product.stock <= product.min_stock ? (
                       <span style={{
                         padding: '0.25rem 0.5rem',
                         fontSize: '0.75rem',

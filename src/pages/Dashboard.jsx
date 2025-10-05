@@ -40,7 +40,7 @@ const Dashboard = () => {
 
       // Calculate stats
       const totalProducts = products?.length || 0;
-      const lowStock = products?.filter(p => p.stock <= p.minStock).length || 0;
+      const lowStock = products?.filter(p => p.stock <= p.min_stock).length || 0;
       const totalSales = transactions?.length || 0;
       const totalRevenue = transactions?.reduce((sum, t) => sum + (t.total || 0), 0) || 0;
 
@@ -250,10 +250,10 @@ const Dashboard = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(product.sellPrice)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(product.sell_price)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.stock} {product.unit}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {product.stock <= product.minStock ? (
+                      {product.stock <= product.min_stock ? (
                         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                           Stok Rendah
                         </span>

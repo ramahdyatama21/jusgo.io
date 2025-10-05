@@ -1,5 +1,6 @@
 // frontend/src/pages/KalkulatorHPP.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { calculateHPP, getBahanHarga } from '../services/belanjaBahanService';
 
 function round(num) {
   return Math.round(num * 100) / 100;
@@ -15,6 +16,23 @@ export default function KalkulatorHPP() {
   const [overhead, setOverhead] = useState('');
   const [targetMargin, setTargetMargin] = useState('');
   const [hasil, setHasil] = useState(null);
+
+  // Load harga bahan otomatis saat input nama bahan
+  const handleBahanNameChange = async (e) => {
+    const namaBahan = e.target.value;
+    setBahanInput({ ...bahanInput, nama: namaBahan });
+    
+    if (namaBahan) {
+      try {
+        const hargaBahan = await getBahanHarga(namaBahan);
+        if (hargaBahan > 0) {
+          setBahanInput({ ...bahanInput, nama: namaBahan, harga: hargaBahan.toString() });
+        }
+      } catch (error) {
+        console.error('Error loading bahan harga:', error);
+      }
+    }
+  };
 
   // Tambah bahan ke list
   const handleAddBahan = (e) => {
@@ -85,6 +103,13 @@ export default function KalkulatorHPP() {
       <div className="page-header">
         <h1 className="page-title">Kalkulator HPP Lanjutan</h1>
         <p className="page-subtitle">Hitung Harga Pokok Penjualan dengan detail</p>
+        <div className="alert alert-info" style={{ marginTop: '1rem' }}>
+          <strong>Contoh:</strong> Pineapple Punch = 1/4 nanas + 1 apel + 1 jeruk
+          <br />
+          <strong>Harga Jual:</strong> Rp 25.000/botol
+          <br />
+          <strong>HPP:</strong> Otomatis berdasarkan harga bahan terbaru
+        </div>
       </div>
       
       <div className="card">
@@ -106,7 +131,7 @@ export default function KalkulatorHPP() {
                 type="text"
                 placeholder="Nama Bahan"
                 value={bahanInput.nama}
-                onChange={e => setBahanInput({ ...bahanInput, nama: e.target.value })}
+                onChange={handleBahanNameChange}
                 className="form-input"
               />
               <input

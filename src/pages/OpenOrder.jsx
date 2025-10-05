@@ -74,9 +74,9 @@ export default function OpenOrder() {
       setCart([...cart, {
         productId: product.id,
         name: product.name,
-        price: product.sellPrice,
+        price: product.sell_price,
         qty: 1,
-        subtotal: product.sellPrice,
+        subtotal: product.sell_price,
         stock: product.stock
       }]);
     }
@@ -332,8 +332,8 @@ export default function OpenOrder() {
                   >
                     <div style={{ fontWeight: '500', color: '#1e293b', marginBottom: '0.25rem' }}>{product.name}</div>
                     <div style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>{product.sku}</div>
-                    <div style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#3b82f6' }}>{product.sellPrice.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</div>
-                    <div style={{ fontSize: '0.875rem', color: product.stock <= product.minStock ? '#dc2626' : '#64748b' }}>Stok: {product.stock}</div>
+                    <div style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#3b82f6' }}>{product.sell_price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</div>
+                    <div style={{ fontSize: '0.875rem', color: product.stock <= product.min_stock ? '#dc2626' : '#64748b' }}>Stok: {product.stock}</div>
                   </button>
                 ))}
               </div>

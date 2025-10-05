@@ -45,7 +45,7 @@ const PWAInstallButton = () => {
         </div>
         <div>
           <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '2px' }}>
-            Install JusGor POS
+            Install JusGo POS
           </div>
           <div style={{ fontSize: '12px', opacity: 0.9 }}>
             Akses cepat dari home screen

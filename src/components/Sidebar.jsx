@@ -49,7 +49,10 @@ const Sidebar = () => {
   return (
     <div className="w-70 bg-slate-800 text-white fixed h-screen overflow-y-auto z-50 shadow-lg border-r border-slate-700">
       <div className="p-6 border-b border-slate-700 bg-slate-800 flex items-center justify-center">
-        <h2 className="text-xl font-bold text-white text-center tracking-tight">POS System</h2>
+        <div className="flex items-center space-x-2">
+          <h1 className="text-2xl font-bold text-orange-500">JusGo</h1>
+          <span className="text-sm font-medium text-slate-300">:)</span>
+        </div>
       </div>
 
       <nav className="p-4 flex-1">

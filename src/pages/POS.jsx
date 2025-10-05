@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts, createTransaction } from '../services/api';
+import PrintReceipt from '../components/PrintReceipt';
 
 const POS = () => {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [lastTransaction, setLastTransaction] = useState(null);
 
   useEffect(() => {
     loadProducts();
@@ -14,12 +17,16 @@ const POS = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Loading products...');
+      
+      // Load products directly without unnecessary tests
       const data = await getProducts();
+      console.log('✅ Products loaded:', data?.length || 0, 'items');
       setProducts(data || []);
       setError(null);
     } catch (err) {
-      console.error('Error loading products:', err);
-      setError('Gagal memuat data produk');
+      console.error('❌ Error loading products:', err);
+      setError(`Gagal memuat data produk: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -70,7 +77,7 @@ const POS = () => {
   };
   
   const getTotal = () => {
-    return cart.reduce((total, item) => total + ((item.price || 0) * (item.quantity || 0)), 0);
+    return cart.reduce((total, item) => total + ((item.sell_price || 0) * (item.quantity || 0)), 0);
   };
   
   const handleCheckout = async () => {
@@ -81,9 +88,9 @@ const POS = () => {
         items: cart.map(item => ({
           productId: item.id,
           name: item.name || '',
-          price: item.price || 0,
+          price: item.sell_price || 0,
           qty: item.quantity || 0,
-          subtotal: (item.price || 0) * (item.quantity || 0)
+          subtotal: (item.sell_price || 0) * (item.quantity || 0)
         })),
         subtotal: getTotal(),
         discount: 0,
@@ -95,8 +102,25 @@ const POS = () => {
       const result = await createTransaction(transactionData);
       
       if (result && result.id) {
-        alert(`Transaksi berhasil! ID: ${result.id}\nTotal: Rp ${getTotal().toLocaleString()}`);
+        // Prepare transaction data for receipt
+        const receiptData = {
+          id: result.id,
+          items: cart,
+          subtotal: getTotal(),
+          discount: 0,
+          tax: 0,
+          total: getTotal(),
+          payment: 0,
+          change: 0,
+          paymentMethod: 'tunai',
+          cashier: 'Admin',
+          created_at: new Date()
+        };
+        
+        setLastTransaction(receiptData);
+        setShowReceipt(true);
         setCart([]);
+        
         // Refresh products to update stock
         loadProducts();
       } else {
@@ -130,9 +154,24 @@ const POS = () => {
           </div>
           
           {loading ? (
-            <div className="loading">
-              <div className="spinner"></div>
-              <p>Memuat data produk...</p>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              padding: '3rem',
+              color: '#64748b'
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                border: '3px solid #e5e7eb',
+                borderTop: '3px solid #3b82f6',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                marginBottom: '1rem'
+              }}></div>
+              <p>Memuat produk...</p>
             </div>
           ) : error ? (
             <div className="alert alert-error">
@@ -172,16 +211,16 @@ const POS = () => {
                     </p>
                   )}
                   <p style={{ color: '#3b82f6', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                    Rp {(product.price || 0).toLocaleString()}
+                    Rp {(product.sell_price || 0).toLocaleString()}
                   </p>
                   <p style={{ 
-                    color: product.stock <= (product.minStock || 5) ? '#ef4444' : '#64748b', 
+                    color: product.stock <= (product.min_stock || 5) ? '#ef4444' : '#64748b', 
                     fontSize: '0.875rem', 
                     marginBottom: '1rem',
-                    fontWeight: product.stock <= (product.minStock || 5) ? 'bold' : 'normal'
+                    fontWeight: product.stock <= (product.min_stock || 5) ? 'bold' : 'normal'
                   }}>
                     Stok: {product.stock}
-                    {product.stock <= (product.minStock || 5) && ' (Stok Rendah)'}
+                    {product.stock <= (product.min_stock || 5) && ' (Stok Rendah)'}
                   </p>
                   <button 
                     className="btn btn-primary"
@@ -225,7 +264,7 @@ const POS = () => {
                     <div>
                       <div style={{ fontWeight: '500' }}>{item.name}</div>
                       <div style={{ color: '#64748b', fontSize: '0.875rem' }}>
-                        Rp {(item.price || 0).toLocaleString()}
+                        Rp {(item.sell_price || 0).toLocaleString()}
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -303,6 +342,14 @@ const POS = () => {
           )}
         </div>
       </div>
+
+      {/* Print Receipt Modal */}
+      {showReceipt && lastTransaction && (
+        <PrintReceipt 
+          transaction={lastTransaction}
+          onClose={() => setShowReceipt(false)}
+        />
+      )}
     </div>
   );
 };

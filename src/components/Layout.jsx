@@ -37,7 +37,7 @@ const Layout = () => {
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-lg fixed h-full">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-orange-500">JusGor POS</h1>
+          <h1 className="text-2xl font-bold text-orange-500">JusGo POS</h1>
           <p className="text-sm text-gray-600 mt-1">v1.0 Beta</p>
         </div>
 

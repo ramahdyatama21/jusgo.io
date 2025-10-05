@@ -11,14 +11,13 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     name: '',
-    sellPrice: '',
+    sell_price: '',
     stock: '',
-    category: '',
+    category: 'ColdPressJuice',
     description: '',
     sku: '',
-    minStock: 5,
-    unit: 'pcs',
-    buyPrice: 0
+    min_stock: 5,
+    unit: 'pcs'
   });
 
   // Load products on component mount
@@ -57,10 +56,9 @@ const Products = () => {
     try {
       const productData = {
         ...formData,
-        sellPrice: parseFloat(formData.sellPrice),
-        buyPrice: parseFloat(formData.buyPrice),
+        sell_price: parseFloat(formData.sell_price),
         stock: parseInt(formData.stock),
-        minStock: parseInt(formData.minStock)
+        min_stock: parseInt(formData.min_stock)
       };
 
       if (editingProduct) {
@@ -81,13 +79,12 @@ const Products = () => {
     setEditingProduct(product);
     setFormData({
       name: product.name || '',
-      sellPrice: product.sellPrice || '',
-      buyPrice: product.buyPrice || '',
+      sell_price: product.sell_price || '',
       stock: product.stock || '',
-      category: product.category || '',
+      category: 'ColdPressJuice',
       description: product.description || '',
       sku: product.sku || '',
-      minStock: product.minStock || 5,
+      min_stock: product.min_stock || 5,
       unit: product.unit || 'pcs'
     });
     setShowForm(true);
@@ -108,13 +105,12 @@ const Products = () => {
   const resetForm = () => {
     setFormData({
       name: '',
-      sellPrice: '',
-      buyPrice: '',
+      sell_price: '',
       stock: '',
-      category: '',
+      category: 'ColdPressJuice',
       description: '',
       sku: '',
-      minStock: 5,
+      min_stock: 5,
       unit: 'pcs'
     });
     setEditingProduct(null);
@@ -215,18 +211,9 @@ const Products = () => {
                 <input
                   type="number"
                   className="form-input"
-                  value={formData.sellPrice}
-                  onChange={(e) => setFormData({...formData, sellPrice: e.target.value})}
+                  value={formData.sell_price}
+                  onChange={(e) => setFormData({...formData, sell_price: e.target.value})}
                   required
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Harga Beli</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  value={formData.buyPrice}
-                  onChange={(e) => setFormData({...formData, buyPrice: e.target.value})}
                 />
               </div>
               <div className="form-group">
@@ -244,8 +231,8 @@ const Products = () => {
                 <input
                   type="number"
                   className="form-input"
-                  value={formData.minStock}
-                  onChange={(e) => setFormData({...formData, minStock: e.target.value})}
+                  value={formData.min_stock}
+                  onChange={(e) => setFormData({...formData, min_stock: e.target.value})}
                   placeholder="5"
                 />
               </div>
@@ -265,19 +252,16 @@ const Products = () => {
               </div>
               <div className="form-group">
                 <label className="form-label">Kategori</label>
-                <select
-                  className="form-input"
-                  value={formData.category}
-                  onChange={(e) => setFormData({...formData, category: e.target.value})}
-                  required
-                >
-                  <option value="">Pilih Kategori</option>
-                  <option value="Makanan">Makanan</option>
-                  <option value="Minuman">Minuman</option>
-                  <option value="Snack">Snack</option>
-                  <option value="Dessert">Dessert</option>
-                  <option value="Lainnya">Lainnya</option>
-                </select>
+                <div style={{
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.375rem',
+                  backgroundColor: '#f9fafb',
+                  color: '#6b7280',
+                  fontSize: '0.875rem'
+                }}>
+                  ColdPressJuice (Otomatis)
+                </div>
               </div>
             </div>
             <div className="form-group">
@@ -308,7 +292,6 @@ const Products = () => {
                 <th>Nama Produk</th>
                 <th>SKU</th>
                 <th>Harga Jual</th>
-                <th>Harga Beli</th>
                 <th>Stok</th>
                 <th>Min. Stok</th>
                 <th>Satuan</th>
@@ -336,21 +319,20 @@ const Products = () => {
                       )}
                     </td>
                     <td>{product.sku || '-'}</td>
-                    <td>Rp {product.sellPrice?.toLocaleString() || '0'}</td>
-                    <td>Rp {product.buyPrice?.toLocaleString() || '0'}</td>
+                    <td>Rp {product.sell_price?.toLocaleString() || '0'}</td>
                     <td>
                       <span style={{ 
-                        color: product.stock <= product.minStock ? '#ef4444' : '#10b981',
+                        color: product.stock <= product.min_stock ? '#ef4444' : '#10b981',
                         fontWeight: '500'
                       }}>
                         {product.stock || 0}
                       </span>
                     </td>
-                    <td>{product.minStock || 0}</td>
+                    <td>{product.min_stock || 0}</td>
                     <td>{product.unit || 'pcs'}</td>
                     <td>{product.category}</td>
                     <td>
-                      {product.stock <= product.minStock ? (
+                      {product.stock <= product.min_stock ? (
                         <span style={{
                           padding: '0.25rem 0.5rem',
                           fontSize: '0.75rem',
