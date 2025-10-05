@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .icon-preview { display: inline-block; margin: 10px; text-align: center; }
+        canvas { border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>JusGor PWA Icon Generator</h1>
+    <p>Generate PWA icons dengan logo JusGor. Klik kanan dan save setiap icon.</p>
+    
+    <div id="icons"></div>
+
+    <script>
+        // Polyfill for roundRect
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+        
+        const sizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
+        const container = document.getElementById('icons');
+        
+        sizes.forEach(size => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Create icon
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const radius = size * 0.4;
+            
+            // Background (JusGor style - black)
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, size, size);
+            
+            // JusGor Logo - improved version
+            // "Jus" text in orange with better positioning
+            ctx.fillStyle = '#ff6b35';
+            ctx.font = `bold ${size * 0.18}px Arial`;
+            ctx.textAlign = 'left';
+            ctx.fillText('Jus', size * 0.2, centerY + size * 0.05);
+            
+            // Green leaves above 'u' - more natural
+            ctx.fillStyle = '#00ff00';
+            ctx.save();
+            ctx.translate(size * 0.35, centerY - size * 0.12);
+            ctx.rotate(-0.2);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, size * 0.025, size * 0.015, 0, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
+            
+            ctx.save();
+            ctx.translate(size * 0.38, centerY - size * 0.15);
+            ctx.rotate(0.2);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, size * 0.02, size * 0.012, 0, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
+            
+            // "Gor!" text in white with red circle background
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(size * 0.68, centerY + size * 0.02, size * 0.14, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${size * 0.13}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('Gor!', size * 0.68, centerY + size * 0.05);
+            
+            // Arrow from 'r' - more stylized
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = size * 0.012;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(size * 0.82, centerY);
+            ctx.lineTo(size * 0.9, centerY);
+            ctx.lineTo(size * 0.88, centerY - size * 0.02);
+            ctx.moveTo(size * 0.9, centerY);
+            ctx.lineTo(size * 0.88, centerY + size * 0.02);
+            ctx.stroke();
+            
+            // POS indicator with rounded corners
+            ctx.fillStyle = '#ff6b35';
+            ctx.beginPath();
+            ctx.roundRect(centerX - size * 0.12, centerY + size * 0.15, size * 0.24, size * 0.07, size * 0.035);
+            ctx.fill();
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${size * 0.04}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('POS', centerX, centerY + size * 0.19);
+            
+            const div = document.createElement('div');
+            div.className = 'icon-preview';
+            div.innerHTML = `
+                <canvas width="${size}" height="${size}"></canvas>
+                <br>
+                <strong>${size}x${size}</strong>
+                <br>
+                <a href="#" onclick="downloadIcon(this.previousElementSibling.previousElementSibling, 'icon-${size}x${size}.png')">Download</a>
+            `;
+            
+            // Copy canvas content
+            const newCanvas = div.querySelector('canvas');
+            const newCtx = newCanvas.getContext('2d');
+            newCtx.drawImage(canvas, 0, 0);
+            
+            container.appendChild(div);
+        });
+        
+        function downloadIcon(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    </script>
+</body>
+</html>
