@@ -54,9 +54,12 @@ export const getProfile = async () => {
 // Products
 export const getProducts = async (search = '', category = '') => {
   try {
-    console.log('Fetching products with params:', { search, category });
+    let query = supabase
+      .from('products')
+      .select('*')
+      .eq('is_active', true) // Only get active products
+      .order('name'); // Sort by name for consistent ordering
     
-    let query = supabase.from('products').select('*');
     if (search) {
       query = query.ilike('name', `%${search}%`);
     }
@@ -68,16 +71,9 @@ export const getProducts = async (search = '', category = '') => {
     
     if (error) {
       console.error('Supabase getProducts error:', error);
-      console.error('Error details:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      });
       return [];
     }
     
-    console.log('Products fetched successfully:', data?.length || 0, 'items');
     return data || [];
   } catch (err) {
     console.error('Get products failed:', err);

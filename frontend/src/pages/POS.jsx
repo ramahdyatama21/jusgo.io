@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts, createTransaction } from '../services/api';
-import { debugProducts } from '../utils/debugProducts';
-import { testSupabaseConnection, testProductsTable } from '../utils/testSupabaseConnection';
 
 const POS = () => {
   const [cart, setCart] = useState([]);
@@ -16,31 +14,15 @@ const POS = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Loading products...');
       
-      // Test Supabase connection first
-      console.log('🔍 Testing Supabase connection...');
-      const connectionTest = await testSupabaseConnection();
-      if (!connectionTest.success) {
-        throw new Error(`Supabase connection failed: ${connectionTest.error}`);
-      }
-      
-      // Test products table access
-      console.log('🔍 Testing products table...');
-      const productsTest = await testProductsTable();
-      if (!productsTest.success) {
-        throw new Error(`Products table access failed: ${productsTest.error}`);
-      }
-      
-      // Load products
+      // Load products directly without unnecessary tests
       const data = await getProducts();
-      console.log('Products loaded:', data);
+      console.log('✅ Products loaded:', data?.length || 0, 'items');
       setProducts(data || []);
       setError(null);
-      
-      // Debug products data
-      await debugProducts();
     } catch (err) {
-      console.error('Error loading products:', err);
+      console.error('❌ Error loading products:', err);
       setError(`Gagal memuat data produk: ${err.message}`);
     } finally {
       setLoading(false);
@@ -152,9 +134,24 @@ const POS = () => {
           </div>
           
           {loading ? (
-            <div className="loading">
-              <div className="spinner"></div>
-              <p>Memuat data produk...</p>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              padding: '3rem',
+              color: '#64748b'
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                border: '3px solid #e5e7eb',
+                borderTop: '3px solid #3b82f6',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                marginBottom: '1rem'
+              }}></div>
+              <p>Memuat produk...</p>
             </div>
           ) : error ? (
             <div className="alert alert-error">
@@ -195,7 +192,6 @@ const POS = () => {
                   )}
                   <p style={{ color: '#3b82f6', fontWeight: 'bold', marginBottom: '0.5rem' }}>
                     Rp {(product.sell_price || 0).toLocaleString()}
-                    {console.log('Product data:', product)}
                   </p>
                   <p style={{ 
                     color: product.stock <= (product.min_stock || 5) ? '#ef4444' : '#64748b', 
