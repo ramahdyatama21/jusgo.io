@@ -133,59 +133,62 @@ const Products = () => {
   
   if (loading) {
     return (
-      <div className="loading">
-        <div className="spinner"></div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+        <div className="text-lg text-gray-600">Memuat produk...</div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="page-header">
-        <h1 className="page-title">Manajemen Produk</h1>
-        <p className="page-subtitle">Kelola produk dan stok</p>
-      </div>
-
-      {error && (
-        <div className="alert alert-error">
-          <h3>Error</h3>
-          <p>{error}</p>
-          <button 
-            className="btn btn-primary" 
-            onClick={() => {
-              setError(null);
-              loadProducts();
-            }}
-          >
-            Coba Lagi
-          </button>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold">📦 Manajemen Produk</h1>
+          <p className="text-purple-100 mt-1 text-sm sm:text-base">Kelola produk dan stok</p>
         </div>
-      )}
-      
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Daftar Produk</h3>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <input
-              type="text"
-              placeholder="Cari produk..."
-              className="form-input"
-              style={{ width: '200px' }}
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+            <h3 className="font-semibold text-red-800 mb-2">Error</h3>
+            <p className="text-red-600 mb-3">{error}</p>
             <button 
-              className="btn btn-primary"
-              onClick={() => setShowForm(!showForm)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium" 
+              onClick={() => {
+                setError(null);
+                loadProducts();
+              }}
             >
-              {showForm ? 'Batal' : 'Tambah Produk'}
+              Coba Lagi
             </button>
           </div>
-        </div>
+        )}
         
-        {showForm && (
-          <form onSubmit={handleSubmit} style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold text-gray-800">Daftar Produk</h3>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  placeholder="🔍 Cari produk..."
+                  className="flex-1 sm:flex-none sm:w-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                />
+                <button 
+                  className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                  onClick={() => setShowForm(!showForm)}
+                >
+                  {showForm ? '✕ Batal' : '➕ Tambah Produk'}
+                </button>
+              </div>
+            </div>
+          </div>
+        
+          {showForm && (
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 bg-gray-50 border-t border-gray-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="form-group">
                 <label className="form-label">Nama Produk</label>
                 <input
@@ -263,120 +266,143 @@ const Products = () => {
                   ColdPressJuice (Otomatis)
                 </div>
               </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Deskripsi</label>
-              <textarea
-                className="form-input"
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                rows="3"
-                placeholder="Deskripsi produk (opsional)"
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button type="submit" className="btn btn-success">
-                {editingProduct ? 'Update Produk' : 'Simpan Produk'}
-              </button>
-              <button type="button" className="btn btn-secondary" onClick={resetForm}>
-                Batal
-              </button>
-            </div>
-          </form>
-        )}
+              </div>
+              <div className="sm:col-span-2 lg:col-span-3">
+                <label className="form-label">Deskripsi</label>
+                <textarea
+                  className="form-input"
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  rows="3"
+                  placeholder="Deskripsi produk (opsional)"
+                />
+              </div>
+              <div className="sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row gap-2">
+                <button type="submit" className="flex-1 sm:flex-none bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                  {editingProduct ? '✓ Update Produk' : '✓ Simpan Produk'}
+                </button>
+                <button type="button" className="flex-1 sm:flex-none bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors" onClick={resetForm}>
+                  ✕ Batal
+                </button>
+              </div>
+            </form>
+          )}
         
-        <div style={{ overflowX: 'auto' }}>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Nama Produk</th>
-                <th>SKU</th>
-                <th>Harga Jual</th>
-                <th>Stok</th>
-                <th>Min. Stok</th>
-                <th>Satuan</th>
-                <th>Kategori</th>
-                <th>Status</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.length === 0 ? (
-                <tr>
-                  <td colSpan="10" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                    {searchQuery ? 'Tidak ada produk yang ditemukan' : 'Belum ada produk'}
-                  </td>
-                </tr>
-              ) : (
-                products.map((product) => (
-                  <tr key={product.id}>
-                    <td>
-                      <div style={{ fontWeight: '600' }}>{product.name}</div>
-                      {product.description && (
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
-                          {product.description}
+          <div className="p-4 sm:p-6">
+            {products.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📦</div>
+                <p className="text-gray-500">{searchQuery ? 'Tidak ada produk yang ditemukan' : 'Belum ada produk'}</p>
+                <p className="text-sm text-gray-400 mt-2">Klik "Tambah Produk" untuk memulai</p>
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {products.map((product) => (
+                        <tr key={product.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-4">
+                            <div className="font-semibold text-gray-900">{product.name}</div>
+                            {product.description && (
+                              <div className="text-xs text-gray-500 mt-1">{product.description}</div>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 text-sm text-gray-600">{product.sku || '-'}</td>
+                          <td className="px-4 py-4 text-sm font-medium text-gray-900">Rp {product.sell_price?.toLocaleString() || '0'}</td>
+                          <td className="px-4 py-4 text-sm">
+                            <span className={product.stock <= product.min_stock ? 'text-red-600 font-semibold' : 'text-green-600 font-semibold'}>
+                              {product.stock || 0} {product.unit || 'pcs'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">
+                            {product.stock <= product.min_stock ? (
+                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Low</span>
+                            ) : (
+                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">OK</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex gap-2">
+                              <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium" onClick={() => handleEdit(product)}>
+                                Edit
+                              </button>
+                              <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-medium" onClick={() => handleDelete(product.id)}>
+                                Hapus
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="lg:hidden space-y-4">
+                  {products.map((product) => (
+                    <div key={product.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 text-base">{product.name}</h3>
+                          {product.description && (
+                            <p className="text-xs text-gray-500 mt-1">{product.description}</p>
+                          )}
+                          {product.sku && (
+                            <p className="text-xs text-gray-400 mt-1">SKU: {product.sku}</p>
+                          )}
                         </div>
-                      )}
-                    </td>
-                    <td>{product.sku || '-'}</td>
-                    <td>Rp {product.sell_price?.toLocaleString() || '0'}</td>
-                    <td>
-                      <span style={{ 
-                        color: product.stock <= product.min_stock ? '#ef4444' : '#10b981',
-                        fontWeight: '500'
-                      }}>
-                        {product.stock || 0}
-                      </span>
-                    </td>
-                    <td>{product.min_stock || 0}</td>
-                    <td>{product.unit || 'pcs'}</td>
-                    <td>{product.category}</td>
-                    <td>
-                      {product.stock <= product.min_stock ? (
-                        <span style={{
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.75rem',
-                          fontWeight: '600',
-                          borderRadius: '9999px',
-                          backgroundColor: '#fecaca',
-                          color: '#991b1b'
-                        }}>
-                          Stok Rendah
-                        </span>
-                      ) : (
-                        <span style={{
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.75rem',
-                          fontWeight: '600',
-                          borderRadius: '9999px',
-                          backgroundColor: '#dcfce7',
-                          color: '#166534'
-                        }}>
-                          Normal
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      <button 
-                        className="btn btn-secondary" 
-                        style={{ marginRight: '0.5rem', fontSize: '0.75rem' }}
-                        onClick={() => handleEdit(product)}
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        className="btn btn-danger"
-                        style={{ fontSize: '0.75rem' }}
-                        onClick={() => handleDelete(product.id)}
-                      >
-                        Hapus
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                        {product.stock <= product.min_stock ? (
+                          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 ml-2">Low</span>
+                        ) : (
+                          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 ml-2">OK</span>
+                        )}
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+                        <div>
+                          <span className="text-gray-500 text-xs">Harga:</span>
+                          <p className="font-semibold text-blue-600">Rp {product.sell_price?.toLocaleString() || '0'}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 text-xs">Stok:</span>
+                          <p className={`font-semibold ${product.stock <= product.min_stock ? 'text-red-600' : 'text-green-600'}`}>
+                            {product.stock || 0} {product.unit || 'pcs'}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button 
+                          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" 
+                          onClick={() => handleEdit(product)}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button 
+                          className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" 
+                          onClick={() => handleDelete(product.id)}
+                        >
+                          🗑️ Hapus
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
