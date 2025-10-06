@@ -86,261 +86,267 @@ export default function Stock() {
   };
 
   return (
-    <div>
-      <div className="page-header">
-        <h1 className="page-title">Manajemen Stok</h1>
-        <p className="page-subtitle">Kelola stok produk dan pergerakan barang</p>
-      </div>
-
-      {/* Daftar Produk */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Daftar Produk</h3>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold">📊 Manajemen Stok</h1>
+          <p className="text-orange-100 mt-1 text-sm sm:text-base">Kelola stok produk dan pergerakan barang</p>
         </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Produk</th>
-                <th>SKU</th>
-                <th>Stok Saat Ini</th>
-                <th>Min. Stok</th>
-                <th>Status</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
+
+        {/* Daftar Produk */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+          <div className="p-4 sm:p-6 border-b border-gray-200 bg-gray-50">
+            <h3 className="text-lg font-semibold text-gray-800">📦 Daftar Produk</h3>
+          </div>
+          <div className="p-4 sm:p-6">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Min</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {products.map((product) => (
+                    <tr key={product.id} className={product.stock <= product.min_stock ? 'bg-red-50' : 'bg-white hover:bg-gray-50'}>
+                      <td className="px-4 py-4 font-medium text-gray-900">{product.name}</td>
+                      <td className="px-4 py-4 text-sm text-gray-600">{product.sku}</td>
+                      <td className="px-4 py-4">
+                        <span className={`font-bold ${product.stock <= product.min_stock ? 'text-red-600' : 'text-gray-900'}`}>
+                          {product.stock} {product.unit}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-600">{product.min_stock} {product.unit}</td>
+                      <td className="px-4 py-4">
+                        {product.stock <= product.min_stock ? (
+                          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Low</span>
+                        ) : (
+                          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">OK</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex gap-2">
+                          <button onClick={() => openModal('in', product)} className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs font-medium">
+                            + Masuk
+                          </button>
+                          <button onClick={() => openModal('out', product)} className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-medium">
+                            - Keluar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
               {products.map((product) => (
-                <tr key={product.id} style={{ backgroundColor: product.stock <= product.min_stock ? '#fef2f2' : '' }}>
-                  <td>
-                    <div style={{ fontWeight: '500' }}>{product.name}</div>
-                  </td>
-                  <td>{product.sku}</td>
-                  <td>
-                    <span style={{ 
-                      fontWeight: 'bold', 
-                      color: product.stock <= product.min_stock ? '#dc2626' : '#1e293b' 
-                    }}>
-                      {product.stock} {product.unit}
-                    </span>
-                  </td>
-                  <td>
-                    {product.min_stock} {product.unit}
-                  </td>
-                  <td>
+                <div key={product.id} className={`border-2 rounded-lg p-4 ${product.stock <= product.min_stock ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900">{product.name}</h3>
+                      <p className="text-xs text-gray-500 mt-1">SKU: {product.sku}</p>
+                    </div>
                     {product.stock <= product.min_stock ? (
-                      <span style={{
-                        padding: '0.25rem 0.5rem',
-                        fontSize: '0.75rem',
-                        fontWeight: '600',
-                        borderRadius: '9999px',
-                        backgroundColor: '#fecaca',
-                        color: '#991b1b'
-                      }}>
-                        Stok Rendah
-                      </span>
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 ml-2">⚠️ Low</span>
                     ) : (
-                      <span style={{
-                        padding: '0.25rem 0.5rem',
-                        fontSize: '0.75rem',
-                        fontWeight: '600',
-                        borderRadius: '9999px',
-                        backgroundColor: '#dcfce7',
-                        color: '#166534'
-                      }}>
-                        Normal
-                      </span>
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 ml-2">✓ OK</span>
                     )}
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => openModal('in', product)}
-                      className="btn btn-success"
-                      style={{ marginRight: '0.5rem', fontSize: '0.875rem' }}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+                    <div>
+                      <span className="text-gray-500 text-xs">Stok Saat Ini:</span>
+                      <p className={`font-bold text-lg ${product.stock <= product.min_stock ? 'text-red-600' : 'text-green-600'}`}>
+                        {product.stock} {product.unit}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 text-xs">Min. Stok:</span>
+                      <p className="font-semibold text-lg text-gray-700">{product.min_stock} {product.unit}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      onClick={() => openModal('in', product)} 
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                     >
-                      + Masuk
+                      ➕ Masuk
                     </button>
-                    <button
-                      onClick={() => openModal('out', product)}
-                      className="btn btn-danger"
-                      style={{ fontSize: '0.875rem' }}
+                    <button 
+                      onClick={() => openModal('out', product)} 
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                     >
-                      - Keluar
+                      ➖ Keluar
                     </button>
-                  </td>
-                </tr>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Riwayat Stok */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Riwayat Pergerakan Stok</h3>
-        </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Waktu</th>
-                <th>Produk</th>
-                <th>Tipe</th>
-                <th>Jumlah</th>
-                <th>Keterangan</th>
-                <th>Oleh</th>
-              </tr>
-            </thead>
-            <tbody>
-              {movements.map((movement) => (
-                <tr key={movement.id}>
-                  <td>
-                    {formatDate(movement.created_at)}
-                  </td>
-                  <td>
-                    <div style={{ fontWeight: '500' }}>{movement.product?.name || '-'}</div>
-                    <div style={{ color: '#64748b', fontSize: '0.875rem' }}>{movement.product?.sku || ''}</div>
-                  </td>
-                  <td>
-                    {movement.type === 'in' ? (
-                      <span style={{
-                        padding: '0.25rem 0.5rem',
-                        fontSize: '0.75rem',
-                        fontWeight: '600',
-                        borderRadius: '9999px',
-                        backgroundColor: '#dcfce7',
-                        color: '#166534'
-                      }}>
-                        Masuk
-                      </span>
-                    ) : (
-                      <span style={{
-                        padding: '0.25rem 0.5rem',
-                        fontSize: '0.75rem',
-                        fontWeight: '600',
-                        borderRadius: '9999px',
-                        backgroundColor: '#fecaca',
-                        color: '#991b1b'
-                      }}>
-                        Keluar
-                      </span>
-                    )}
-                  </td>
-                  <td>
-                    {movement.qty} {movement.product?.unit || ''}
-                  </td>
-                  <td>
-                    {movement.description || '-'}
-                  </td>
-                  <td>
-                    -
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        {/* Riwayat Stok */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="p-4 sm:p-6 border-b border-gray-200 bg-gray-50">
+            <h3 className="text-lg font-semibold text-gray-800">📜 Riwayat Pergerakan Stok</h3>
+          </div>
+          <div className="p-4 sm:p-6">
+            {movements.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📋</div>
+                <p className="text-gray-500">Belum ada riwayat pergerakan stok</p>
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto max-h-96">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keterangan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {movements.map((movement) => (
+                        <tr key={movement.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-4 text-xs text-gray-600">{formatDate(movement.created_at)}</td>
+                          <td className="px-4 py-4">
+                            <div className="font-medium text-gray-900">{movement.product?.name || '-'}</div>
+                            <div className="text-xs text-gray-500">{movement.product?.sku || ''}</div>
+                          </td>
+                          <td className="px-4 py-4">
+                            {movement.type === 'in' ? (
+                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Masuk</span>
+                            ) : (
+                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Keluar</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 text-sm font-semibold text-gray-900">{movement.qty} {movement.product?.unit || ''}</td>
+                          <td className="px-4 py-4 text-sm text-gray-600">{movement.description || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
-      {/* Modal Form Stok */}
-      {showModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 50,
-          padding: '1rem'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '0.5rem',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            maxWidth: '28rem',
-            width: '100%'
-          }}>
-            <div style={{ padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '1rem' }}>
-                {modalType === 'in' ? 'Stok Masuk' : 'Stok Keluar'}
-              </h2>
+                {/* Mobile List View */}
+                <div className="md:hidden space-y-3 max-h-96 overflow-y-auto">
+                  {movements.map((movement) => (
+                    <div key={movement.id} className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm text-gray-900">{movement.product?.name || '-'}</h4>
+                          <p className="text-xs text-gray-500">{formatDate(movement.created_at)}</p>
+                        </div>
+                        {movement.type === 'in' ? (
+                          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 ml-2">➕ Masuk</span>
+                        ) : (
+                          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 ml-2">➖ Keluar</span>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-bold text-gray-900">{movement.qty} {movement.product?.unit || ''}</span>
+                        <span className="text-xs text-gray-500">{movement.description || '-'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Modal Form Stok */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-2xl max-w-md w-full">
+              <div className={`p-4 sm:p-6 rounded-t-lg ${modalType === 'in' ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-red-600'}`}>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">
+                  {modalType === 'in' ? '➕ Stok Masuk' : '➖ Stok Keluar'}
+                </h2>
+              </div>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="p-4 sm:p-6 space-y-4">
                 <div>
-                  <label className="form-label">Produk</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Produk</label>
                   <input
                     type="text"
                     value={selectedProduct?.name || ''}
                     disabled
-                    className="form-input"
-                    style={{ backgroundColor: '#f3f4f6' }}
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700"
                   />
                 </div>
 
                 <div>
-                  <label className="form-label">Stok Saat Ini</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Stok Saat Ini</label>
                   <input
                     type="text"
                     value={`${selectedProduct?.stock || 0} ${selectedProduct?.unit || ''}`}
                     disabled
-                    className="form-input"
-                    style={{ backgroundColor: '#f3f4f6' }}
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 font-semibold"
                   />
                 </div>
 
                 <div>
-                  <label className="form-label">Jumlah</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
                   <input
                     type="number"
                     value={qty}
                     onChange={(e) => setQty(parseInt(e.target.value) || 0)}
-                    className="form-input"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     min="1"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="form-label">Keterangan</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="form-input"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                     rows="3"
                     placeholder="Opsional"
-                    style={{ resize: 'vertical' }}
                   />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: '1rem' }}>
+                <div className="flex flex-col sm:flex-row gap-2 pt-4">
                   <button
                     onClick={() => {
                       setShowModal(false);
                       resetForm();
                     }}
-                    className="btn btn-secondary"
+                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors"
                   >
-                    Batal
+                    ✕ Batal
                   </button>
                   <button
                     onClick={handleStockAction}
                     disabled={loading}
-                    className={`btn ${modalType === 'in' ? 'btn-success' : 'btn-danger'}`}
-                    style={{ opacity: loading ? 0.6 : 1 }}
+                    className={`flex-1 ${modalType === 'in' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-60`}
                   >
-                    {loading ? 'Memproses...' : 'Simpan'}
+                    {loading ? '⏳ Memproses...' : '✓ Simpan'}
                   </button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
