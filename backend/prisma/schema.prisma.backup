@@ -1,0 +1,86 @@
+// backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  name      String
+  role      String   // admin, kasir
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+  stockMovements StockMovement[]
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  sku         String   @unique
+  name        String
+  category    String
+  unit        String   // pcs, kg, liter, dll
+  buyPrice    Float    // harga beli (HPP)
+  sellPrice   Float    // harga jual
+  stock       Int      @default(0)
+  minStock    Int      @default(0) // minimum stok untuk alert
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactionItems TransactionItem[]
+  stockMovements   StockMovement[]
+}
+
+model Transaction {
+  id            Int      @id @default(autoincrement())
+  transactionNo String   @unique
+  date          DateTime @default(now())
+  total         Float
+  paymentMethod String   // tunai, qris_dummy
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  items TransactionItem[]
+}
+
+model TransactionItem {
+  id            Int         @id @default(autoincrement())
+  transactionId Int
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  productId     Int
+  product       Product     @relation(fields: [productId], references: [id])
+  qty           Int
+  price         Float       // harga jual saat transaksi
+  subtotal      Float
+}
+
+model StockMovement {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id])
+  type        String   // in (masuk), out (keluar)
+  qty         Int
+  description String?
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Setting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}
