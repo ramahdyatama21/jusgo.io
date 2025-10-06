@@ -226,16 +226,16 @@ export default function KalkulatorHPP() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Kalkulator HPP Lanjutan</h1>
-          <p className="text-gray-600">Hitung Harga Pokok Penjualan dengan AI Analysis & Proyeksi Bisnis</p>
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-2">Kalkulator HPP Lanjutan</h1>
+          <p className="text-sm sm:text-base text-gray-600">Hitung Harga Pokok Penjualan dengan AI Analysis & Proyeksi Bisnis</p>
       </div>
       
         {/* Product Information Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Informasi Produk</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4">Informasi Produk</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Nama Produk</label>
             <input
@@ -277,11 +277,11 @@ export default function KalkulatorHPP() {
             </div>
           </div>
           
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <button
               onClick={analyzeWithAI}
               disabled={!namaProduk || isAnalyzing}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {isAnalyzing ? 'Menganalisis...' : 'Analisis AI Otomatis'}
             </button>
@@ -289,25 +289,25 @@ export default function KalkulatorHPP() {
         </div>
         {/* AI Analysis Results */}
         {aiAnalysis && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Analisis AI</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-blue-800">HPP Estimasi</h3>
-                <p className="text-2xl font-bold text-blue-600">
-                  {aiAnalysis.estimatedHPP.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4">Analisis AI</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-blue-800">HPP Estimasi</h3>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">
+                  {aiAnalysis.estimatedHPP.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-green-800">Harga Kompetitif</h3>
-                <p className="text-2xl font-bold text-green-600">
-                  {aiAnalysis.suggestedPricing.competitive.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+              <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-green-800">Harga Kompetitif</h3>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">
+                  {aiAnalysis.suggestedPricing.competitive.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-purple-800">Harga Premium</h3>
-                <p className="text-2xl font-bold text-purple-600">
-                  {aiAnalysis.suggestedPricing.premium.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+              <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-purple-800">Harga Premium</h3>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600">
+                  {aiAnalysis.suggestedPricing.premium.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
             </div>
@@ -323,13 +323,13 @@ export default function KalkulatorHPP() {
         )}
 
         {/* Manual Calculation Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Perhitungan Manual</h2>
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4">Perhitungan Manual</h2>
           
           {/* Bahan Input Form */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-3">Rincian Bahan</h3>
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
+          <div className="mb-4 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-3">Rincian Bahan</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 mb-4">
               <input
                 type="text"
                 placeholder="Nama Bahan"
@@ -370,7 +370,7 @@ export default function KalkulatorHPP() {
               />
               <button 
                 onClick={handleAddBahan} 
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm sm:text-base w-full sm:w-auto"
               >
                 Tambah
               </button>
@@ -378,44 +378,48 @@ export default function KalkulatorHPP() {
             
             {/* Bahan Table */}
             {bahan.length > 0 && (
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Satuan</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Satuan</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Harga</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {bahan.map((b, i) => (
-                      <tr key={i} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm text-gray-900">{b.nama}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{b.jumlah}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{b.satuan}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{b.harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{b.totalHarga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
-                        <td className="px-4 py-3 text-sm">
-                          <button 
-                            onClick={() => handleRemoveBahan(i)} 
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            Hapus
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-300">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Jml</th>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Satuan</th>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Harga</th>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                          <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 bg-white">
+                        {bahan.map((b, i) => (
+                          <tr key={i} className="hover:bg-gray-50">
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">{b.nama}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">{b.jumlah}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden sm:table-cell">{b.satuan}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden md:table-cell">{b.harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">{b.totalHarga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
+                              <button 
+                                onClick={() => handleRemoveBahan(i)} 
+                                className="text-red-600 hover:text-red-800 font-medium"
+                              >
+                                Hapus
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             )}
         </div>
 
           {/* Biaya Produksi */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Biaya Packaging per Unit</label>
               <input
@@ -471,73 +475,77 @@ export default function KalkulatorHPP() {
 
           <button 
             onClick={handleSubmit} 
-            className="w-full bg-green-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-600"
+            className="w-full bg-green-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-600 text-sm sm:text-base"
           >
             Hitung HPP
           </button>
         </div>
         {/* Hasil Perhitungan HPP */}
         {hasil && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Hasil Perhitungan HPP</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-blue-800">HPP Bahan per Unit</h3>
-                <p className="text-xl font-bold text-blue-600">
-                  {hasil.rincian.bahanPerUnit.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4">Hasil Perhitungan HPP</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-blue-800">HPP Bahan per Unit</h3>
+                <p className="text-lg sm:text-xl font-bold text-blue-600">
+                  {hasil.rincian.bahanPerUnit.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-green-800">Packaging per Unit</h3>
-                <p className="text-xl font-bold text-green-600">
-                  {hasil.rincian.packagingPerUnit.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+              <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-green-800">Packaging per Unit</h3>
+                <p className="text-lg sm:text-xl font-bold text-green-600">
+                  {hasil.rincian.packagingPerUnit.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
-              <div className="bg-orange-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-orange-800">Biaya Lainnya per Unit</h3>
-                <p className="text-xl font-bold text-orange-600">
-                  {hasil.rincian.lainnyaPerUnit.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+              <div className="bg-orange-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-orange-800">Biaya Lainnya per Unit</h3>
+                <p className="text-lg sm:text-xl font-bold text-orange-600">
+                  {hasil.rincian.lainnyaPerUnit.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-purple-800">HPP Total per Unit</h3>
-                <p className="text-2xl font-bold text-purple-600">
-                  {hasil.rincian.hpp.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+              <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-purple-800">HPP Total per Unit</h3>
+                <p className="text-xl sm:text-2xl font-bold text-purple-600">
+                  {hasil.rincian.hpp.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
             </div>
             
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Strategi</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Jual</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Margin (%)</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelebihan</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risiko</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {hasil.opsi.map((o, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-900">{o.strategi}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{o.harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{o.margin}%</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{o.kelebihan}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{o.risiko}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                  <table className="min-w-full divide-y divide-gray-300">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Strategi</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Margin</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Kelebihan</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Risiko</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white">
+                      {hasil.opsi.map((o, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">{o.strategi}</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 font-medium">{o.harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden sm:table-cell">{o.margin}%</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden md:table-cell">{o.kelebihan}</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden lg:table-cell">{o.risiko}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
         {/* Target & Proyeksi Penjualan */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Target & Proyeksi Penjualan</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4">Target & Proyeksi Penjualan</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Target Laba Bersih per Bulan</label>
               <input
@@ -565,47 +573,47 @@ export default function KalkulatorHPP() {
           <button 
             onClick={calculateProjection}
             disabled={!targetLaba || !hargaJualPilihan}
-            className="w-full bg-purple-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-purple-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
           >
             Hitung Proyeksi
           </button>
-      </div>
-      
+        </div>
+
         {/* Hasil Proyeksi */}
         {proyeksi && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Hasil Proyeksi</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-blue-800">Target Jual per Hari</h3>
-                <p className="text-2xl font-bold text-blue-600">{proyeksi.targetJualPerHari} unit</p>
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4">Hasil Proyeksi</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-blue-800">Target Jual per Hari</h3>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{proyeksi.targetJualPerHari} unit</p>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-green-800">Target Jual per Bulan</h3>
-                <p className="text-2xl font-bold text-green-600">{proyeksi.targetJualPerBulan} unit</p>
+              <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-green-800">Target Jual per Bulan</h3>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{proyeksi.targetJualPerBulan} unit</p>
               </div>
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-purple-800">Potensi Omset per Bulan</h3>
-                <p className="text-2xl font-bold text-purple-600">
-                  {proyeksi.potensiOmset.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+              <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-purple-800">Potensi Omset per Bulan</h3>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-purple-600">
+                  {proyeksi.potensiOmset.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
-              <div className="bg-orange-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-orange-800">Total Biaya Produk per Bulan</h3>
-                <p className="text-2xl font-bold text-orange-600">
-                  {proyeksi.totalBiayaProduk.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+              <div className="bg-orange-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-orange-800">Total Biaya Produk per Bulan</h3>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-orange-600">
+                  {proyeksi.totalBiayaProduk.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
-              <div className="bg-red-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-red-800">Total Biaya Tetap per Bulan</h3>
-                <p className="text-2xl font-bold text-red-600">
-                  {proyeksi.biayaTetap.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+              <div className="bg-red-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-red-800">Total Biaya Tetap per Bulan</h3>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-red-600">
+                  {proyeksi.biayaTetap.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
-              <div className="bg-indigo-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-indigo-800">Proyeksi Laba Bersih per Bulan</h3>
-                <p className="text-2xl font-bold text-indigo-600">
-                  {proyeksi.proyeksiLaba.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+              <div className="bg-indigo-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-indigo-800">Proyeksi Laba Bersih per Bulan</h3>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-indigo-600">
+                  {proyeksi.proyeksiLaba.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
                 </p>
               </div>
           </div>
@@ -614,13 +622,13 @@ export default function KalkulatorHPP() {
 
         {/* Chart Proyeksi */}
         {chartData && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Grafik Proyeksi Laba Bersih</h2>
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4">Grafik Proyeksi Laba Bersih</h2>
             
             {/* Simple Bar Chart */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-700 mb-3">Proyeksi Laba per Bulan</h3>
-              <div className="h-64 flex items-end justify-between space-x-1 bg-gray-50 p-4 rounded-lg">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-3">Proyeksi Laba per Bulan</h3>
+              <div className="h-48 sm:h-56 md:h-64 flex items-end justify-between space-x-1 bg-gray-50 p-3 sm:p-4 rounded-lg overflow-x-auto">
                 {chartData.map((data, index) => {
                   const maxLaba = Math.max(...chartData.map(d => d.laba));
                   const height = (data.laba / maxLaba) * 200;
