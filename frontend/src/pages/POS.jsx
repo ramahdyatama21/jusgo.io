@@ -133,214 +133,192 @@ const POS = () => {
   };
   
   return (
-    <div>
-      <div className="page-header">
-        <h1 className="page-title">Kasir (POS)</h1>
-        <p className="page-subtitle">Sistem Point of Sale</p>
-      </div>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-1">Kasir (POS)</h1>
+          <p className="text-sm sm:text-base text-gray-600">Sistem Point of Sale</p>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Product List */}
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">Daftar Produk</h3>
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800">Daftar Produk</h3>
             <button 
-              className="btn btn-secondary" 
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors" 
               onClick={loadProducts}
-              style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
             >
-              Refresh
+              🔄 Refresh
             </button>
           </div>
           
+          <div className="p-4 sm:p-6">
           {loading ? (
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              padding: '3rem',
-              color: '#64748b'
-            }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                border: '3px solid #e5e7eb',
-                borderTop: '3px solid #3b82f6',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-                marginBottom: '1rem'
-              }}></div>
-              <p>Memuat produk...</p>
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-500 text-sm">Memuat produk...</p>
             </div>
           ) : error ? (
-            <div className="alert alert-error">
-              {error}
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+              <p className="text-red-600 mb-4">{error}</p>
               <button 
-                className="btn btn-primary" 
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors" 
                 onClick={loadProducts}
-                style={{ marginTop: '1rem' }}
               >
                 Coba Lagi
               </button>
             </div>
           ) : products.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-              <p>Tidak ada produk tersedia</p>
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-4">Tidak ada produk tersedia</p>
               <button 
-                className="btn btn-primary" 
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors" 
                 onClick={loadProducts}
-                style={{ marginTop: '1rem' }}
               >
                 Refresh
               </button>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {products.map((product) => (
-                <div key={product.id} style={{ 
-                  border: '1px solid #e5e7eb', 
-                  borderRadius: '0.5rem', 
-                  padding: '1rem',
-                  textAlign: 'center'
-                }}>
-                  <h4 style={{ marginBottom: '0.5rem' }}>{product.name}</h4>
+                <div 
+                  key={product.id} 
+                  className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-lg transition-shadow bg-white cursor-pointer"
+                  onClick={() => addToCart(product)}
+                >
+                  <h4 className="font-semibold text-sm sm:text-base text-gray-800 mb-1 line-clamp-2">{product.name}</h4>
                   {product.category && (
-                    <p style={{ color: '#6b7280', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+                    <p className="text-gray-500 text-xs mb-2">
                       {product.category}
                     </p>
                   )}
-                  <p style={{ color: '#3b82f6', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                    Rp {(product.sell_price || 0).toLocaleString()}
+                  <p className="text-blue-600 font-bold text-base sm:text-lg mb-2">
+                    Rp {(product.sell_price || 0).toLocaleString('id-ID')}
                   </p>
-                  <p style={{ 
-                    color: product.stock <= (product.min_stock || 5) ? '#ef4444' : '#64748b', 
-                    fontSize: '0.875rem', 
-                    marginBottom: '1rem',
-                    fontWeight: product.stock <= (product.min_stock || 5) ? 'bold' : 'normal'
-                  }}>
-                    Stok: {product.stock}
-                    {product.stock <= (product.min_stock || 5) && ' (Stok Rendah)'}
-                  </p>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={`text-xs sm:text-sm font-medium ${product.stock <= (product.min_stock || 5) ? 'text-red-600' : 'text-gray-600'}`}>
+                      Stok: {product.stock}
+                    </span>
+                    {product.stock <= (product.min_stock || 5) && product.stock > 0 && (
+                      <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded">Low</span>
+                    )}
+                  </div>
                   <button 
-                    className="btn btn-primary"
-                    onClick={() => addToCart(product)}
-                    disabled={product.stock <= 0}
-                    style={{ 
-                      width: '100%',
-                      opacity: product.stock <= 0 ? 0.5 : 1,
-                      cursor: product.stock <= 0 ? 'not-allowed' : 'pointer'
+                    className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
+                      product.stock <= 0 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(product);
                     }}
+                    disabled={product.stock <= 0}
                   >
-                    {product.stock <= 0 ? 'Stok Habis' : 'Tambah ke Keranjang'}
+                    {product.stock <= 0 ? '❌ Habis' : '➕ Tambah'}
                   </button>
                 </div>
               ))}
             </div>
           )}
+          </div>
         </div>
         
         {/* Shopping Cart */}
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">Keranjang Belanja</h3>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-4">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-blue-600">
+            <h3 className="text-lg sm:text-xl font-semibold text-white">🛒 Keranjang</h3>
+            {cart.length > 0 && (
+              <span className="bg-white text-blue-600 px-3 py-1 rounded-full text-sm font-bold">
+                {cart.length}
+              </span>
+            )}
           </div>
           
+          <div className="p-4 sm:p-6">
           {cart.length === 0 ? (
-            <p style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>
-              Keranjang kosong
-            </p>
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🛒</div>
+              <p className="text-gray-500">Keranjang kosong</p>
+              <p className="text-sm text-gray-400 mt-2">Tambahkan produk untuk memulai</p>
+            </div>
           ) : (
             <>
-              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              <div className="max-h-[40vh] sm:max-h-96 overflow-y-auto space-y-3 mb-4">
                 {cart.map((item) => (
-                  <div key={item.id} style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    padding: '0.75rem 0',
-                    borderBottom: '1px solid #e5e7eb'
-                  }}>
-                    <div>
-                      <div style={{ fontWeight: '500' }}>{item.name}</div>
-                      <div style={{ color: '#64748b', fontSize: '0.875rem' }}>
-                        Rp {(item.sell_price || 0).toLocaleString()}
+                  <div key={item.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm text-gray-800">{item.name}</h4>
+                        <p className="text-blue-600 font-semibold text-sm">
+                          Rp {(item.sell_price || 0).toLocaleString('id-ID')}
+                        </p>
                       </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        style={{ 
-                          width: '24px', 
-                          height: '24px', 
-                          border: '1px solid #d1d5db',
-                          background: 'white',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        -
-                      </button>
-                      <span style={{ minWidth: '2rem', textAlign: 'center' }}>
-                        {item.quantity}
-                      </span>
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        style={{ 
-                          width: '24px', 
-                          height: '24px', 
-                          border: '1px solid #d1d5db',
-                          background: 'white',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        +
-                      </button>
                       <button 
                         onClick={() => removeFromCart(item.id)}
-                        className="btn btn-danger"
-                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                        className="text-red-500 hover:text-red-700 font-bold text-lg"
+                        title="Hapus"
                       >
-                        Hapus
+                        ✕
                       </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden">
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="px-3 py-1 hover:bg-gray-100 text-gray-700 font-bold transition-colors"
+                        >
+                          −
+                        </button>
+                        <span className="px-4 py-1 font-semibold text-gray-800 min-w-[3rem] text-center border-x border-gray-300">
+                          {item.quantity}
+                        </span>
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="px-3 py-1 hover:bg-gray-100 text-gray-700 font-bold transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500">Subtotal</p>
+                        <p className="font-bold text-gray-800">
+                          Rp {((item.sell_price || 0) * (item.quantity || 0)).toLocaleString('id-ID')}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
               
-              <div style={{ 
-                borderTop: '2px solid #e5e7eb', 
-                paddingTop: '1rem', 
-                marginTop: '1rem' 
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  fontSize: '1.25rem', 
-                  fontWeight: 'bold',
-                  marginBottom: '1rem'
-                }}>
-                  <span>Total:</span>
-                  <span>Rp {getTotal().toLocaleString()}</span>
+              <div className="border-t-2 border-gray-200 pt-4 mt-4">
+                <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4 mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700 font-medium">Total Pembayaran:</span>
+                    <span className="text-2xl font-bold text-green-600">
+                      Rp {getTotal().toLocaleString('id-ID')}
+                    </span>
+                  </div>
                 </div>
                 
                 <button 
-                  className="btn btn-success"
+                  className={`w-full py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg transition-all transform active:scale-95 ${
+                    cart.length === 0
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg'
+                  }`}
                   onClick={handleCheckout}
                   disabled={cart.length === 0}
-                  style={{ 
-                    width: '100%',
-                    opacity: cart.length === 0 ? 0.5 : 1,
-                    cursor: cart.length === 0 ? 'not-allowed' : 'pointer'
-                  }}
                 >
-                  {cart.length === 0 ? 'Keranjang Kosong' : 'Proses Pembayaran'}
+                  {cart.length === 0 ? '🛒 Keranjang Kosong' : '💳 Proses Pembayaran'}
                 </button>
               </div>
             </>
           )}
+          </div>
         </div>
+      </div>
       </div>
 
       {/* Print Receipt Modal */}
